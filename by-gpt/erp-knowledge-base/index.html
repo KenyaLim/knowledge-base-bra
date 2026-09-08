@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ERP Knowledge Base</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="menu-btn" id="menuBtn" aria-label="Buka menu">☰</button>
+    <a class="brand" href="#/"><span class="brand-mark">KB</span><span>ERP Knowledge Base</span></a>
+    <div class="top-actions">
+      <label class="search">
+        <span>⌕</span>
+        <input id="searchInput" type="search" placeholder="Cari modul, menu, istilah..." autocomplete="off">
+      </label>
+      <button class="theme-btn" id="themeBtn" title="Ubah tema">◐</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="side-title">LEARNING PATH</div>
+      <nav id="nav">
+        <a href="#/" data-route="/">Dashboard</a>
+        <a href="#/guide" data-route="/guide">Guide Awal</a>
+        <details open>
+          <summary>Order</summary>
+          <a href="#/order" data-route="/order">Overview</a>
+          <a href="#/order-entry-detail">Order Entry Detail</a>
+          <a href="#/assortment">Assortment</a>
+          <a href="#/po-buyer">PO Buyer</a>
+          <a href="#/destination">Destination</a>
+          <a href="#/ship-date">Ship Date</a>
+          <a href="#/style-color-size">Style, Color & Size</a>
+        </details>
+        <details>
+          <summary>MRP</summary>
+          <a href="#/mrp" data-route="/mrp">Overview</a>
+          <a href="#/rm-spec">RM Specification</a>
+          <a href="#/consumption">Consumption</a>
+          <a href="#/fabric-trims">Fabric & Trims</a>
+          <a href="#/article">Article</a>
+        </details>
+        <details>
+          <summary>Purchase</summary>
+          <a href="#/purchase" data-route="/purchase">Overview</a>
+          <a href="#/rm-purchase">RM Purchase</a>
+          <a href="#/bom">BOM</a>
+          <a href="#/regular-combined">Regular & Combined</a>
+          <a href="#/domestic-import">Domestic & Import</a>
+        </details>
+        <details>
+          <summary>Inventory</summary>
+          <a href="#/inventory" data-route="/inventory">Overview</a>
+          <a href="#/rm-receive">RM Receive / GRN</a>
+          <a href="#/qc">QC</a>
+          <a href="#/rm-issue">RM Issue</a>
+          <a href="#/rm-rollwise">RM Roll Wise</a>
+          <a href="#/rm-rackwise">RM Rack Wise</a>
+          <a href="#/stock-report">Stock Report</a>
+        </details>
+        <a href="#/faq" data-route="/faq">FAQ</a>
+      </nav>
+      <div class="side-footer">Internal Learning Reference</div>
+    </aside>
+
+    <main class="content">
+      <div id="app"></div>
+      <footer>
+        <div>ERP Knowledge Base</div>
+        <div>Order → MRP → Purchase → Inventory → Production</div>
+      </footer>
+    </main>
+  </div>
+
+  <div class="search-panel" id="searchPanel"></div>
+  <script src="assets/app.js"></script>
+</body>
+</html>
