@@ -1,3 +1,3 @@
 # knowledge-base-bra
 
-BETA TESTING
+TESTING

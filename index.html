@@ -1,101 +1,873 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STAGE — Panduan Alur Produksi</title>
+<style>
 
-    <link rel="stylesheet" href="style.css">
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
+  :root{
+    --paper:      #FFFFFF;
+    --paper-dim:  #F4F5F7;
+    --ink:        #20252B;
+    --ink-soft:   #505A65;
+    --ink-faint:  #7B858F;
+    --indigo:     #34495E;
+    --indigo-dim: #E7EBEF;
+    --line:       #D9DEE3;
+    --line-strong:#1B1B18;
+    --good:       #3F6B4A;
+    --warn:       #58636D;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{ background:var(--indigo); color:var(--paper); }
+
+  a{ color:inherit; }
+
+  code, .mono{
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  h1,h2,h3,h4{
+    font-family:'Source Serif 4', serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+  }
+
+  /* ---------- layout shell ---------- */
+
+  .shell{
+    display:grid;
+    grid-template-columns: 272px 1fr;
+    max-width:1280px;
+    margin:0 auto;
+    min-height:100vh;
+  }
+
+  /* ---------- sidebar ---------- */
+
+  .sidebar{
+    border-right:1px solid var(--line);
+    padding:40px 28px 40px 32px;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+  }
+
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:6px;
+  }
+
+  .brand-mark{
+    width:11px; height:11px;
+    background:var(--indigo);
+    flex:none;
+    margin-bottom:2px;
+  }
+
+  .brand-name{
+    font-family:'Source Serif 4', serif;
+    font-size:21px;
+    font-weight:700;
+  }
+
+  .brand-sub{
+    font-size:12.5px;
+    color:var(--ink-faint);
+    margin-bottom:34px;
+    padding-left:21px;
+  }
+
+  .nav-group-label{
+    font-size:11.5px;
+    color:var(--ink-faint);
+    margin:26px 0 10px 0;
+    padding-bottom:6px;
+    border-bottom:1px solid var(--line);
+  }
+
+  .nav-group-label:first-of-type{ margin-top:0; }
+
+  .navlist{ list-style:none; }
+
+  .navlist li{ margin:0; }
+
+  .navlink{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    padding:7px 6px 7px 2px;
+    font-size:14.5px;
+    text-decoration:none;
+    color:var(--ink-soft);
+    border-left:2px solid transparent;
+    transition:color .15s ease, border-color .15s ease, padding-left .15s ease;
+  }
+
+  .navlink:hover{ color:var(--ink); padding-left:8px; }
+
+  .navlink.active{
+    color:var(--ink);
+    border-left-color:var(--indigo);
+    font-weight:500;
+    padding-left:8px;
+  }
+
+  .navlink .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-faint);
+    flex:none;
+    width:16px;
+  }
+
+  .navlink.pending{ color:var(--ink-faint); }
+  .navlink.pending .num{ color:#C2BFB1; }
+
+  .sidebar-foot{
+    margin-top:40px;
+    padding-top:18px;
+    border-top:1px solid var(--line);
+    font-size:12px;
+    color:var(--ink-faint);
+    line-height:1.7;
+  }
+
+  /* ---------- main ---------- */
+
+  main{ padding:0; min-width:0; }
+
+  .hero{
+    padding:76px 64px 56px 64px;
+    border-bottom:1px solid var(--line);
+  }
+
+  .hero-eyebrow{
+    font-size:13px;
+    color:var(--indigo);
+    font-family:'IBM Plex Mono', monospace;
+    margin-bottom:18px;
+  }
+
+  .hero h1{
+    font-size:44px;
+    line-height:1.15;
+    max-width:16ch;
+    margin-bottom:22px;
+  }
+
+  .hero p{
+    font-size:16.5px;
+    color:var(--ink-soft);
+    max-width:56ch;
+  }
+
+  .hero-meta{
+    display:flex;
+    gap:36px;
+    margin-top:34px;
+    flex-wrap:wrap;
+  }
+
+  .hero-meta div{ font-size:13px; color:var(--ink-faint); }
+  .hero-meta strong{
+    display:block;
+    color:var(--ink);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    font-weight:500;
+    margin-bottom:3px;
+  }
+
+  section.stage{
+    padding:64px;
+    border-bottom:1px solid var(--line);
+  }
+
+  .stage-head{
+    display:flex;
+    gap:20px;
+    align-items:baseline;
+    margin-bottom:30px;
+  }
+
+  .stage-number{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    color:var(--indigo);
+    border:1px solid var(--indigo);
+    padding:3px 9px;
+    flex:none;
+  }
+
+  .stage-head h2{ font-size:30px; }
+
+  .stage-intro{
+    max-width:70ch;
+    font-size:16px;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+
+  .stage-intro + .stage-intro{ margin-top:14px; }
+
+  h3.sub{
+    font-size:19px;
+    margin:38px 0 14px 0;
+  }
+
+  h4.minor{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    text-transform:none;
+    margin:26px 0 10px 0;
+    color:var(--ink);
+  }
+
+  p{ max-width:70ch; color:var(--ink-soft); font-size:15.5px; margin-bottom:12px;}
+
+  ul.field-list{
+    list-style:none;
+    max-width:60ch;
+    margin:14px 0 22px 0;
+    border-top:1px solid var(--line);
+  }
+
+  ul.field-list li{
+    padding:9px 0;
+    border-bottom:1px solid var(--line);
+    font-size:15px;
+    color:var(--ink-soft);
+    display:flex;
+    gap:12px;
+  }
+
+  ul.field-list li::before{
+    content:"—";
+    color:var(--ink-faint);
+    flex:none;
+  }
+
+  /* code breakdown block */
+
+  .code-block{
+    border:1px solid var(--line-strong);
+    max-width:640px;
+    margin:18px 0 26px 0;
+  }
+
+  .code-string{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:20px;
+    padding:20px 24px;
+    border-bottom:1px solid var(--line-strong);
+    background:var(--paper-dim);
+    letter-spacing:0.02em;
+  }
+
+  .code-parts{ padding:6px 0; }
+
+  .code-part{
+    display:grid;
+    grid-template-columns:110px 1fr;
+    gap:16px;
+    padding:11px 24px;
+    border-bottom:1px solid var(--line);
+    font-size:14.5px;
+  }
+  .code-part:last-child{ border-bottom:none; }
+
+  .code-part .seg{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--indigo);
+    font-weight:500;
+  }
+  .code-part .desc{ color:var(--ink-soft); }
+
+  /* flow diagram */
+
+  .flow{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:0;
+    margin:20px 0 30px 0;
+    max-width:70ch;
+  }
+
+  .flow-step{
+    border:1px solid var(--line-strong);
+    padding:11px 18px;
+    font-size:14px;
+    font-family:'IBM Plex Mono', monospace;
+    background:var(--paper);
+    white-space:nowrap;
+  }
+
+  .flow-step.end{ background:var(--ink); color:var(--paper); }
+  .flow-step.reject{ background:var(--paper-dim); color:var(--warn); border-color:var(--warn); }
+
+  .flow-arrow{
+    padding:0 10px;
+    color:var(--ink-faint);
+    font-size:15px;
+  }
+
+  .flow-row{ display:flex; align-items:center; flex-wrap:wrap; margin-bottom:10px;}
+  .flow-row-label{
+    font-size:12px;
+    color:var(--ink-faint);
+    width:100%;
+    margin-bottom:8px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  /* table */
+
+  table{
+    border-collapse:collapse;
+    width:100%;
+    max-width:780px;
+    margin:16px 0 30px 0;
+    font-size:14.5px;
+  }
+
+  table caption{
+    text-align:left;
+    font-size:12px;
+    color:var(--ink-faint);
+    margin-bottom:8px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  thead th{
+    text-align:left;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+    color:var(--ink);
+    border-bottom:1px solid var(--line-strong);
+    padding:9px 16px 9px 0;
+  }
+
+  tbody td{
+    padding:12px 16px 12px 0;
+    border-bottom:1px solid var(--line);
+    color:var(--ink-soft);
+    vertical-align:top;
+  }
+
+  tbody td:first-child{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--ink);
+    white-space:nowrap;
+  }
+
+  /* two column grid for term cards */
+
+  .term-grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    max-width:900px;
+    margin:20px 0 30px 0;
+  }
+
+  .term-card{
+    background:var(--paper);
+    padding:20px 22px;
+  }
+
+  .term-card h5{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:15px;
+    font-weight:600;
+    margin-bottom:8px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .term-card h5::before{
+    content:"";
+    width:6px;
+    height:6px;
+    background:var(--indigo);
+    flex:none;
+  }
+
+  .term-card p{ font-size:14px; margin:0; }
+
+  /* worked example callout */
+
+  .example{
+    border-left:3px solid var(--indigo);
+    background:var(--paper-dim);
+    padding:18px 24px;
+    max-width:64ch;
+    margin:18px 0 28px 0;
+  }
+
+  .example .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--indigo);
+    margin-bottom:8px;
+  }
+
+  .example p{ font-size:14.5px; margin-bottom:6px; color:var(--ink); }
+  .example p:last-child{ margin-bottom:0; }
+
+  /* pending stages section */
+
+  .pending-section{
+    padding:64px;
+  }
+
+  .pending-list{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    max-width:900px;
+  }
+
+  .pending-item{
+    background:var(--paper);
+    padding:20px;
+  }
+
+  .pending-item .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-faint);
+    display:block;
+    margin-bottom:8px;
+  }
+
+  .pending-item .name{
+    font-family:'Source Serif 4', serif;
+    font-size:17px;
+    font-weight:600;
+    display:block;
+    margin-bottom:10px;
+  }
+
+  .pending-item .status{
+    font-size:11.5px;
+    color:var(--warn);
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  footer{
+    padding:40px 64px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:12.5px;
+    color:var(--ink-faint);
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  /* responsive */
+
+  @media (max-width: 880px){
+    .shell{ grid-template-columns:1fr; }
+    .sidebar{
+      position:relative;
+      height:auto;
+      border-right:none;
+      border-bottom:1px solid var(--line);
+    }
+    .hero, section.stage, .pending-section, footer{ padding:40px 24px; }
+    .hero h1{ font-size:32px; }
+    .term-grid{ grid-template-columns:1fr; }
+  }
+
+</style>
 </head>
 <body>
-    
-    <div id="navbar"></div>
 
-    <main>
+<div class="shell">
 
-        <section class="hero">
-            <p class="eyebrow">Learning Guide</p>
-            <h1>lorem ipsum</h1>
-            <p>lorem ipsum</p>
+  <!-- ============ SIDEBAR ============ -->
+  <nav class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-name">STAGE</div>
+    </div>
+    <div class="brand-sub">Panduan Alur Produksi · v11</div>
 
-            <div class="search">
-                <input type="search" name="" id="searchInput" placeholder="Cari disini . . .">
-                <button id="searchButton">Cari</button>
-            </div>
+    <div class="nav-group-label">Didokumentasikan</div>
+    <ul class="navlist">
+      <li><a class="navlink active" href="modules/order.html"><span class="num">01</span><span>Order</span></a></li>
+      <li><a class="navlink" href="modules/mrp.html"><span class="num">02</span><span>MRP</span></a></li>
+      <li><a class="navlink" href="modules/purchase.html"><span class="num">03</span><span>Purchase</span></a></li>
+      <li><a class="navlink" href="modules/inventory.html"><span class="num">04</span><span>Inventory</span></a></li>
+    </ul>
 
-            <div id="searchResults" class="search-results"></div>
-        </section>
+    <div class="nav-group-label">Belum didokumentasikan</div>
+    <ul class="navlist">
+      <li><a class="navlink pending" href="#lanjutan"><span class="num">05</span><span>Cutting</span></a></li>
+      <li><a class="navlink pending" href="#lanjutan"><span class="num">06</span><span>Sewing</span></a></li>
+      <li><a class="navlink pending" href="#lanjutan"><span class="num">07</span><span>Packing</span></a></li>
+      <li><a class="navlink pending" href="#lanjutan"><span class="num">08</span><span>Inventory FG</span></a></li>
+      <li><a class="navlink pending" href="#lanjutan"><span class="num">09</span><span>Shipment</span></a></li>
+      <li><a class="navlink pending" href="#lanjutan"><span class="num">10</span><span>Reporting</span></a></li>
+      <li><a class="navlink pending" href="#lanjutan"><span class="num">11</span><span>Web Report</span></a></li>
+    </ul>
 
-        <section id="modules">
-            <div class="section-title">
-                <div>
-                    <p class="eyebrow">MODUL</p>
-                    <!-- <h2>MODUL ERP</h2> -->
-                </div>
-            </div>
+    <div class="sidebar-foot">
+      PT. Busana Remaja Agracipta<br>
+      Disusun dari rangkuman pelatihan internal.
+    </div>
+  </nav>
 
-            <!-- MODUL MODUL -->
+  <!-- ============ MAIN ============ -->
+  <main>
 
-            <div class="card-grid">
-                <a class="card" href="modul/order.html">
-                    <span class="tag">MODUL 01</span>
-                    <h3>ORDER</h3>
-                    <p>Panduan dan informasi proses Order</p>
-                </a>
+    <div class="hero">
+      <div class="hero-eyebrow">DOKUMENTASI SISTEM PRODUKSI</div>
+      <h1>Memahami alur kerja STAGE, dari order sampai gudang.</h1>
+      <p>Ringkasan ini menjelaskan empat tahap pertama pada sistem STAGE — Order, MRP, Purchase, dan Inventory — mulai dari pesanan buyer masuk, kebutuhan material dihitung, material dibeli, hingga material diterima dan dikelola di gudang. Tahap-tahap produksi berikutnya belum tercakup dalam ringkasan ini.</p>
+      <div class="hero-meta">
+        <div><strong>11</strong>tahap dalam alur produksi</div>
+        <div><strong>4</strong>tahap terdokumentasi di sini</div>
+        <div><strong>STAGE v11</strong>versi sistem</div>
+      </div>
+    </div>
 
-                <a class="card" href="modul/mrp.html">
-                    <span class="tag">MODUL 02</span>
-                    <h3>MRP</h3>
-                    <p>Panduan dan informasi proses MRP</p>
-                </a>
+    <!-- ============ 01 ORDER ============ -->
+    <section class="stage" id="order">
+      <div class="stage-head">
+        <span class="stage-number">01</span>
+        <h2>Order</h2>
+      </div>
 
-                <a class="card" href="modul/purchase.html">
-                    <span class="tag">MODUL 03</span>
-                    <h3>PURCHASE</h3>
-                    <p>Panduan dan informasi proses Purchase</p>
-                </a>
+      <p class="stage-intro">Order berisi pesanan dari buyer yang menjadi dasar untuk seluruh proses selanjutnya. Setiap order memiliki nomor SPI — Surat Pesanan Internal — yang menjadi acuan di tahap-tahap berikutnya, termasuk MRP dan Purchase.</p>
 
-                <a class="card" href="modul/inventory.html">
-                    <span class="tag">MODUL 04</span>
-                    <h3>INVENTORY</h3>
-                    <p>Panduan dan informasi proses Inventory</p>
-                </a>
-            </div>
-        </section>
+      <h3 class="sub">Order Entry Detail</h3>
+      <p>Berisi informasi utama mengenai sebuah order. Informasi yang dapat dilihat antara lain:</p>
+      <ul class="field-list">
+        <li>Order number</li>
+        <li>Buyer</li>
+        <li>Order Date</li>
+        <li>Order Quantity</li>
+        <li>Ship date</li>
+        <li>Informasi order lainnya</li>
+      </ul>
 
-        <section id="faq" class="">
-            <p class="eyebrow"> FAQ</p>
-            <h2>Pertanyaan Umum</h2>
+      <h4 class="minor">Format nomor order (SPI)</h4>
+      <div class="code-block">
+        <div class="code-string">2B/2026/HBI/1821</div>
+        <div class="code-parts">
+          <div class="code-part"><span class="seg">2B</span><span class="desc">Unit</span></div>
+          <div class="code-part"><span class="seg">2026</span><span class="desc">Tahun order</span></div>
+          <div class="code-part"><span class="seg">HBI</span><span class="desc">Kode buyer</span></div>
+          <div class="code-part"><span class="seg">1821</span><span class="desc">Nomor urut order</span></div>
+        </div>
+      </div>
 
-            <div class="faq-list">
-                <details>
-                    <summary>Apa itu ERP?</summary>
-                    <p>Adalah</p>
-                </details>
+      <h3 class="sub">Istilah kunci</h3>
+      <div class="term-grid">
+        <div class="term-card">
+          <h5>Assortment</h5>
+          <p>Digunakan untuk melihat pembagian order berdasarkan style, color, size, dan quantity.</p>
+        </div>
+        <div class="term-card">
+          <h5>PO Buyer</h5>
+          <p>Purchase order dari buyer. Menjadi referensi utama untuk mengetahui produk yang harus diproduksi dan kebutuhan order.</p>
+        </div>
+        <div class="term-card">
+          <h5>Destination</h5>
+          <p>Lokasi tujuan pengiriman barang. Buyer dan destination tidak selalu berada di lokasi yang sama — misalnya buyer berasal dari Inggris, namun barang dikirim ke Brazil.</p>
+        </div>
+        <div class="term-card">
+          <h5>Ship date</h5>
+          <p>Tanggal barang harus dikirim, sesuai permintaan buyer.</p>
+        </div>
+        <div class="term-card">
+          <h5>Style</h5>
+          <p>Model atau identitas garmen dari masing-masing buyer.</p>
+        </div>
+        <div class="term-card">
+          <h5>Color &amp; Size</h5>
+          <p>Color menunjukkan warna produk atau material dan dapat memiliki kode tertentu. Size menunjukkan ukuran produk.</p>
+        </div>
+      </div>
+    </section>
 
-                <details>
-                    <summary>Apa itu ERP?</summary>
-                    <p>Adalah</p>
-                </details>
+    <!-- ============ 02 MRP ============ -->
+    <section class="stage" id="mrp">
+      <div class="stage-head">
+        <span class="stage-number">02</span>
+        <h2>MRP</h2>
+      </div>
 
-                <details>
-                    <summary>Apa itu ERP?</summary>
-                    <p>Adalah</p>
-                </details>
+      <p class="stage-intro"><strong style="color:var(--ink); font-weight:600;">Material Requirement Planning</strong> — sistem digital yang merencanakan kebutuhan material produksi secara akurat, berdasarkan order yang sudah masuk.</p>
 
-                <details>
-                    <summary>Apa itu ERP?</summary>
-                    <p>Adalah</p>
-                </details>
-            </div>
-        </section>
+      <h3 class="sub">BOM (Bill of Material)</h3>
+      <p>BOM menjadi salah satu dasar utama dalam proses MRP. BOM berisi material yang dibutuhkan, jumlahnya, dan spesifikasinya. Material dibagi menjadi dua kelompok:</p>
 
-    </main>
+      <div class="term-grid">
+        <div class="term-card">
+          <h5>Fabric</h5>
+          <p>Kain — digunakan sebagai material utama garmen.</p>
+        </div>
+        <div class="term-card">
+          <h5>Trims</h5>
+          <p>Material pendukung: benang, label, renda, strap, foam cup, dan material sejenis.</p>
+        </div>
+      </div>
 
+      <h3 class="sub">RM Specifications</h3>
+      <p>Digunakan untuk melihat spesifikasi raw material. Informasi yang dicakup meliputi Material, Article, Color, Size, Position, dan Consumption.</p>
 
-    <script src="script.js"></script>
+      <p>Article menjadi identitas penting untuk membedakan material. Setelah article diketahui, material dapat dibedakan lagi berdasarkan color.</p>
+
+      <div class="example">
+        <div class="label">CONTOH — IDENTITAS MATERIAL</div>
+        <p>Article: DPO-05000-15R</p>
+        <p>Color: Black</p>
+        <p>Position: Armhole</p>
+      </div>
+
+      <h4 class="minor">Consumption</h4>
+      <p>Menunjukkan kebutuhan material untuk membuat satu unit produk. Consumption dapat berbeda tergantung size yang digunakan.</p>
+
+      <div class="example">
+        <div class="label">CONTOH PERHITUNGAN</div>
+        <p>Consumption = 0,1338 yard/pcs</p>
+        <p>Order quantity = 1.540 pcs</p>
+        <p>1.540 × 0,1338 = 206,052 yard kebutuhan material untuk order tersebut.</p>
+      </div>
+
+      <h3 class="sub">Mengakses Specifications</h3>
+      <p>Menu MRP → Specifications, kemudian tekan <span class="mono">F8</span> untuk memfilter berdasarkan nomor SPI atau nomor PO. Pilihan tampilan tersedia untuk Fabric atau Trims.</p>
+    </section>
+
+    <!-- ============ 03 PURCHASE ============ -->
+    <section class="stage" id="purchase">
+      <div class="stage-head">
+        <span class="stage-number">03</span>
+        <h2>Purchase</h2>
+      </div>
+
+      <p class="stage-intro">Purchase digunakan untuk melakukan pembelian material setelah kebutuhan material dari MRP sudah diketahui. Setelah consumption tersedia, perusahaan dapat menghitung kebutuhan material dan melakukan purchasing.</p>
+
+      <h3 class="sub">Sumber material</h3>
+      <table>
+        <thead><tr><th>Kategori</th><th>Keterangan</th></tr></thead>
+        <tbody>
+          <tr><td>Domestic</td><td>Pembelian material dari supplier lokal, dalam Indonesia.</td></tr>
+          <tr><td>Import</td><td>Pembelian material dari supplier luar negeri.</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:-14px;">Kode <span class="mono">P</span> menunjukkan sumber lokal dan kode <span class="mono">I</span> menunjukkan sumber internasional.</p>
+
+      <h3 class="sub">Jenis purchase</h3>
+      <table>
+        <thead><tr><th>Jenis</th><th>Digunakan ketika</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Regular</td>
+            <td>Pembelian material berkaitan dengan satu SPI tertentu. SPI menjadi acuan pembuatan PO dan nomornya terlihat langsung pada PO.</td>
+          </tr>
+          <tr>
+            <td>Combined</td>
+            <td>Beberapa kebutuhan material — masing-masing dari SPI berbeda — digabung dalam satu pembelian. Satu PO Combined dapat memuat beberapa SPI.</td>
+          </tr>
+          <tr>
+            <td>General</td>
+            <td>Kebutuhan yang sifatnya lebih umum dan tidak berkaitan langsung dengan SPI tertentu.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="example">
+        <div class="label">CONTOH — COMBINED PURCHASE</div>
+        <p>SPI 001 → Fabric A</p>
+        <p>SPI 002 → Fabric B</p>
+        <p>SPI 003 → Fabric C</p>
+        <p>Ketiga kebutuhan tersebut digabung dalam satu proses purchase.</p>
+      </div>
+
+      <h3 class="sub">Data yang tercakup dalam RM Purchase</h3>
+      <ul class="field-list">
+        <li>Supplier</li>
+        <li>Buyer</li>
+        <li>Order Number</li>
+        <li>Material</li>
+        <li>Quantity</li>
+        <li>Currency</li>
+        <li>PO Number</li>
+      </ul>
+    </section>
+
+    <!-- ============ 04 INVENTORY ============ -->
+    <section class="stage" id="inventory">
+      <div class="stage-head">
+        <span class="stage-number">04</span>
+        <h2>Inventory</h2>
+      </div>
+
+      <p class="stage-intro">Digunakan untuk menyimpan dan mengelola material yang sudah diterima di gudang. Material yang lolos QC masuk ke stock inventory, sedangkan inventory juga mengelola material berdasarkan roll dan lokasi penyimpanan.</p>
+
+      <h3 class="sub">Alur penerimaan material</h3>
+
+      <div class="flow-row">
+        <div class="flow-row-label">JALUR NORMAL</div>
+        <div class="flow">
+          <span class="flow-step">Supplier</span><span class="flow-arrow">→</span>
+          <span class="flow-step">Receive / GRN</span><span class="flow-arrow">→</span>
+          <span class="flow-step">QC</span><span class="flow-arrow">→</span>
+          <span class="flow-step">Good</span><span class="flow-arrow">→</span>
+          <span class="flow-step end">Stock</span>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <div class="flow-row-label">JIKA MATERIAL DITOLAK</div>
+        <div class="flow">
+          <span class="flow-step">Supplier</span><span class="flow-arrow">→</span>
+          <span class="flow-step">Receive / GRN</span><span class="flow-arrow">→</span>
+          <span class="flow-step">QC</span><span class="flow-arrow">→</span>
+          <span class="flow-step reject">Reject</span><span class="flow-arrow">→</span>
+          <span class="flow-step reject">Return to Supplier</span>
+        </div>
+      </div>
+
+      <h3 class="sub">RM Receive (GRN)</h3>
+      <p>Digunakan untuk mencatat material yang diterima dari supplier. Proses ini disebut GRN, atau Raw Material Received. Saat melakukan receive, user memasukkan:</p>
+      <ul class="field-list">
+        <li>PO Number</li>
+        <li>SPI</li>
+        <li>Material</li>
+        <li>Quantity</li>
+        <li>Informasi penerimaan lainnya</li>
+      </ul>
+
+      <h4 class="minor">Kode pada nomor GRN</h4>
+      <table>
+        <thead><tr><th>Kode</th><th>Arti</th></tr></thead>
+        <tbody>
+          <tr><td>IDMP</td><td>Penerimaan dari supplier ke gudang.</td></tr>
+          <tr><td>ODPD</td><td>Perpindahan dari gudang ke SPI — issued untuk produksi.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="example">
+        <div class="label">CONTOH — PENERIMAAN PARSIAL</div>
+        <p>PO foam cup = 1.800 pcs</p>
+        <p>Pengiriman pertama = 500 pcs</p>
+        <p>Sistem mencatat 500 pcs sebagai quantity yang sudah diterima. Sisanya tetap berstatus pending, dan supplier dapat mengirimkannya secara bertahap. Gudang melakukan receive setiap kali material datang.</p>
+      </div>
+
+      <h3 class="sub">RM Issue</h3>
+      <p>Digunakan untuk mengeluarkan material dari inventory ketika dibutuhkan oleh proses produksi.</p>
+      <div class="flow-row">
+        <div class="flow">
+          <span class="flow-step">Stock</span><span class="flow-arrow">→</span>
+          <span class="flow-step">Issue</span><span class="flow-arrow">→</span>
+          <span class="flow-step end">Production</span>
+        </div>
+      </div>
+
+      <h3 class="sub">Pengelolaan penyimpanan</h3>
+      <div class="term-grid">
+        <div class="term-card">
+          <h5>RM Roll Wise</h5>
+          <p>Mengelola material yang disimpan dalam bentuk roll, terutama fabric. Material yang diterima dapat dipecah menjadi beberapa roll, masing-masing dengan informasi dan nomor sendiri.</p>
+        </div>
+        <div class="term-card">
+          <h5>RM Rack Wise</h5>
+          <p>Menunjukkan lokasi penyimpanan material di gudang — rack mana material tersebut disimpan. Fokusnya pada lokasi, bukan detail roll.</p>
+        </div>
+      </div>
+
+      <div class="example">
+        <div class="label">CONTOH — PEMBAGIAN ROLL</div>
+        <p>Received fabric = 1.000 yard, kemudian disimpan menjadi:</p>
+        <p>Roll 001 = 400 yard · Roll 002 = 350 yard · Roll 003 = 250 yard</p>
+      </div>
+
+      <h3 class="sub">Stock Report</h3>
+      <p>Digunakan untuk melihat informasi stock material. Informasi yang dapat digunakan untuk monitoring antara lain Material, Quantity, Status stock, Lokasi penyimpanan, dan informasi inventory lainnya.</p>
+    </section>
+
+    <!-- ============ PENDING STAGES ============ -->
+    <section class="pending-section" id="lanjutan">
+      <h3 class="sub" style="margin-top:0;">Tahapan selanjutnya</h3>
+      <p style="margin-bottom:24px;">Tujuh tahap berikut merupakan bagian dari alur produksi STAGE, namun belum dijelaskan secara rinci pada rangkuman ini.</p>
+      <div class="pending-list">
+        <div class="pending-item"><span class="num">05</span><span class="name">Cutting</span><span class="status">Belum tersedia</span></div>
+        <div class="pending-item"><span class="num">06</span><span class="name">Sewing</span><span class="status">Belum tersedia</span></div>
+        <div class="pending-item"><span class="num">07</span><span class="name">Packing</span><span class="status">Belum tersedia</span></div>
+        <div class="pending-item"><span class="num">08</span><span class="name">Inventory FG</span><span class="status">Belum tersedia</span></div>
+        <div class="pending-item"><span class="num">09</span><span class="name">Shipment</span><span class="status">Belum tersedia</span></div>
+        <div class="pending-item"><span class="num">10</span><span class="name">Reporting</span><span class="status">Belum tersedia</span></div>
+        <div class="pending-item"><span class="num">11</span><span class="name">Web Report</span><span class="status">Belum tersedia</span></div>
+      </div>
+    </section>
+
+    <footer>
+      <div>STAGE Version 11 · PT. Busana Remaja Agracipta</div>
+      <div>Disusun dari rangkuman pelatihan internal</div>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  // active-state highlighting on scroll
+  const sections = document.querySelectorAll('section.stage[id]');
+  const links = document.querySelectorAll('.navlink[href^="#"]');
+
+  const setActive = (id) => {
+    links.forEach(l => {
+      if(l.getAttribute('href') === '#' + id){
+        if(!l.classList.contains('pending')) l.classList.add('active');
+      } else if (!l.classList.contains('pending')) {
+        l.classList.remove('active');
+      }
+    });
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        setActive(entry.target.id);
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
 
 </body>
 </html>
