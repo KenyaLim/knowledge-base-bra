@@ -190,7 +190,7 @@ input {
 }
 
 .sidebar-dashboard.active {
-    color: #00000000;
+    color: #000000000;
     background: #eeeeee;
     border-right-color: #111111;
     font-weight: 700;
