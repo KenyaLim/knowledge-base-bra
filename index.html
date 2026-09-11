@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuBase | Dashboard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body data-page="dashboard">
+
+    <!-- Navbar dibuat otomatis oleh navbar.js -->
+    <div id="navbar"></div>
+
+    <div class="app-layout">
+
+        <!-- Sidebar dibuat otomatis oleh navbar.js -->
+        <aside id="sidebar"></aside>
+
+        <!-- Isi halaman -->
+        <main class="main-content">
+
+            <section class="hero">
+                <div class="hero-content">
+                    <p class="eyebrow">KNOWLEDGE BASE</p>
+
+                    <h1>How can we help you?</h1>
+
+                    <p class="hero-description">
+                        Search the centralized documentation for ERP modules,
+                        procedures, tutorials, and troubleshooting guides.
+                    </p>
+
+                    <div class="search-box">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input
+                            type="text"
+                            id="searchInput"
+                            placeholder="Search documentation..."
+                        >
+                        <button id="searchButton">SEARCH</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-heading">
+                    <i class="ph ph-path"></i>
+                    <h2>Quick Start</h2>
+                </div>
+
+                <div class="card-grid">
+
+                    <a href="getting-started/installation.html" class="card">
+                        <span class="card-number">01</span>
+                        <h3>Getting Started</h3>
+                        <p>
+                            Learn the basic setup and configuration
+                            before using the system.
+                        </p>
+                        <span class="card-link">
+                            View Guide <i class="ph ph-arrow-right"></i>
+                        </span>
+                    </a>
+
+                    <a href="erp/purchase/index.html" class="card">
+                        <span class="card-number">02</span>
+                        <h3>Purchase</h3>
+                        <p>
+                            Documentation for purchase orders,
+                            material purchasing, and receiving.
+                        </p>
+                        <span class="card-link">
+                            View Module <i class="ph ph-arrow-right"></i>
+                        </span>
+                    </a>
+
+                    <a href="erp/inventory/index.html" class="card">
+                        <span class="card-number">03</span>
+                        <h3>Inventory</h3>
+                        <p>
+                            Learn about stock, goods receipt,
+                            and inventory processes.
+                        </p>
+                        <span class="card-link">
+                            View Module <i class="ph ph-arrow-right"></i>
+                        </span>
+                    </a>
+
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-heading">
+                    <i class="ph ph-books"></i>
+                    <h2>Explore Modules</h2>
+                </div>
+
+                <div class="module-grid">
+
+                    <a href="erp/stage/index.html" class="module-card">
+                        <div class="module-icon">
+                            <i class="ph ph-shopping-cart"></i>
+                        </div>
+                        <div>
+                            <h3>Stage</h3>
+                            <p>Order and packing processes.</p>
+                        </div>
+                    </a>
+
+                    <a href="erp/mrp/index.html" class="module-card">
+                        <div class="module-icon">
+                            <i class="ph ph-chart-bar"></i>
+                        </div>
+                        <div>
+                            <h3>MRP</h3>
+                            <p>Material requirements and planning.</p>
+                        </div>
+                    </a>
+
+                    <a href="erp/purchase/index.html" class="module-card">
+                        <div class="module-icon">
+                            <i class="ph ph-receipt"></i>
+                        </div>
+                        <div>
+                            <h3>Purchase</h3>
+                            <p>Purchase orders and material buying.</p>
+                        </div>
+                    </a>
+
+                    <a href="erp/inventory/index.html" class="module-card">
+                        <div class="module-icon">
+                            <i class="ph ph-package"></i>
+                        </div>
+                        <div>
+                            <h3>Inventory</h3>
+                            <p>Material receiving and stock.</p>
+                        </div>
+                    </a>
+
+                    <a href="erp/production/index.html" class="module-card">
+                        <div class="module-icon">
+                            <i class="ph ph-factory"></i>
+                        </div>
+                        <div>
+                            <h3>Production</h3>
+                            <p>Cutting and sewing processes.</p>
+                        </div>
+                    </a>
+
+                    <a href="erp/shipment/index.html" class="module-card">
+                        <div class="module-icon">
+                            <i class="ph ph-truck"></i>
+                        </div>
+                        <div>
+                            <h3>Shipment</h3>
+                            <p>Packing, shipment, and export.</p>
+                        </div>
+                    </a>
+
+                </div>
+            </section>
+
+            <footer class="site-footer">
+                © 2026 DocuBase. ERP Knowledge Base.
+            </footer>
+
+        </main>
+    </div>
+
+    <script src="js/navbar.js"></script>
+</body>
+</html>
