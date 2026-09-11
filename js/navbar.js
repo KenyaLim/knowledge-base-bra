@@ -57,6 +57,19 @@ document.addEventListener("DOMContentLoaded", function () {
     /*
         =========================
         NAVBAR
+
+        <div class="navbar-right">
+                    
+                    <a href="#" class="navbar-link">
+                        <i class="ph ph-github-logo"></i>
+                        <span>GitHub</span>
+                    </a>
+
+                    <a href="#" class="navbar-signin">
+                        Sign In
+                    </a>
+
+                </div>
         =========================
     */
 
@@ -76,24 +89,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     <a href="${ROOT}index.html" class="navbar-logo">
 
-                        <span>LOREM IPSUM</span>
+                        <span class="navbar-logo-icon">
+                            <i class="ph ph-squares-four"></i>
+                        </span>
+
+                        <span>Dashboard</span>
 
                     </a>
 
                 </div>
 
-                <div class="navbar-right">
-
-                    <a href="#" class="navbar-link">
-                        <i class="ph ph-github-logo"></i>
-                        <span>GitHub</span>
-                    </a>
-
-                    <a href="#" class="navbar-signin">
-                        Sign In
-                    </a>
-
-                </div>
+                
 
             </header>
         `;
@@ -296,7 +302,9 @@ document.addEventListener("DOMContentLoaded", function () {
                             <i class="ph-fill ph-house-line"></i>
                         </span>
 
+                        <span></span>
                     </a>
+
 
                     ${modules.map(function (module) {
 
@@ -356,8 +364,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div class="sidebar-footer">
 
                     <span class="status-dot"></span>
-
-                    <span></span>
 
                 </div>
 
