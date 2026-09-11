@@ -119,11 +119,11 @@ document.addEventListener("DOMContentLoaded", function () {
             title: "Getting Started",
             icon: "ph-rocket",
             children: [
-                {
-                    title: "Installation",
-                    page: "installation",
-                    url: "getting-started/installation.html"
-                },
+                // {
+                //     title: "Installation",
+                //     page: "installation",
+                //     url: "getting-started/installation.html"
+                // },
                 {
                     title: "Quick Configuration",
                     page: "configuration",
