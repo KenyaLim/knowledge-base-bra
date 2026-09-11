@@ -128,6 +128,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     title: "Quick Configuration",
                     page: "configuration",
                     url: "getting-started/configuration.html"
+                },
+                {
+                    title: "FAQ",
+                    page: "Frequently Asked Questions",
+                    url: "getting-started/faq.html"
                 }
             ]
         },
