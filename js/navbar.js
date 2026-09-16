@@ -99,7 +99,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 </div>
 
-                
+                <div class="navbar-right">
+                    <form class="navbar-logout-form" action="/api/logout" method="POST">
+                        <button type="submit" class="navbar-signin">
+                            Logout
+                        </button>
+                    </form>
+                </div>
 
             </header>
         `;

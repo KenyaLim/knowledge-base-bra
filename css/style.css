@@ -107,10 +107,16 @@ input {
     padding: 9px 18px;
     font-size: 14px;
     font-weight: 700;
+    border: 0;
+    cursor: pointer;
 }
 
 .navbar-signin:hover {
     background: #000000;
+}
+
+.navbar-logout-form {
+    margin: 0;
 }
 
 .mobile-menu-btn {
@@ -698,4 +704,102 @@ input {
 
 .faq-item.open .faq-question i {
     transform: rotate(45deg);
+}
+
+/* =========================
+   LOGIN
+   ========================= */
+
+.login-body {
+    min-height: 100vh;
+    background: #f5f5f5;
+}
+
+.login-shell {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 460px;
+    background: white;
+    border: 1px solid #d4d4d4;
+    padding: 40px;
+}
+
+.login-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.login-brand h1 {
+    margin: 4px 0 0 0;
+    font-size: 28px;
+}
+
+.login-copy {
+    color: #555555;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-label {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"] {
+    height: 46px;
+    border: 1px solid #d4d4d4;
+    padding: 0 14px;
+    margin-bottom: 16px;
+    background: #ffffff;
+}
+
+.login-form input[type="text"]:focus,
+.login-form input[type="password"]:focus {
+    outline: 2px solid #111111;
+    outline-offset: 1px;
+}
+
+.login-submit {
+    margin-top: 8px;
+    height: 48px;
+    border: 0;
+    background: #111111;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.login-submit:hover {
+    background: #000000;
+}
+
+.login-error {
+    background: #f5f5f5;
+    border: 1px solid #d4d4d4;
+    color: #111111;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px 14px;
+    margin: 0 0 20px 0;
 }
