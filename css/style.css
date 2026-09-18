@@ -770,6 +770,15 @@ input {
     background: #ffffff;
 }
 
+.login-form input[type="text"],
+.login-form input[type="email"] {
+    height: 46px;
+    border: 1px solid #d4d4d4;
+    padding: 0 14px;
+    margin-bottom: 16px;
+    background: #ffffff;
+}
+
 .login-form input[type="text"]:focus,
 .login-form input[type="password"]:focus {
     outline: 2px solid #111111;
