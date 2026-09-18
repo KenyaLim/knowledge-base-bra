@@ -33,11 +33,11 @@
             <form class="login-form" method="POST" action="/api/login" autocomplete="on">
                 <input type="hidden" name="next" id="nextField" value="/index.html">
 
-                <label class="login-label" for="username">Username</label>
+                <label class="login-label" for="email">Email</label>
                 <input
-                    id="username"
-                    name="username"
-                    type="text"
+                    id="email"
+                    name="email"
+                    type="email"
                     required
                     autocomplete="username"
                     spellcheck="false"
@@ -73,12 +73,12 @@
 
         if (error === "invalid") {
             errorBox.hidden = false;
-            errorBox.textContent = "Username or password is incorrect.";
+            errorBox.textContent = "Email or password is incorrect.";
         }
 
         if (error === "config") {
             errorBox.hidden = false;
-            errorBox.textContent = "Login is not configured. Set AUTH_USERNAME, AUTH_PASSWORD, and AUTH_SECRET in Vercel.";
+            errorBox.textContent = "Login is not configured. Set SUPABASE_URL, SUPABASE_ANON_KEY, and AUTH_SECRET in Vercel.";
         }
     </script>
 </body>

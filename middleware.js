@@ -55,35 +55,39 @@ function isPublicAsset(path) {
 }
 
 async function handleLogin(request, url) {
-    const username = (process.env.AUTH_USERNAME || "").trim();
-    const password = process.env.AUTH_PASSWORD || "";
     const secret = process.env.AUTH_SECRET || "";
+    const supabaseUrl = (process.env.SUPABASE_URL || "").replace(/\/$/, "");
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || "";
 
-    if (!username || !password || !secret) {
+    if (!supabaseUrl || !supabaseAnonKey || !secret) {
         return redirectTo(loginUrl(url.origin, "config", "/index.html"));
     }
 
-    let submittedUser = "";
+    let submittedEmail = "";
     let submittedPassword = "";
     let nextPath = "/index.html";
 
     try {
         const form = await request.formData();
-        submittedUser = String(form.get("username") || "").trim();
+        submittedEmail = String(form.get("email") || "").trim();
         submittedPassword = String(form.get("password") || "");
         nextPath = safeNext(String(form.get("next") || "/index.html"));
     } catch {
         return redirectTo(loginUrl(url.origin, "invalid", "/index.html"));
     }
 
-    const userOk = await secretsEqual(secret, submittedUser, username);
-    const passOk = await secretsEqual(secret, submittedPassword, password);
+    const authenticated = await authenticateWithSupabase(
+        supabaseUrl,
+        supabaseAnonKey,
+        submittedEmail,
+        submittedPassword
+    );
 
-    if (!userOk || !passOk) {
+    if (!authenticated) {
         return redirectTo(loginUrl(url.origin, "invalid", nextPath));
     }
 
-    const token = await createSession(secret, submittedUser);
+    const token = await createSession(secret, submittedEmail);
     const response = redirectTo(new URL(nextPath, url.origin).toString());
 
     response.headers.append(
@@ -92,6 +96,25 @@ async function handleLogin(request, url) {
     );
 
     return response;
+}
+
+async function authenticateWithSupabase(url, anonKey, email, password) {
+    if (!email || !password) return false;
+
+    try {
+        const response = await fetch(`${url}/auth/v1/token?grant_type=password`, {
+            method: "POST",
+            headers: {
+                apikey: anonKey,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        return response.ok;
+    } catch {
+        return false;
+    }
 }
 
 function handleLogout(url) {
