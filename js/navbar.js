@@ -468,19 +468,148 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const searchInput = document.getElementById("searchInput");
     const searchButton = document.getElementById("searchButton");
+    const searchStatus = document.getElementById("searchStatus");
+    const searchResults = document.getElementById("searchResults");
 
     if (searchInput && searchButton) {
+        const searchableItems = Array.from(document.querySelectorAll(
+            ".card-grid > .card, .module-grid > .module-card"
+        ));
+        const documentationIndex = [
+            { title: "Order Entry Detail", text: "SPI, order number, buyer, order date, order quantity, ship date, assortment, buyer PO, destination, style, color, size.", url: "erp/stage/order.html" },
+            { title: "MRP - Raw Material Specifications", text: "MRP, BOM, Fabric, Trims, article, color, size, position, consumption, SPI, PO number, F8 filter.", url: "erp/mrp/material-requirement.html" },
+            { title: "Purchase Order", text: "Regular, Combined, General, Domestic, Import, supplier, buyer, order number, material, quantity, currency, PO number.", url: "erp/purchase/purchase-order.html" },
+            { title: "RM Purchase", text: "Raw material purchase, supplier, buyer, order number, SPI, material, quantity, currency, PO number, BOM.", url: "erp/purchase/purchase-material.html" },
+            { title: "Purchase Goods Receipt", text: "GRN, Goods Receipt Note, PO Number, SPI, material, quantity, partial delivery, pending quantity.", url: "erp/purchase/goods-receipt.html" },
+            { title: "Inventory RM Receive / GRN", text: "Inventory, Supplier, Receive, GRN, QC, Good, Stock, Reject, Return to Supplier, IDMP, ODPD, PO Number, SPI.", url: "erp/inventory/goods-receipt.html" },
+            { title: "Inventory Stock", text: "RM Issue, Stock, Issue, Production, Roll Wise, Rack Wise, Stock Report, material, quantity, status stock, storage location.", url: "erp/inventory/stock.html" },
+            { title: "Production - Cutting", text: "Cutting, material, order, style, color, size, quantity.", url: "erp/production/cutting.html" },
+            { title: "Production - Sewing", text: "Sewing, garment, production line, output, quality check.", url: "erp/production/sewing.html" },
+            { title: "Shipment - Export", text: "Shipment, Export, destination, ship date, quantity, shipping documents.", url: "erp/shipment/export.html" }
+        ];
 
-        function runSearch() {
+        function clearHighlights(item) {
+            item.querySelectorAll("mark.search-highlight").forEach(function (mark) {
+                mark.replaceWith(document.createTextNode(mark.textContent));
+            });
+        }
 
-            const keyword = searchInput.value.trim();
-
+        function highlightMatches(item, keyword) {
             if (!keyword) return;
 
-            alert("Search: " + keyword);
+            const matcher = new RegExp(
+                keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+                "gi"
+            );
+            const walker = document.createTreeWalker(item, NodeFilter.SHOW_TEXT);
+            const textNodes = [];
+            let node;
+
+            while ((node = walker.nextNode())) {
+                if (node.parentElement.closest(".search-highlight")) continue;
+                if (matcher.test(node.nodeValue)) textNodes.push(node);
+                matcher.lastIndex = 0;
+            }
+
+            textNodes.forEach(function (textNode) {
+                const fragment = document.createDocumentFragment();
+                let lastIndex = 0;
+                let match;
+                matcher.lastIndex = 0;
+
+                while ((match = matcher.exec(textNode.nodeValue))) {
+                    fragment.appendChild(document.createTextNode(
+                        textNode.nodeValue.slice(lastIndex, match.index)
+                    ));
+                    const mark = document.createElement("mark");
+                    mark.className = "search-highlight";
+                    mark.textContent = match[0];
+                    fragment.appendChild(mark);
+                    lastIndex = match.index + match[0].length;
+                }
+
+                fragment.appendChild(document.createTextNode(
+                    textNode.nodeValue.slice(lastIndex)
+                ));
+                textNode.replaceWith(fragment);
+            });
+        }
+
+        function escapeHtml(value) {
+            return value.replace(/[&<>"']/g, function (character) {
+                return {
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    "\"": "&quot;",
+                    "'": "&#039;"
+                }[character];
+            });
+        }
+
+        function highlightHtml(value, keyword) {
+            const safeValue = escapeHtml(value);
+            if (!keyword) return safeValue;
+            const matcher = new RegExp(
+                keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+                "gi"
+            );
+            return safeValue.replace(matcher, "<mark class=\"search-highlight\">$&</mark>");
+        }
+
+        function renderDocumentationResults(keyword) {
+            if (!searchResults) return 0;
+            searchResults.innerHTML = "";
+            if (!keyword) return 0;
+
+            const matches = documentationIndex.filter(function (entry) {
+                return `${entry.title} ${entry.text}`.toLocaleLowerCase().includes(keyword);
+            });
+
+            matches.forEach(function (entry) {
+                const result = document.createElement("a");
+                result.className = "search-result";
+                result.href = entry.url;
+                result.innerHTML = `<strong>${highlightHtml(entry.title, keyword)}</strong><span>${highlightHtml(entry.text, keyword)}</span><i class="ph ph-arrow-up-right"></i>`;
+                searchResults.appendChild(result);
+            });
+            return matches.length;
+        }
+
+        function runSearch() {
+            const keyword = searchInput.value.trim().toLocaleLowerCase();
+            let visibleCount = 0;
+            const documentationCount = renderDocumentationResults(keyword);
+
+            searchableItems.forEach(function (item) {
+                clearHighlights(item);
+                const matches = !keyword || item.textContent.toLocaleLowerCase().includes(keyword);
+                item.hidden = !matches;
+                if (matches) {
+                    visibleCount += 1;
+                    highlightMatches(item, keyword);
+                }
+            });
+
+            document.querySelectorAll(".card-grid, .module-grid").forEach(function (grid) {
+                grid.hidden = keyword !== "" && !Array.from(grid.children).some(function (item) {
+                    return !item.hidden;
+                });
+            });
+
+            if (!searchStatus) return;
+            const totalCount = visibleCount + documentationCount;
+            if (!keyword) {
+                searchStatus.textContent = "";
+            } else if (totalCount === 0) {
+                searchStatus.textContent = `No results found for "${searchInput.value.trim()}".`;
+            } else {
+                searchStatus.textContent = `${totalCount} result${totalCount === 1 ? "" : "s"} found.`;
+            }
         }
 
         searchButton.addEventListener("click", runSearch);
+        searchInput.addEventListener("input", runSearch);
 
         searchInput.addEventListener("keydown", function (event) {
 
