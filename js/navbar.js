@@ -81,10 +81,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
 
                 <div class="navbar-right">
-                    <a href="${ROOT}admin.html" class="navbar-link">
-                        <i class="ph ph-pencil-simple"></i>
-                        Admin
-                    </a>
                     <form class="navbar-logout-form" action="/api/logout" method="POST">
                         <button type="submit" class="navbar-signin">
                             Logout
@@ -134,9 +130,19 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-shopping-cart",
             children: [
                 {
-                    title: "All Materials",
+                    title: "Overview",
                     page: "stage",
                     url: "erp/stage/index.html"
+                },
+                {
+                    title: "Order",
+                    page: "stage-order",
+                    url: "erp/stage/order.html"
+                },
+                {
+                    title: "Packing",
+                    page: "stage-packing",
+                    url: "erp/stage/packing.html"
                 }
             ]
         },
@@ -147,9 +153,14 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-chart-bar",
             children: [
                 {
-                    title: "All Materials",
+                    title: "Overview",
                     page: "mrp",
                     url: "erp/mrp/index.html"
+                },
+                {
+                    title: "Material Requirement",
+                    page: "mrp-material",
+                    url: "erp/mrp/material-requirement.html"
                 }
             ]
         },
@@ -160,9 +171,24 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-receipt",
             children: [
                 {
-                    title: "All Materials",
+                    title: "Overview",
                     page: "purchase",
                     url: "erp/purchase/index.html"
+                },
+                {
+                    title: "Purchase Order",
+                    page: "purchase-order",
+                    url: "erp/purchase/purchase-order.html"
+                },
+                {
+                    title: "Purchase Material",
+                    page: "purchase-material",
+                    url: "erp/purchase/purchase-material.html"
+                },
+                {
+                    title: "Goods Receipt",
+                    page: "goods-receipt",
+                    url: "erp/purchase/goods-receipt.html"
                 }
             ]
         },
@@ -173,9 +199,19 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-package",
             children: [
                 {
-                    title: "All Materials",
+                    title: "Overview",
                     page: "inventory",
                     url: "erp/inventory/index.html"
+                },
+                {
+                    title: "Stock",
+                    page: "inventory-stock",
+                    url: "erp/inventory/stock.html"
+                },
+                {
+                    title: "Goods Receipt",
+                    page: "inventory-grn",
+                    url: "erp/inventory/goods-receipt.html"
                 }
             ]
         },
@@ -186,9 +222,19 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-factory",
             children: [
                 {
-                    title: "All Materials",
+                    title: "Overview",
                     page: "production",
                     url: "erp/production/index.html"
+                },
+                {
+                    title: "Cutting",
+                    page: "production-cutting",
+                    url: "erp/production/cutting.html"
+                },
+                {
+                    title: "Sewing",
+                    page: "production-sewing",
+                    url: "erp/production/sewing.html"
                 }
             ]
         },
@@ -199,9 +245,19 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-truck",
             children: [
                 {
-                    title: "All Materials",
+                    title: "Overview",
                     page: "shipment",
                     url: "erp/shipment/index.html"
+                },
+                {
+                    title: "Packing",
+                    page: "shipment-packing",
+                    url: "erp/shipment/packing.html"
+                },
+                {
+                    title: "Export",
+                    page: "shipment-export",
+                    url: "erp/shipment/export.html"
                 }
             ]
         }
@@ -239,17 +295,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         </span>
 
                         <span></span>
-                    </a>
-
-                    <a
-                        href="${ROOT}admin.html"
-                        class="sidebar-dashboard ${page === "admin" ? "active" : ""}"
-                    >
-                        <span class="sidebar-main-icon">
-                            <i class="ph ph-pencil-simple"></i>
-                        </span>
-
-                        <span>Admin</span>
                     </a>
 
 
