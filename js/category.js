@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     <span class="material-icon"><i class="ph ${icon}"></i></span>
                     <span class="material-info">
                         <strong>${escapeHtml(document.title)}</strong>
-                        <small>${escapeHtml(document.summary || document.file_name || document.type)}</small>
+                        <small>${escapeHtml(document.summary || document.file_name || document.type)}${document.file_name ? ` · ${escapeHtml(document.file_name)}` : ""}</small>
                     </span>
                     <i class="ph ph-arrow-up-right material-arrow"></i>
                 </a>

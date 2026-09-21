@@ -64,21 +64,32 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         list.innerHTML = documents.map(function (document) {
+            const href = document.type === "article"
+                ? `/erp/document.html?slug=${encodeURIComponent(document.slug)}`
+                : document.file_url;
+            const viewLink = href
+                ? `<a class="document-view-link" href="${escapeAttribute(href)}" target="_blank" rel="noopener">View</a>`
+                : "";
+
             return `
-                <button class="document-list-item" type="button" data-id="${document.id}">
+                <div class="document-list-item" role="button" tabindex="0" data-id="${document.id}">
                     <span>
                         <strong>${escapeHtml(document.title)}</strong>
-                        <small>${escapeHtml(document.module)} · ${escapeHtml(document.slug)}</small>
+                        <small>${escapeHtml(document.module)} · ${escapeHtml(document.type || "article")} · ${escapeHtml(document.slug)}</small>
                     </span>
-                    <span class="document-badge ${document.published ? "published" : "draft"}">
-                        ${document.published ? "Published" : "Draft"}
+                    <span class="document-list-actions">
+                        <span class="document-badge ${document.published ? "published" : "draft"}">
+                            ${document.published ? "Published" : "Draft"}
+                        </span>
+                        ${viewLink}
                     </span>
-                </button>
+                </div>
             `;
         }).join("");
 
         list.querySelectorAll("[data-id]").forEach(function (button) {
-            button.addEventListener("click", function () {
+            button.addEventListener("click", function (event) {
+                if (event.target.closest(".document-view-link")) return;
                 const document = documents.find((item) => String(item.id) === button.dataset.id);
                 if (document) selectDocument(document);
             });
@@ -170,4 +181,8 @@ function escapeHtml(value) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+}
+
+function escapeAttribute(value) {
+    return escapeHtml(value).replaceAll("`", "&#096;");
 }
