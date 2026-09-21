@@ -195,7 +195,8 @@ input {
 }
 
 .sidebar-dashboard,
-.sidebar-module-button {
+.sidebar-module-button,
+.sidebar-direct-link {
     height: 48px;
     width: 288px;
     display: flex;
@@ -214,6 +215,21 @@ input {
 
 .sidebar-dashboard:hover {
     background: #f0f0f0;
+}
+
+.sidebar-direct-link {
+    color: #111111;
+}
+
+.sidebar-direct-link:hover {
+    background: #f0f0f0;
+}
+
+.sidebar-direct-link.active {
+    color: #000000;
+    background: #eeeeee;
+    border-right: 4px solid #111111;
+    font-weight: 700;
 }
 
 .sidebar-dashboard.active {

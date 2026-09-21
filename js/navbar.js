@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const modules = [
         {
             id: "getting-started",
-            title: "Getting Started",
+            title: "Quick Configuration",
             icon: "ph-rocket",
             children: [
                 // {
@@ -155,14 +155,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 //     url: "getting-started/installation.html"
                 // },
                 {
-                    title: "Quick Configuration",
+                    title: "Overview",
                     page: "configuration",
                     url: "getting-started/configuration.html"
-                },
-                {
-                    title: "FAQ",
-                    page: "Frequently Asked Questions",
-                    url: "getting-started/faq.html"
                 }
             ]
         },
@@ -303,6 +298,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     url: "erp/shipment/export.html"
                 }
             ]
+        },
+
+        {
+            id: "faq",
+            title: "FAQ",
+            icon: "ph-question",
+            children: [
+                {
+                    title: "Overview",
+                    page: "faq",
+                    url: "getting-started/faq.html"
+                }
+            ]
         }
     ];
 
@@ -344,6 +352,27 @@ document.addEventListener("DOMContentLoaded", function () {
                     ${modules.map(function (module) {
 
                         const active = moduleHasActivePage(module);
+
+                        if (module.children.length === 1) {
+                            const child = module.children[0];
+
+                            return `
+                                <div class="sidebar-module ${active ? "module-active" : ""}">
+                                    <a
+                                        href="${ROOT}${child.url}"
+                                        class="sidebar-direct-link ${active ? "active" : ""}"
+                                    >
+                                        <span class="sidebar-module-left">
+                                            <span class="sidebar-main-icon">
+                                                <i class="ph ${module.icon}"></i>
+                                            </span>
+
+                                            <span>${module.title}</span>
+                                        </span>
+                                    </a>
+                                </div>
+                            `;
+                        }
 
                         return `
                             <div class="sidebar-module ${active ? "module-active" : ""}">
