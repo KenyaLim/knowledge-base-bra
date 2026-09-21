@@ -1,6 +1,24 @@
 const COOKIE_NAME = "kb_session";
 
-export default async function handler(request) {
+export default async function handler(req, res) {
+    try {
+        const request = await toWebRequest(req);
+        const response = await handleRequest(request);
+        const body = await response.text();
+
+        res.statusCode = response.status;
+        response.headers.forEach(function (value, key) {
+            res.setHeader(key, value);
+        });
+        res.end(body);
+    } catch {
+        res.statusCode = 500;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ error: "Documents API failed" }));
+    }
+}
+
+async function handleRequest(request) {
     const session = await readSession(request, process.env.AUTH_SECRET || "");
 
     if (!session) {
@@ -28,6 +46,23 @@ export default async function handler(request) {
     if (method === "DELETE") return deleteDocument(url.searchParams);
 
     return json({ error: "Method not allowed" }, 405);
+}
+
+async function toWebRequest(req) {
+    const protocol = req.headers["x-forwarded-proto"] || "https";
+    const host = req.headers.host || "localhost";
+    const method = String(req.method || "GET").toUpperCase();
+    const options = {
+        method,
+        headers: new Headers(req.headers)
+    };
+
+    if (method !== "GET" && method !== "HEAD") {
+        options.body = req;
+        options.duplex = "half";
+    }
+
+    return new Request(`${protocol}://${host}${req.url || "/api/documents"}`, options);
 }
 
 async function listDocuments(searchParams, isAdmin) {

@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         try {
             const response = await fetch("/api/documents");
-            const data = await response.json();
+            const data = await readJsonResponse(response);
             if (!response.ok) throw new Error(data.error || "Could not load documents");
             documents = data;
             renderList();
@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
-            const data = await response.json();
+            const data = await readJsonResponse(response);
             if (!response.ok) throw new Error(data.error || "Could not save document");
             showMessage("Document saved.", "success");
             await loadDocuments();
@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         try {
             const response = await fetch(`/api/documents?id=${encodeURIComponent(id)}`, { method: "DELETE" });
-            const data = await response.json();
+            const data = await readJsonResponse(response);
             if (!response.ok) throw new Error(data.error || "Could not delete document");
             resetForm();
             await loadDocuments();
@@ -131,6 +131,16 @@ document.addEventListener("DOMContentLoaded", function () {
     refreshButton.addEventListener("click", loadDocuments);
     loadDocuments();
 });
+
+async function readJsonResponse(response) {
+    const text = await response.text();
+
+    try {
+        return JSON.parse(text);
+    } catch {
+        throw new Error(`Server returned an invalid response (${response.status})`);
+    }
+}
 
 function escapeHtml(value) {
     return String(value)
