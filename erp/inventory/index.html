@@ -22,7 +22,7 @@
                 <div class="hero-content">
                     <p class="eyebrow">ERP KNOWLEDGE BASE</p>
                     <h1>Inventory</h1>
-                    <p class="hero-description">Inventory module overview.</p>
+                    <p class="hero-description">Receiving, storing, issuing, and monitoring raw materials.</p>
                 </div>
             </section>
 
@@ -32,18 +32,49 @@
                     <h2>Documentation</h2>
                 </div>
 
-                <div class="module-card">
-                    <div class="module-icon">
-                        <i class="ph ph-book-open"></i>
-                    </div>
-                    <div>
-                        <h3>Inventory</h3>
-                        <p>
-                            Ganti bagian ini dengan isi dokumentasi
-                            untuk halaman Inventory.
-                        </p>
-                    </div>
+                <div class="documentation">
+                    <article class="doc-block">
+                        <span class="doc-label">Bahasa Indonesia</span>
+                        <h3>4. Inventory</h3>
+                        <p>Inventory digunakan untuk menyimpan dan mengelola material yang sudah diterima di gudang. Material yang lolos QC masuk ke stock inventory.</p>
+                        <h4>Alur inventory</h4>
+                        <p><strong>Supplier -&gt; Receive/GRN -&gt; QC -&gt; Good -&gt; Stock</strong></p>
+                        <p>Jika material ditolak: <strong>Supplier -&gt; Receive/GRN -&gt; QC -&gt; Reject -&gt; Return to Supplier</strong>.</p>
+                        <h4>RM Receive / GRN</h4>
+                        <p>RM Receive mencatat material yang diterima dari supplier. User memasukkan PO Number, SPI, Material, Quantity, dan informasi penerimaan lainnya. GRN berarti Raw Material Received. Quantity yang diterima dapat berbeda dari quantity pada PO.</p>
+                        <p>Contoh: PO foam cup 1.800 pcs dikirim bertahap. Pengiriman pertama 500 pcs dicatat sebagai received, sedangkan sisanya tetap pending. Kode GRN <strong>IDMP</strong> berarti dari supplier ke gudang, sedangkan <strong>ODPD</strong> berarti material issued dari gudang ke SPI.</p>
+                        <h4>RM Issue, Roll Wise, Rack Wise, dan Stock Report</h4>
+                        <ul>
+                            <li><strong>RM Issue</strong>: mengeluarkan material dari stock untuk produksi. Alurnya Stock -&gt; Issue -&gt; Production.</li>
+                            <li><strong>RM Roll Wise</strong>: mengelola material berbentuk roll, terutama fabric. Contoh 1.000 yard dibagi menjadi Roll 001 400 yard, Roll 002 350 yard, dan Roll 003 250 yard.</li>
+                            <li><strong>RM Rack Wise</strong>: mengetahui lokasi rack tempat material disimpan.</li>
+                            <li><strong>Stock Report</strong>: memonitor material, quantity, status stock, dan lokasi penyimpanan.</li>
+                        </ul>
+                        <div class="doc-english">
+                            <span class="doc-label">English</span>
+                            <h3>4. Inventory</h3>
+                            <p>Inventory stores and manages materials received in the warehouse. Materials that pass QC are moved into inventory stock.</p>
+                            <h4>Inventory flow</h4>
+                            <p><strong>Supplier -&gt; Receive/GRN -&gt; QC -&gt; Good -&gt; Stock</strong></p>
+                            <p>For rejected material: <strong>Supplier -&gt; Receive/GRN -&gt; QC -&gt; Reject -&gt; Return to Supplier</strong>.</p>
+                            <h4>RM Receive / GRN</h4>
+                            <p>RM Receive records materials received from a supplier. The user enters PO Number, SPI, Material, Quantity, and other receipt information. GRN means Raw Material Received. The received quantity may differ from the PO quantity.</p>
+                            <p>Example: an 1,800-piece foam cup PO may be delivered in stages. The first delivery of 500 pieces is recorded as received and the balance remains pending. GRN code <strong>IDMP</strong> means supplier to warehouse, while <strong>ODPD</strong> means material issued from warehouse to an SPI.</p>
+                            <h4>RM Issue, Roll Wise, Rack Wise, and Stock Report</h4>
+                            <ul>
+                                <li><strong>RM Issue</strong> sends stock to production: Stock -&gt; Issue -&gt; Production.</li>
+                                <li><strong>RM Roll Wise</strong> manages roll-based materials, especially fabric.</li>
+                                <li><strong>RM Rack Wise</strong> identifies the rack location.</li>
+                                <li><strong>Stock Report</strong> monitors material, quantity, stock status, and storage location.</li>
+                            </ul>
+                        </div>
+                    </article>
                 </div>
+                <article class="doc-block glossary">
+                    <span class="doc-label">Glossarium / Glossary</span>
+                    <h3>Istilah penting</h3>
+                    <dl><dt><strong>GRN</strong></dt><dd>Goods Receipt Note atau catatan penerimaan.</dd><dt><strong>QC</strong></dt><dd>Quality Control atau pemeriksaan kualitas.</dd><dt><strong>RM Issue</strong></dt><dd>Pengeluaran material dari stock ke produksi.</dd><dt><strong>Roll Wise</strong></dt><dd>Pengelolaan material berdasarkan roll.</dd><dt><strong>Rack Wise</strong></dt><dd>Pengelolaan berdasarkan lokasi rack.</dd></dl>
+                </article>
             </section>
         </main>
     </div>

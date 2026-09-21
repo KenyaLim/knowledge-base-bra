@@ -531,6 +531,133 @@ input {
     background: #fafafa;
 }
 
+.documentation {
+    display: grid;
+    gap: 18px;
+}
+
+.doc-block {
+    background: white;
+    border: 1px solid #d4d4d4;
+    padding: 24px;
+}
+
+.doc-block h3 {
+    margin: 0 0 12px;
+    font-size: 18px;
+}
+
+.doc-block h4 {
+    margin: 20px 0 8px;
+    font-size: 15px;
+}
+
+.doc-block p,
+.doc-block li {
+    color: #555555;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.doc-block p {
+    margin: 0 0 10px;
+}
+
+.doc-block ul,
+.doc-block ol {
+    margin: 8px 0 14px;
+    padding-left: 22px;
+}
+
+.doc-block strong {
+    color: #111111;
+}
+
+.doc-english {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px dashed #bdbdbd;
+}
+
+.doc-english h3,
+.doc-english h4 {
+    color: #333333;
+}
+
+.doc-label {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: #777777;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.doc-image-slot {
+    min-height: 190px;
+    margin-top: 20px;
+    border: 1px dashed #999999;
+    background: #fafafa;
+    text-align: center;
+}
+
+.doc-image-slot label {
+    min-height: 190px;
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #555555;
+    cursor: pointer;
+}
+
+.doc-image-slot label i {
+    color: #777777;
+    font-size: 34px;
+}
+
+.doc-image-slot label span {
+    font-size: 12px;
+}
+
+.doc-image-slot input {
+    display: none;
+}
+
+.doc-image-slot img {
+    display: block;
+    width: 100%;
+    max-height: 520px;
+    object-fit: contain;
+    background: white;
+}
+
+.doc-image-slot.has-image label {
+    display: none;
+}
+
+.glossary dl {
+    display: grid;
+    grid-template-columns: minmax(130px, 0.35fr) 1fr;
+    gap: 10px 20px;
+    margin: 0;
+}
+
+.glossary dt,
+.glossary dd {
+    margin: 0;
+    color: #555555;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.glossary dt {
+    color: #111111;
+}
+
 .module-icon {
     width: 46px;
     height: 46px;
