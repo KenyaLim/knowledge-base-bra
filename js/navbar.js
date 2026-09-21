@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         {
             id: "stage",
-            title: "Stage",
+            title: "Order",
             icon: "ph-shopping-cart",
             children: [
                 {
