@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuBase | Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="admin">
+    <div id="navbar"></div>
+
+    <div class="app-layout">
+        <aside id="sidebar"></aside>
+
+        <main class="main-content">
+            <section class="admin-header">
+                <div>
+                    <p class="eyebrow">CONTENT MANAGEMENT</p>
+                    <h1>Documentation Admin</h1>
+                    <p>Tambah, ubah, dan publish materi dari satu tempat.</p>
+                </div>
+                <button id="newDocumentButton" class="admin-button" type="button">
+                    <i class="ph ph-plus"></i> New document
+                </button>
+            </section>
+
+            <p id="adminMessage" class="admin-message" role="status"></p>
+
+            <section class="admin-layout">
+                <div class="admin-panel">
+                    <div class="admin-panel-heading">
+                        <h2>Documents</h2>
+                        <button id="refreshButton" class="icon-button" type="button" title="Refresh documents" aria-label="Refresh documents">
+                            <i class="ph ph-arrows-clockwise"></i>
+                        </button>
+                    </div>
+                    <div id="documentList" class="document-list"></div>
+                </div>
+
+                <form id="documentForm" class="admin-panel document-form">
+                    <div class="admin-panel-heading">
+                        <h2 id="formHeading">New document</h2>
+                        <span id="formStatus" class="form-status">Draft</span>
+                    </div>
+
+                    <input id="documentId" type="hidden">
+
+                    <label for="documentSlug">Slug</label>
+                    <input id="documentSlug" name="slug" required placeholder="mrp-material">
+                    <small>Gunakan huruf kecil, angka, dan tanda hubung.</small>
+
+                    <label for="documentModule">Module</label>
+                    <input id="documentModule" name="module" required placeholder="MRP">
+
+                    <label for="documentTitle">Title</label>
+                    <input id="documentTitle" name="title" required placeholder="Material Requirement">
+
+                    <label for="documentSummary">Summary</label>
+                    <textarea id="documentSummary" name="summary" rows="3" placeholder="Ringkasan singkat materi"></textarea>
+
+                    <label for="documentContent">Content</label>
+                    <textarea id="documentContent" name="content" rows="16" required placeholder="# Judul materi&#10;&#10;Tulis materi menggunakan Markdown..."></textarea>
+
+                    <label class="checkbox-label">
+                        <input id="documentPublished" name="published" type="checkbox">
+                        Publish document
+                    </label>
+
+                    <div class="form-actions">
+                        <button class="admin-button" type="submit"><i class="ph ph-floppy-disk"></i> Save</button>
+                        <button id="deleteButton" class="danger-button" type="button" hidden><i class="ph ph-trash"></i> Delete</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/navbar.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

@@ -81,6 +81,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
 
                 <div class="navbar-right">
+                    <a href="${ROOT}admin.html" class="navbar-link">
+                        <i class="ph ph-pencil-simple"></i>
+                        Admin
+                    </a>
                     <form class="navbar-logout-form" action="/api/logout" method="POST">
                         <button type="submit" class="navbar-signin">
                             Logout
@@ -295,6 +299,17 @@ document.addEventListener("DOMContentLoaded", function () {
                         </span>
 
                         <span></span>
+                    </a>
+
+                    <a
+                        href="${ROOT}admin.html"
+                        class="sidebar-dashboard ${page === "admin" ? "active" : ""}"
+                    >
+                        <span class="sidebar-main-icon">
+                            <i class="ph ph-pencil-simple"></i>
+                        </span>
+
+                        <span>Admin</span>
                     </a>
 
 
