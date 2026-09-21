@@ -1,5 +1,6 @@
 const COOKIE_NAME = "kb_session";
 const SESSION_MS = 1000 * 60 * 60 * 12;
+const IDLE_SESSION_MS = 1000 * 60 * 30;
 
 const PUBLIC_PATHS = ["/api/login", "/api/logout"];
 
@@ -20,6 +21,10 @@ export default async function middleware(request) {
         return handleLogout(url);
     }
 
+    if (method === "GET" && path === "/api/session") {
+        return handleSession(request);
+    }
+
     if (isPublicAsset(path)) {
         return next();
     }
@@ -35,11 +40,20 @@ export default async function middleware(request) {
     }
 
     if (session) {
-        return next({
+        const response = next({
             headers: {
                 "Cache-Control": "private, no-store"
             }
         });
+        response.headers.set(
+            "Set-Cookie",
+            cookieValue(
+                await refreshSession(secret, session),
+                Math.floor(SESSION_MS / 1000),
+                url.protocol === "https:"
+            )
+        );
+        return response;
     }
 
     const login = new URL("/login.html", url.origin);
@@ -76,18 +90,21 @@ async function handleLogin(request, url) {
         return redirectTo(loginUrl(url.origin, "invalid", "/index.html"));
     }
 
-    const authenticated = await authenticateWithSupabase(
+    const user = await authenticateWithSupabase(
         supabaseUrl,
         supabaseAnonKey,
         submittedEmail,
         submittedPassword
     );
 
-    if (!authenticated) {
+    if (!user) {
         return redirectTo(loginUrl(url.origin, "invalid", nextPath));
     }
 
-    const token = await createSession(secret, submittedEmail);
+    const token = await createSession(secret, {
+        email: submittedEmail,
+        name: user.user_metadata?.full_name || user.user_metadata?.name || ""
+    });
     const response = redirectTo(new URL(nextPath, url.origin).toString());
 
     response.headers.append(
@@ -111,10 +128,38 @@ async function authenticateWithSupabase(url, anonKey, email, password) {
             body: JSON.stringify({ email, password })
         });
 
-        return response.ok;
+        if (!response.ok) return false;
+        return await response.json();
     } catch {
         return false;
     }
+}
+
+async function handleSession(request) {
+    const secret = process.env.AUTH_SECRET || "";
+    const session = await readSession(request, secret);
+
+    if (!session) {
+        return Response.json({ authenticated: false }, {
+            status: 401,
+            headers: { "Cache-Control": "no-store" }
+        });
+    }
+
+    return Response.json({
+        authenticated: true,
+        email: session.e || session.u || "",
+        name: session.n || ""
+    }, {
+        headers: {
+            "Cache-Control": "private, no-store",
+            "Set-Cookie": cookieValue(
+                await refreshSession(secret, session),
+                Math.floor(SESSION_MS / 1000),
+                new URL(request.url).protocol === "https:"
+            )
+        }
+    });
 }
 
 function handleLogout(url) {
@@ -128,9 +173,11 @@ function handleLogout(url) {
     return response;
 }
 
-async function createSession(secret, username) {
+async function createSession(secret, user) {
     const payload = encodePayload({
-        u: username,
+        e: user.email,
+        n: user.name,
+        a: Date.now(),
         exp: Date.now() + SESSION_MS
     });
     const signature = await sign(secret, payload);
@@ -157,10 +204,27 @@ async function readSession(request, secret) {
         if (!data || typeof data.exp !== "number" || data.exp < Date.now()) {
             return null;
         }
+        const lastActivity = typeof data.a === "number"
+            ? data.a
+            : data.exp - SESSION_MS;
+        if (Date.now() - lastActivity >= IDLE_SESSION_MS) {
+            return null;
+        }
+        data.a = lastActivity;
         return data;
     } catch {
         return null;
     }
+}
+
+async function refreshSession(secret, session) {
+    const payload = encodePayload({
+        e: session.e || session.u || "",
+        n: session.n || "",
+        a: Date.now(),
+        exp: session.exp
+    });
+    return `${payload}.${await sign(secret, payload)}`;
 }
 
 async function secretsEqual(secret, submitted, expected) {

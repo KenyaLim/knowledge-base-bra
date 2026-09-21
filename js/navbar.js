@@ -81,6 +81,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
 
                 <div class="navbar-right">
+                    <div class="navbar-user" aria-live="polite">
+                        <i class="ph ph-user-circle"></i>
+                        <span id="navbar-user-name">Loading...</span>
+                        <span id="navbar-user-email"></span>
+                    </div>
                     <form class="navbar-logout-form" action="/api/logout" method="POST">
                         <button type="submit" class="navbar-signin">
                             Logout
@@ -90,6 +95,44 @@ document.addEventListener("DOMContentLoaded", function () {
 
             </header>
         `;
+
+        fetch("/api/session", { headers: { Accept: "application/json" } })
+            .then(function (response) {
+                if (!response.ok) throw new Error("Session unavailable");
+                return response.json();
+            })
+            .then(function (session) {
+                const nameElement = document.getElementById("navbar-user-name");
+                const emailElement = document.getElementById("navbar-user-email");
+                const welcomeElement = document.getElementById("welcomeMessage");
+                const email = session.email || "";
+                const name = session.name || email;
+
+                if (nameElement) nameElement.textContent = name;
+                if (emailElement && session.name) emailElement.textContent = email;
+                if (welcomeElement) {
+                    welcomeElement.textContent = `Welcome, ${email}`;
+                }
+            })
+            .catch(function () {
+                const nameElement = document.getElementById("navbar-user-name");
+                if (nameElement) nameElement.textContent = "Signed in";
+            });
+
+        let idleTimer;
+        const logoutForm = document.querySelector(".navbar-logout-form");
+
+        function resetIdleTimer() {
+            window.clearTimeout(idleTimer);
+            idleTimer = window.setTimeout(function () {
+                if (logoutForm) logoutForm.submit();
+            }, 30 * 60 * 1000);
+        }
+
+        ["mousemove", "keydown", "click", "scroll", "touchstart"].forEach(function (eventName) {
+            document.addEventListener(eventName, resetIdleTimer, { passive: true });
+        });
+        resetIdleTimer();
     }
 
     /*

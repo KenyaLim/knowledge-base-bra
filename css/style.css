@@ -88,6 +88,27 @@ input {
     gap: 16px;
 }
 
+.navbar-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #555555;
+    font-size: 13px;
+}
+
+.navbar-user i {
+    color: #111111;
+    font-size: 20px;
+}
+
+#navbar-user-email:not(:empty)::before {
+    content: "(";
+}
+
+#navbar-user-email:not(:empty)::after {
+    content: ")";
+}
+
 .navbar-link {
     display: flex;
     align-items: center;
@@ -337,6 +358,13 @@ input {
     font-size: 12px;
     font-weight: 800;
     letter-spacing: 0.12em;
+}
+
+.welcome-message {
+    margin: 0 0 18px 0;
+    color: #555555;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .hero h1 {
