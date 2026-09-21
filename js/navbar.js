@@ -54,25 +54,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const ROOT = getRootPath();
 
-    /*
-        =========================
-        NAVBAR
-
-        <div class="navbar-right">
-                    
-                    <a href="#" class="navbar-link">
-                        <i class="ph ph-github-logo"></i>
-                        <span>GitHub</span>
-                    </a>
-
-                    <a href="#" class="navbar-signin">
-                        Sign In
-                    </a>
-
-                </div>
-        =========================
-    */
-
     if (navbarContainer) {
         navbarContainer.innerHTML = `
             <header class="top-navbar">
