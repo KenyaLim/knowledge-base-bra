@@ -5,17 +5,34 @@ create table if not exists documents (
   title text not null,
   summary text,
   content text not null,
+  type text not null default 'article',
+  file_name text,
+  file_path text,
+  file_url text,
   published boolean default false,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+alter table documents add column if not exists type text not null default 'article';
+alter table documents add column if not exists file_name text;
+alter table documents add column if not exists file_path text;
+alter table documents add column if not exists file_url text;
+
+update documents
+set module = lower(module)
+where module <> lower(module);
+
+insert into storage.buckets (id, name, public)
+values ('documents', 'documents', true)
+on conflict (id) do update set public = true;
 
 alter table documents enable row level security;
 
 insert into documents (slug, module, title, summary, content, published)
 values (
   'mrp-material',
-  'MRP',
+  'mrp',
   'Material Requirement',
   'Panduan penggunaan Material Requirement.',
   '# Material Requirement

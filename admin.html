@@ -46,13 +46,22 @@
                     </div>
 
                     <input id="documentId" type="hidden">
+                    <input id="documentFileUrl" type="hidden">
 
                     <label for="documentSlug">Slug</label>
                     <input id="documentSlug" name="slug" required placeholder="mrp-material">
                     <small>Gunakan huruf kecil, angka, dan tanda hubung.</small>
 
-                    <label for="documentModule">Module</label>
-                    <input id="documentModule" name="module" required placeholder="MRP">
+                    <label for="documentModule">Category</label>
+                    <select id="documentModule" name="module" required>
+                        <option value="">Pilih kategori</option>
+                        <option value="stage">Stage</option>
+                        <option value="mrp">MRP</option>
+                        <option value="purchase">Purchase</option>
+                        <option value="inventory">Inventory</option>
+                        <option value="production">Production</option>
+                        <option value="shipment">Shipment</option>
+                    </select>
 
                     <label for="documentTitle">Title</label>
                     <input id="documentTitle" name="title" required placeholder="Material Requirement">
@@ -60,7 +69,18 @@
                     <label for="documentSummary">Summary</label>
                     <textarea id="documentSummary" name="summary" rows="3" placeholder="Ringkasan singkat materi"></textarea>
 
-                    <label for="documentContent">Content</label>
+                    <label for="documentType">Type</label>
+                    <select id="documentType" name="type" required>
+                        <option value="article">Article</option>
+                        <option value="pdf">PDF</option>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                    </select>
+
+                    <label id="fileLabel" for="documentFile">File</label>
+                    <input id="documentFile" name="file" type="file">
+
+                    <label id="contentLabel" for="documentContent">Content</label>
                     <textarea id="documentContent" name="content" rows="16" required placeholder="# Judul materi&#10;&#10;Tulis materi menggunakan Markdown..."></textarea>
 
                     <label class="checkbox-label">

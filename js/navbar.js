@@ -134,19 +134,9 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-shopping-cart",
             children: [
                 {
-                    title: "Overview",
+                    title: "All Materials",
                     page: "stage",
                     url: "erp/stage/index.html"
-                },
-                {
-                    title: "Order",
-                    page: "stage-order",
-                    url: "erp/stage/order.html"
-                },
-                {
-                    title: "Packing",
-                    page: "stage-packing",
-                    url: "erp/stage/packing.html"
                 }
             ]
         },
@@ -157,14 +147,9 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-chart-bar",
             children: [
                 {
-                    title: "Overview",
+                    title: "All Materials",
                     page: "mrp",
                     url: "erp/mrp/index.html"
-                },
-                {
-                    title: "Material Requirement",
-                    page: "mrp-material",
-                    url: "erp/mrp/material-requirement.html"
                 }
             ]
         },
@@ -175,24 +160,9 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-receipt",
             children: [
                 {
-                    title: "Overview",
+                    title: "All Materials",
                     page: "purchase",
                     url: "erp/purchase/index.html"
-                },
-                {
-                    title: "Purchase Order",
-                    page: "purchase-order",
-                    url: "erp/purchase/purchase-order.html"
-                },
-                {
-                    title: "Purchase Material",
-                    page: "purchase-material",
-                    url: "erp/purchase/purchase-material.html"
-                },
-                {
-                    title: "Goods Receipt",
-                    page: "goods-receipt",
-                    url: "erp/purchase/goods-receipt.html"
                 }
             ]
         },
@@ -203,19 +173,9 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-package",
             children: [
                 {
-                    title: "Overview",
+                    title: "All Materials",
                     page: "inventory",
                     url: "erp/inventory/index.html"
-                },
-                {
-                    title: "Stock",
-                    page: "inventory-stock",
-                    url: "erp/inventory/stock.html"
-                },
-                {
-                    title: "Goods Receipt",
-                    page: "inventory-grn",
-                    url: "erp/inventory/goods-receipt.html"
                 }
             ]
         },
@@ -226,19 +186,9 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-factory",
             children: [
                 {
-                    title: "Overview",
+                    title: "All Materials",
                     page: "production",
                     url: "erp/production/index.html"
-                },
-                {
-                    title: "Cutting",
-                    page: "production-cutting",
-                    url: "erp/production/cutting.html"
-                },
-                {
-                    title: "Sewing",
-                    page: "production-sewing",
-                    url: "erp/production/sewing.html"
                 }
             ]
         },
@@ -249,19 +199,9 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-truck",
             children: [
                 {
-                    title: "Overview",
+                    title: "All Materials",
                     page: "shipment",
                     url: "erp/shipment/index.html"
-                },
-                {
-                    title: "Packing",
-                    page: "shipment-packing",
-                    url: "erp/shipment/packing.html"
-                },
-                {
-                    title: "Export",
-                    page: "shipment-export",
-                    url: "erp/shipment/export.html"
                 }
             ]
         }

@@ -7,6 +7,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const refreshButton = document.getElementById("refreshButton");
     const formHeading = document.getElementById("formHeading");
     const formStatus = document.getElementById("formStatus");
+    const typeField = document.getElementById("documentType");
+    const fileField = document.getElementById("documentFile");
+    const contentField = document.getElementById("documentContent");
+    const contentLabel = document.getElementById("contentLabel");
     let documents = [];
 
     function field(name) {
@@ -24,6 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
         formHeading.textContent = "New document";
         formStatus.textContent = "Draft";
         deleteButton.hidden = true;
+        updateTypeFields();
     }
 
     function selectDocument(document) {
@@ -33,10 +38,23 @@ document.addEventListener("DOMContentLoaded", function () {
         field("Title").value = document.title;
         field("Summary").value = document.summary || "";
         field("Content").value = document.content;
+        field("Type").value = document.type || "article";
+        field("FileUrl").value = document.file_url || "";
         field("Published").checked = document.published;
         formHeading.textContent = "Edit document";
         formStatus.textContent = document.published ? "Published" : "Draft";
         deleteButton.hidden = false;
+        updateTypeFields();
+    }
+
+    function updateTypeFields() {
+        const article = typeField.value === "article";
+        contentLabel.hidden = !article;
+        contentField.hidden = !article;
+        contentField.required = article;
+        fileField.hidden = article;
+        document.getElementById("fileLabel").hidden = article;
+        fileField.required = !article && !field("Id").value;
     }
 
     function renderList() {
@@ -85,20 +103,21 @@ document.addEventListener("DOMContentLoaded", function () {
     form.addEventListener("submit", async function (event) {
         event.preventDefault();
         const id = field("Id").value;
-        const payload = {
-            slug: field("Slug").value,
-            module: field("Module").value,
-            title: field("Title").value,
-            summary: field("Summary").value,
-            content: field("Content").value,
-            published: field("Published").checked
-        };
+        const payload = new FormData();
+        payload.set("slug", field("Slug").value);
+        payload.set("module", field("Module").value);
+        payload.set("title", field("Title").value);
+        payload.set("summary", field("Summary").value);
+        payload.set("type", field("Type").value);
+        payload.set("content", field("Content").value);
+        payload.set("published", String(field("Published").checked));
+        payload.set("file_url", field("FileUrl").value);
+        if (fileField.files[0]) payload.set("file", fileField.files[0]);
 
         try {
             const response = await fetch(id ? `/api/documents?id=${encodeURIComponent(id)}` : "/api/documents", {
                 method: id ? "PATCH" : "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
+                body: payload
             });
             const data = await readJsonResponse(response);
             if (!response.ok) throw new Error(data.error || "Could not save document");
@@ -129,6 +148,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     newButton.addEventListener("click", resetForm);
     refreshButton.addEventListener("click", loadDocuments);
+    typeField.addEventListener("change", updateTypeFields);
+    updateTypeFields();
     loadDocuments();
 });
 

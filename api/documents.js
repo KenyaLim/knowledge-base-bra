@@ -30,7 +30,7 @@ async function handleRequest(request) {
     const method = request.method.toUpperCase();
 
     if (method === "GET") {
-        if (!url.searchParams.has("slug") && !isAdmin) {
+        if (!url.searchParams.has("slug") && !url.searchParams.has("category") && !isAdmin) {
             return json({ error: "Forbidden" }, 403);
         }
 
@@ -68,8 +68,10 @@ async function toWebRequest(req) {
 async function listDocuments(searchParams, isAdmin) {
     const filters = ["select=*"];
     const slug = searchParams.get("slug");
+    const category = searchParams.get("category");
 
     if (slug) filters.push(`slug=eq.${encodeURIComponent(slug)}`);
+    if (category) filters.push(`module=eq.${encodeURIComponent(category)}`);
     if (!isAdmin) filters.push("published=eq.true");
     filters.push("order=updated_at.desc");
 
@@ -80,6 +82,11 @@ async function listDocuments(searchParams, isAdmin) {
 async function createDocument(request) {
     const body = await readDocumentBody(request);
     if (!body.ok) return json({ error: body.error }, 400);
+
+    const uploaded = await uploadFile(body.file, body.data.slug);
+    if (!uploaded.ok) return json({ error: uploaded.error }, 400);
+
+    Object.assign(body.data, uploaded.data);
 
     const response = await supabaseRequest("/rest/v1/documents", {
         method: "POST",
@@ -97,6 +104,11 @@ async function updateDocument(request) {
 
     const body = await readDocumentBody(request);
     if (!body.ok) return json({ error: body.error }, 400);
+
+    const uploaded = await uploadFile(body.file, body.data.slug);
+    if (!uploaded.ok) return json({ error: uploaded.error }, 400);
+
+    Object.assign(body.data, uploaded.data);
 
     const response = await supabaseRequest(
         `/rest/v1/documents?id=eq.${encodeURIComponent(id)}`,
@@ -124,39 +136,105 @@ async function deleteDocument(searchParams) {
 
 async function readDocumentBody(request) {
     let input;
+    let file = null;
 
     try {
-        input = await request.json();
+        if ((request.headers.get("content-type") || "").includes("multipart/form-data")) {
+            const form = await request.formData();
+            input = Object.fromEntries(form.entries());
+            file = form.get("file");
+        } else {
+            input = await request.json();
+        }
     } catch {
         return { ok: false, error: "Invalid JSON body" };
     }
 
     const slug = String(input.slug || "").trim().toLowerCase();
-    const module = String(input.module || "").trim();
+    const module = String(input.module || "").trim().toLowerCase();
     const title = String(input.title || "").trim();
     const summary = String(input.summary || "").trim();
     const content = String(input.content || "").trim();
+    const type = String(input.type || "article").trim().toLowerCase();
+    const published = input.published === true || input.published === "true" || input.published === "on";
 
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
         return { ok: false, error: "Slug must use lowercase letters, numbers, and hyphens" };
     }
 
-    if (!module || !title || !content) {
-        return { ok: false, error: "Module, title, and content are required" };
+    if (!module || !title) {
+        return { ok: false, error: "Category and title are required" };
+    }
+
+    if (!["article", "pdf", "image", "video"].includes(type)) {
+        return { ok: false, error: "Invalid document type" };
+    }
+
+    if (type === "article" && !content) {
+        return { ok: false, error: "Article content is required" };
+    }
+
+    if (type !== "article" && (!file || typeof file.arrayBuffer !== "function") && !input.file_url) {
+        return { ok: false, error: "A file is required for this document type" };
     }
 
     return {
         ok: true,
+        file,
         data: {
             slug,
             module,
             title,
             summary,
-            content,
-            published: Boolean(input.published),
+            type,
+            content: type === "article" ? content : "",
+            file_url: String(input.file_url || "").trim() || null,
+            published,
             updated_at: new Date().toISOString()
         }
     };
+}
+
+async function uploadFile(file, slug) {
+    if (!file || typeof file.arrayBuffer !== "function") return { ok: true, data: {} };
+
+    const baseUrl = (process.env.SUPABASE_URL || "").replace(/\/$/, "");
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
+    if (!baseUrl || !serviceRoleKey) {
+        return { ok: false, error: "Supabase Storage configuration is missing" };
+    }
+    const extension = file.name.includes(".") ? file.name.split(".").pop().toLowerCase() : "bin";
+    const path = `${slug}-${Date.now()}.${extension}`;
+
+    try {
+        const response = await fetch(`${baseUrl}/storage/v1/object/documents/${path}`, {
+            method: "POST",
+            headers: {
+                apikey: serviceRoleKey,
+                Authorization: `Bearer ${serviceRoleKey}`,
+                "Content-Type": file.type || "application/octet-stream",
+                "x-upsert": "true"
+            },
+            body: await file.arrayBuffer()
+        });
+
+        if (!response.ok) {
+            const error = await response.text();
+            return { ok: false, error: `File upload failed: ${error}` };
+        }
+
+        return {
+            ok: true,
+            data: {
+                file_name: file.name,
+                file_path: path,
+                file_url: `${baseUrl}/storage/v1/object/public/documents/${path}`
+            }
+        };
+    } catch {
+        return { ok: false, error: "Could not upload file" };
+    }
 }
 
 async function supabaseRequest(path, options = {}) {

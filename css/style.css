@@ -503,6 +503,72 @@ input {
     background: #fafafa;
 }
 
+.material-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.material-card {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #d4d4d4;
+    background: white;
+    transition: 0.2s ease;
+}
+
+.material-card:hover {
+    border-color: #111111;
+    background: #fafafa;
+    transform: translateY(-2px);
+}
+
+.material-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eeeeee;
+    color: #222222;
+    font-size: 20px;
+}
+
+.material-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.material-info strong,
+.material-info small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.material-info strong {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.material-info small {
+    color: #666666;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.material-arrow {
+    color: #777777;
+}
+
+.error-text {
+    color: #a52222;
+}
+
 .module-icon {
     width: 46px;
     height: 46px;
@@ -716,7 +782,8 @@ input {
 }
 
 .document-form input:not([type="checkbox"]),
-.document-form textarea {
+.document-form textarea,
+.document-form select {
     width: 100%;
     border: 1px solid #c8c8c8;
     background: #fafafa;
@@ -726,7 +793,8 @@ input {
 }
 
 .document-form input:not([type="checkbox"]):focus,
-.document-form textarea:focus {
+.document-form textarea:focus,
+.document-form select:focus {
     border-color: #111111;
     background: white;
 }
@@ -907,6 +975,10 @@ input {
     }
 
     .module-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .material-grid {
         grid-template-columns: 1fr;
     }
 }
