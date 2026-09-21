@@ -20,6 +20,10 @@ export default async function middleware(request) {
         return handleLogout(url);
     }
 
+    if (path.startsWith("/api/")) {
+        return handleApiRequest(request, process.env.AUTH_SECRET || "");
+    }
+
     if (isPublicAsset(path)) {
         return next();
     }
@@ -45,6 +49,22 @@ export default async function middleware(request) {
     const login = new URL("/login.html", url.origin);
     login.searchParams.set("next", path + url.search);
     return Response.redirect(login.toString(), 302);
+}
+
+async function handleApiRequest(request, secret) {
+    const session = await readSession(request, secret);
+
+    if (!session) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+            status: 401,
+            headers: {
+                "Content-Type": "application/json",
+                "Cache-Control": "no-store"
+            }
+        });
+    }
+
+    return next();
 }
 
 function isPublicAsset(path) {
