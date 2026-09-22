@@ -1038,6 +1038,107 @@ input {
     padding: 0;
 }
 
+.cms-admin-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
+    gap: 24px;
+}
+
+.cms-panel {
+    background: white;
+    border: 1px solid #d4d4d4;
+    padding: 22px;
+}
+
+.cms-form label {
+    display: block;
+    margin-bottom: 14px;
+    color: #333333;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.cms-form input:not([type="checkbox"]),
+.cms-form textarea {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    border: 1px solid #bdbdbd;
+    background: #fafafa;
+    padding: 10px;
+}
+
+.cms-form textarea {
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.cms-checkbox {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+}
+
+.cms-checkbox input {
+    width: 16px;
+    height: 16px;
+}
+
+.cms-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.cms-secondary-button {
+    border: 1px solid #bdbdbd;
+    background: white;
+    padding: 9px 18px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.cms-material-list {
+    display: grid;
+    gap: 8px;
+}
+
+.cms-material-item {
+    width: 100%;
+    border: 1px solid #e1e1e1;
+    background: #fafafa;
+    padding: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.cms-material-item:hover {
+    border-color: #111111;
+}
+
+.cms-reading-section {
+    max-width: 980px;
+}
+
+.cms-pdf-panel {
+    margin-top: 36px;
+    border-top: 1px solid #d4d4d4;
+    padding-top: 24px;
+}
+
+.cms-pdf-panel iframe {
+    width: 100%;
+    height: min(80vh, 900px);
+    border: 1px solid #d4d4d4;
+    background: #eeeeee;
+}
+
+@media (max-width: 760px) {
+    .cms-admin-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
 .content-action.danger {
     border-color: #9b2c2c;
     background: #9b2c2c;

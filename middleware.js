@@ -25,12 +25,24 @@ export default async function middleware(request) {
         return handleSession(request);
     }
 
+    if (path === "/api/cms/content" && method === "GET") {
+        return handleCmsContent(request);
+    }
+
+    if (path === "/api/cms/admin/content" && ["GET", "POST"].includes(method)) {
+        return handleCmsAdminContent(request, method);
+    }
+
     if (isPublicAsset(path)) {
         return next();
     }
 
     const secret = process.env.AUTH_SECRET || "";
     const session = await readSession(request, secret);
+
+    if (path === "/admin.html" && !isCmsAdmin(session)) {
+        return redirectTo(new URL("/index.html", url.origin).toString());
+    }
 
     if (path === "/login.html") {
         if (session) {
@@ -149,7 +161,8 @@ async function handleSession(request) {
     return Response.json({
         authenticated: true,
         email: session.e || session.u || "",
-        name: session.n || ""
+        name: session.n || "",
+        isAdmin: isCmsAdmin(session)
     }, {
         headers: {
             "Cache-Control": "private, no-store",
@@ -160,6 +173,98 @@ async function handleSession(request) {
             )
         }
     });
+}
+
+async function handleCmsContent(request) {
+    const session = await readSession(request, process.env.AUTH_SECRET || "");
+    if (!session) return jsonResponse({ error: "Unauthorized" }, 401);
+
+    const slug = new URL(request.url).searchParams.get("slug");
+    const query = slug
+        ? `?select=*&slug=eq.${encodeURIComponent(slug)}&published=eq.true&limit=1`
+        : "?select=*&published=eq.true&order=sort_order.asc,created_at.asc";
+    const result = await supabaseRequest("GET", "/rest/v1/cms_materials" + query);
+
+    if (!result.ok) return jsonResponse({ error: "CMS database request failed" }, 502);
+    return jsonResponse(slug ? (result.data[0] || null) : result.data);
+}
+
+async function handleCmsAdminContent(request, method) {
+    const session = await readSession(request, process.env.AUTH_SECRET || "");
+    if (!isCmsAdmin(session)) return jsonResponse({ error: "Forbidden" }, 403);
+
+    if (method === "GET") {
+        const result = await supabaseRequest(
+            "GET",
+            "/rest/v1/cms_materials?select=*&order=sort_order.asc,created_at.asc"
+        );
+        if (!result.ok) return jsonResponse({ error: "CMS database request failed" }, 502);
+        return jsonResponse(result.data);
+    }
+
+    let material;
+    try {
+        material = await request.json();
+    } catch {
+        return jsonResponse({ error: "Invalid JSON" }, 400);
+    }
+
+    const required = ["slug", "title"];
+    if (!required.every((field) => typeof material[field] === "string" && material[field].trim())) {
+        return jsonResponse({ error: "Slug and title are required" }, 400);
+    }
+
+    const payload = {
+        slug: material.slug.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-"),
+        title: material.title.trim(),
+        module: String(material.module || "").trim(),
+        summary: String(material.summary || "").trim(),
+        content: String(material.content || ""),
+        pdf_url: String(material.pdf_url || "").trim(),
+        published: Boolean(material.published),
+        sort_order: Number.isFinite(Number(material.sort_order)) ? Number(material.sort_order) : 0
+    };
+    const result = await supabaseRequest(
+        "POST",
+        "/rest/v1/cms_materials?on_conflict=slug",
+        payload,
+        { Prefer: "resolution=merge-duplicates,return=representation" }
+    );
+
+    if (!result.ok) return jsonResponse({ error: "Could not save CMS material" }, 502);
+    return jsonResponse(result.data[0] || payload, 200);
+}
+
+function isCmsAdmin(session) {
+    if (!session) return false;
+    const admins = (process.env.CMS_ADMIN_EMAILS || "")
+        .split(",")
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean);
+    return admins.includes(String(session.e || session.u || "").toLowerCase());
+}
+
+async function supabaseRequest(method, path, body, extraHeaders) {
+    const baseUrl = (process.env.SUPABASE_URL || "").replace(/\/$/, "");
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+    if (!baseUrl || !serviceKey) return { ok: false, data: null };
+
+    try {
+        const response = await fetch(baseUrl + path, {
+            method,
+            headers: {
+                apikey: serviceKey,
+                Authorization: `Bearer ${serviceKey}`,
+                "Content-Type": "application/json",
+                ...(extraHeaders || {})
+            },
+            body: body === undefined ? undefined : JSON.stringify(body)
+        });
+        const data = await response.json().catch(() => null);
+        return { ok: response.ok, data };
+    } catch {
+        return { ok: false, data: null };
+    }
 }
 
 function handleLogout(url) {
@@ -342,6 +447,16 @@ function redirectTo(location) {
         status: 302,
         headers: {
             Location: location,
+            "Cache-Control": "no-store"
+        }
+    });
+}
+
+function jsonResponse(data, status = 200) {
+    return new Response(JSON.stringify(data), {
+        status,
+        headers: {
+            "Content-Type": "application/json",
             "Cache-Control": "no-store"
         }
     });
