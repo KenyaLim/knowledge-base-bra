@@ -170,17 +170,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 {
                     title: "Overview",
                     page: "stage",
-                    url: "erp/stage/index.html"
+                    url: "erp/0-order/index.html"
                 },
                 {
                     title: "Order",
                     page: "stage-order",
-                    url: "erp/stage/order.html"
-                },
-                {
-                    title: "Packing",
-                    page: "stage-packing",
-                    url: "erp/stage/packing.html"
+                    url: "erp/0-order/order.html"
                 }
             ]
         },
@@ -193,12 +188,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 {
                     title: "Overview",
                     page: "mrp",
-                    url: "erp/mrp/index.html"
+                    url: "erp/1-mrp/index.html"
                 },
                 {
                     title: "Material Requirement",
                     page: "mrp-material",
-                    url: "erp/mrp/material-requirement.html"
+                    url: "erp/1-mrp/material-requirement.html"
                 }
             ]
         },
@@ -211,22 +206,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 {
                     title: "Overview",
                     page: "purchase",
-                    url: "erp/purchase/index.html"
+                    url: "erp/2-purchase/index.html"
                 },
                 {
                     title: "Purchase Order",
                     page: "purchase-order",
-                    url: "erp/purchase/purchase-order.html"
+                    url: "erp/2-purchase/purchase-order.html"
                 },
                 {
                     title: "Purchase Material",
                     page: "purchase-material",
-                    url: "erp/purchase/purchase-material.html"
+                    url: "erp/2-purchase/purchase-material.html"
                 },
                 {
                     title: "Goods Receipt",
                     page: "goods-receipt",
-                    url: "erp/purchase/goods-receipt.html"
+                    url: "erp/2-purchase/goods-receipt.html"
                 }
             ]
         },
