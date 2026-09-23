@@ -17,3 +17,5 @@ Admins can select Order, MRP, Purchase, Inventory, Production, or Shipment;
 published materials are added as children in that module's sidebar. Use
 `Overview` for a module summary without an image and `Detail` for richer
 content with text, image, and/or PDF.
+
+deploy ulang test
