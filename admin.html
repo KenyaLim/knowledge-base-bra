@@ -29,14 +29,28 @@
                     <input type="hidden" id="materialId">
                     <label>Slug<input id="slug" required placeholder="mrp-material"></label>
                     <label>Title<input id="title" required placeholder="Material Requirement"></label>
-                    <label>Module<input id="module" placeholder="MRP"></label>
+                    <label>Module<select id="module" required>
+                        <option value="stage">Order</option>
+                        <option value="mrp">MRP</option>
+                        <option value="purchase">Purchase</option>
+                        <option value="inventory">Inventory</option>
+                        <option value="production">Production</option>
+                        <option value="shipment">Shipment</option>
+                    </select></label>
+                    <label>Jenis materi<select id="kind">
+                        <option value="detail">Detail</option>
+                        <option value="overview">Overview (tanpa gambar)</option>
+                    </select></label>
                     <label>Summary<textarea id="summary" rows="2"></textarea></label>
                     <label>Content<textarea id="content" rows="12" placeholder="Tulis materi di sini. Satu paragraf per baris."></textarea></label>
                     <label>PDF URL<input id="pdfUrl" type="url" placeholder="https://.../materi.pdf"></label>
+                    <label>Gambar URL<input id="imageUrl" type="url" placeholder="https://.../materi.jpg"></label>
+                    <label>Upload PDF/gambar<input id="fileUpload" type="file" accept="application/pdf,image/png,image/jpeg,image/webp,image/gif"></label>
                     <label>Urutan<input id="sortOrder" type="number" value="0"></label>
                     <label class="cms-checkbox"><input id="published" type="checkbox"> Published</label>
                     <div class="cms-form-actions">
                         <button type="button" id="newMaterial" class="cms-secondary-button">New</button>
+                        <button type="button" id="deleteMaterial" class="cms-secondary-button" hidden>Delete</button>
                         <button type="submit" class="navbar-signin">Save material</button>
                     </div>
                     <p id="formStatus" class="search-status" aria-live="polite"></p>

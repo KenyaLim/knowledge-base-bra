@@ -29,8 +29,12 @@ export default async function middleware(request) {
         return handleCmsContent(request);
     }
 
-    if (path === "/api/cms/admin/content" && ["GET", "POST"].includes(method)) {
+    if (path === "/api/cms/admin/content" && ["GET", "POST", "DELETE"].includes(method)) {
         return handleCmsAdminContent(request, method);
+    }
+
+    if (path === "/api/cms/admin/upload" && method === "POST") {
+        return handleCmsAdminUpload(request);
     }
 
     if (isPublicAsset(path)) {
@@ -202,6 +206,19 @@ async function handleCmsAdminContent(request, method) {
         return jsonResponse(result.data);
     }
 
+    if (method === "DELETE") {
+        const id = new URL(request.url).searchParams.get("id");
+        if (!id || !/^[0-9a-f-]{36}$/i.test(id)) {
+            return jsonResponse({ error: "A valid material id is required" }, 400);
+        }
+        const result = await supabaseRequest(
+            "DELETE",
+            `/rest/v1/cms_materials?id=eq.${encodeURIComponent(id)}`
+        );
+        if (!result.ok) return jsonResponse({ error: "Could not delete CMS material" }, 502);
+        return jsonResponse({ deleted: true });
+    }
+
     let material;
     try {
         material = await request.json();
@@ -218,9 +235,12 @@ async function handleCmsAdminContent(request, method) {
         slug: material.slug.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-"),
         title: material.title.trim(),
         module: String(material.module || "").trim(),
+        module_id: String(material.module_id || material.module || "").trim().toLowerCase(),
+        kind: material.kind === "overview" ? "overview" : "detail",
         summary: String(material.summary || "").trim(),
         content: String(material.content || ""),
         pdf_url: String(material.pdf_url || "").trim(),
+        image_url: material.kind === "overview" ? "" : String(material.image_url || "").trim(),
         published: Boolean(material.published),
         sort_order: Number.isFinite(Number(material.sort_order)) ? Number(material.sort_order) : 0
     };
@@ -233,6 +253,52 @@ async function handleCmsAdminContent(request, method) {
 
     if (!result.ok) return jsonResponse({ error: "Could not save CMS material" }, 502);
     return jsonResponse(result.data[0] || payload, 200);
+}
+
+async function handleCmsAdminUpload(request) {
+    const session = await readSession(request, process.env.AUTH_SECRET || "");
+    if (!isCmsAdmin(session)) return jsonResponse({ error: "Forbidden" }, 403);
+
+    const bucket = process.env.CMS_STORAGE_BUCKET || "cms-materials";
+    let file;
+    try {
+        const form = await request.formData();
+        file = form.get("file");
+    } catch {
+        return jsonResponse({ error: "Invalid upload" }, 400);
+    }
+    if (!file || typeof file.arrayBuffer !== "function") {
+        return jsonResponse({ error: "A file is required" }, 400);
+    }
+    if (file.size > 15 * 1024 * 1024) {
+        return jsonResponse({ error: "File size must be 15 MB or less" }, 400);
+    }
+    if (!/^application\/pdf$|^image\/(png|jpeg|jpg|webp|gif)$/.test(file.type)) {
+        return jsonResponse({ error: "Only PDF and image files are supported" }, 400);
+    }
+
+    const extension = file.name.includes(".") ? file.name.split(".").pop().toLowerCase() : "bin";
+    const path = `${crypto.randomUUID()}.${extension}`;
+    const baseUrl = (process.env.SUPABASE_URL || "").replace(/\/$/, "");
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+    if (!baseUrl || !serviceKey) return jsonResponse({ error: "Storage is not configured" }, 502);
+
+    try {
+        const response = await fetch(`${baseUrl}/storage/v1/object/${bucket}/${path}`, {
+            method: "POST",
+            headers: {
+                apikey: serviceKey,
+                Authorization: `Bearer ${serviceKey}`,
+                "Content-Type": file.type,
+                "x-upsert": "true"
+            },
+            body: await file.arrayBuffer()
+        });
+        if (!response.ok) return jsonResponse({ error: "Could not upload file" }, 502);
+        return jsonResponse({ url: `${baseUrl}/storage/v1/object/public/${bucket}/${path}` });
+    } catch {
+        return jsonResponse({ error: "Could not upload file" }, 502);
+    }
 }
 
 function isCmsAdmin(session) {

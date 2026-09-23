@@ -54,6 +54,16 @@ async function loadMaterial() {
         document.getElementById("materialTitle").textContent = material.title;
         document.getElementById("materialSummary").textContent = material.summary;
         renderPlainText(document.getElementById("materialContent"), material.content);
+        if (material.image_url && material.kind !== "overview") {
+            const imageUrl = safeUrl(material.image_url);
+            if (imageUrl) {
+                const image = document.createElement("img");
+                image.className = "cms-material-image";
+                image.src = imageUrl;
+                image.alt = material.title;
+                document.getElementById("materialContent").prepend(image);
+            }
+        }
         if (material.pdf_url) {
             const pdfUrl = safeUrl(material.pdf_url);
             if (pdfUrl) {

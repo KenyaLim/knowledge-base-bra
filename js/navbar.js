@@ -356,7 +356,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             const child = module.children[0];
 
                             return `
-                                <div class="sidebar-module ${active ? "module-active" : ""}">
+                                <div class="sidebar-module ${active ? "module-active" : ""}" data-module-id="${module.id}">
                                     <a
                                         href="${ROOT}${child.url}"
                                         class="sidebar-direct-link ${active ? "active" : ""}"
@@ -374,7 +374,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
 
                         return `
-                            <div class="sidebar-module ${active ? "module-active" : ""}">
+                            <div class="sidebar-module ${active ? "module-active" : ""}" data-module-id="${module.id}">
 
                                 <button
                                     type="button"
@@ -432,6 +432,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
             </div>
         `;
+
+        fetch("/api/cms/content")
+            .then(function (response) { return response.ok ? response.json() : []; })
+            .then(function (materials) {
+                materials.forEach(function (material) {
+                    const moduleId = String(material.module_id || material.module || "").toLowerCase();
+                    const parent = sidebarContainer.querySelector(`[data-module-id="${CSS.escape(moduleId)}"]`);
+                    const children = parent && parent.querySelector(".sidebar-children");
+                    if (!children) return;
+                    const item = document.createElement("li");
+                    const link = document.createElement("a");
+                    link.href = `${ROOT}material.html?slug=${encodeURIComponent(material.slug)}`;
+                    link.textContent = material.title;
+                    if (page === "material" && new URLSearchParams(window.location.search).get("slug") === material.slug) {
+                        link.className = "active";
+                        parent.classList.add("module-active");
+                        children.classList.add("open");
+                        const button = parent.querySelector(".sidebar-module-button");
+                        const caret = parent.querySelector(".sidebar-caret");
+                        if (button) button.setAttribute("aria-expanded", "true");
+                        if (caret) caret.classList.add("rotate");
+                    }
+                    item.appendChild(link);
+                    children.appendChild(item);
+                });
+            })
+            .catch(function () { /* Static navigation remains available when CMS is offline. */ });
     }
 
     /*
