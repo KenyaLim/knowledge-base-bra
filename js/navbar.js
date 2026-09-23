@@ -168,13 +168,13 @@ document.addEventListener("DOMContentLoaded", function () {
             children: [
                 {
                     title: "Overview",
-                    page: "order-overview",
-                    url: "material.html?slug=order-overview"
+                    page: "stage",
+                    url: "erp/0-order/index.html"
                 },
                 {
                     title: "Order",
-                    page: "order-entry",
-                    url: "material.html?slug=order-entry"
+                    page: "stage-order",
+                    url: "erp/0-order/order.html"
                 }
             ]
         },
@@ -185,13 +185,13 @@ document.addEventListener("DOMContentLoaded", function () {
             children: [
                 {
                     title: "Overview",
-                    page: "mrp-overview",
-                    url: "material.html?slug=mrp-overview"
+                    page: "mrp",
+                    url: "erp/1-mrp/index.html"
                 },
                 {
                     title: "Material Requirement",
-                    page: "mrp-material-requirement",
-                    url: "material.html?slug=mrp-material-requirement"
+                    page: "mrp-material",
+                    url: "erp/1-mrp/material-requirement.html"
                 }
             ]
         },
@@ -202,23 +202,23 @@ document.addEventListener("DOMContentLoaded", function () {
             children: [
                 {
                     title: "Overview",
-                    page: "purchase-overview",
-                    url: "material.html?slug=purchase-overview"
+                    page: "purchase",
+                    url: "erp/2-purchase/index.html"
                 },
                 {
                     title: "Purchase Order",
                     page: "purchase-order",
-                    url: "material.html?slug=purchase-order"
+                    url: "erp/2-purchase/purchase-order.html"
                 },
                 {
                     title: "Purchase Material",
                     page: "purchase-material",
-                    url: "material.html?slug=purchase-material"
+                    url: "erp/2-purchase/purchase-material.html"
                 },
                 {
                     title: "Goods Receipt",
                     page: "goods-receipt",
-                    url: "material.html?slug=goods-receipt"
+                    url: "erp/2-purchase/goods-receipt.html"
                 }
             ]
         },
@@ -229,18 +229,18 @@ document.addEventListener("DOMContentLoaded", function () {
             children: [
                 {
                     title: "Overview",
-                    page: "inventory-overview",
-                    url: "material.html?slug=inventory-overview"
+                    page: "inventory",
+                    url: "erp/inventory/index.html"
                 },
                 {
                     title: "Stock",
                     page: "inventory-stock",
-                    url: "material.html?slug=inventory-stock"
+                    url: "erp/inventory/stock.html"
                 },
                 {
                     title: "Goods Receipt",
                     page: "inventory-grn",
-                    url: "material.html?slug=inventory-grn"
+                    url: "erp/inventory/goods-receipt.html"
                 }
             ]
         },
@@ -251,18 +251,18 @@ document.addEventListener("DOMContentLoaded", function () {
             children: [
                 {
                     title: "Overview",
-                    page: "production-overview",
-                    url: "material.html?slug=production-overview"
+                    page: "production",
+                    url: "erp/production/index.html"
                 },
                 {
                     title: "Cutting",
                     page: "production-cutting",
-                    url: "material.html?slug=production-cutting"
+                    url: "erp/production/cutting.html"
                 },
                 {
                     title: "Sewing",
                     page: "production-sewing",
-                    url: "material.html?slug=production-sewing"
+                    url: "erp/production/sewing.html"
                 }
             ]
         },
@@ -273,18 +273,18 @@ document.addEventListener("DOMContentLoaded", function () {
             children: [
                 {
                     title: "Overview",
-                    page: "shipment-overview",
-                    url: "material.html?slug=shipment-overview"
+                    page: "shipment",
+                    url: "erp/shipment/index.html"
                 },
                 {
                     title: "Packing",
                     page: "shipment-packing",
-                    url: "material.html?slug=shipment-packing"
+                    url: "erp/shipment/packing.html"
                 },
                 {
                     title: "Export",
                     page: "shipment-export",
-                    url: "material.html?slug=shipment-export"
+                    url: "erp/shipment/export.html"
                 }
             ]
         },
@@ -522,11 +522,11 @@ document.addEventListener("DOMContentLoaded", function () {
             ".card-grid > .card, .module-grid > .module-card"
         ));
         const documentationIndex = [
-            { title: "Order Entry Detail", text: "SPI, order number, buyer, order date, order quantity, ship date, assortment, buyer PO, destination, style, color, size.", url: "erp/stage/order.html" },
-            { title: "MRP - Raw Material Specifications", text: "MRP, BOM, Fabric, Trims, article, color, size, position, consumption, SPI, PO number, F8 filter.", url: "erp/mrp/material-requirement.html" },
-            { title: "Purchase Order", text: "Regular, Combined, General, Domestic, Import, supplier, buyer, order number, material, quantity, currency, PO number.", url: "erp/purchase/purchase-order.html" },
-            { title: "RM Purchase", text: "Raw material purchase, supplier, buyer, order number, SPI, material, quantity, currency, PO number, BOM.", url: "erp/purchase/purchase-material.html" },
-            { title: "Purchase Goods Receipt", text: "GRN, Goods Receipt Note, PO Number, SPI, material, quantity, partial delivery, pending quantity.", url: "erp/purchase/goods-receipt.html" },
+            { title: "Order Entry Detail", text: "SPI, order number, buyer, order date, order quantity, ship date, assortment, buyer PO, destination, style, color, size.", url: "erp/0-order/order.html" },
+            { title: "MRP - Raw Material Specifications", text: "MRP, BOM, Fabric, Trims, article, color, size, position, consumption, SPI, PO number, F8 filter.", url: "erp/1-mrp/material-requirement.html" },
+            { title: "Purchase Order", text: "Regular, Combined, General, Domestic, Import, supplier, buyer, order number, material, quantity, currency, PO number.", url: "erp/2-purchase/purchase-order.html" },
+            { title: "RM Purchase", text: "Raw material purchase, supplier, buyer, order number, SPI, material, quantity, currency, PO number, BOM.", url: "erp/2-purchase/purchase-material.html" },
+            { title: "Purchase Goods Receipt", text: "GRN, Goods Receipt Note, PO Number, SPI, material, quantity, partial delivery, pending quantity.", url: "erp/2-purchase/goods-receipt.html" },
             { title: "Inventory RM Receive / GRN", text: "Inventory, Supplier, Receive, GRN, QC, Good, Stock, Reject, Return to Supplier, IDMP, ODPD, PO Number, SPI.", url: "erp/inventory/goods-receipt.html" },
             { title: "Inventory Stock", text: "RM Issue, Stock, Issue, Production, Roll Wise, Rack Wise, Stock Report, material, quantity, status stock, storage location.", url: "erp/inventory/stock.html" },
             { title: "Production - Cutting", text: "Cutting, material, order, style, color, size, quantity.", url: "erp/production/cutting.html" },
