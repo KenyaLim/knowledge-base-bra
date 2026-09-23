@@ -279,13 +279,14 @@ document.addEventListener("DOMContentLoaded", function () {
     */
 
     function moduleHasActivePage(module) {
-        return module.children.some(function (child) {
+        return (Array.isArray(module.children) ? module.children : []).some(function (child) {
             return child.page === page;
         });
     }
 
     function renderCmsModuleNodes(moduleList) {
         if (!sidebarContainer) return;
+        if (!Array.isArray(moduleList)) return;
         const scroll = sidebarContainer.querySelector(".sidebar-scroll");
         if (!scroll) return;
         scroll.querySelectorAll(".sidebar-module").forEach(function (moduleElement) {
@@ -295,18 +296,19 @@ document.addEventListener("DOMContentLoaded", function () {
         const footer = sidebarContainer.querySelector(".sidebar-footer");
         const fragment = document.createDocumentFragment();
         moduleList.forEach(function (module) {
+            if (!module || typeof module !== "object") return;
             const wrapper = document.createElement("div");
             const active = moduleHasActivePage(module);
             wrapper.className = `sidebar-module ${active ? "module-active" : ""}`;
             wrapper.dataset.moduleId = module.slug || module.id;
             const children = Array.isArray(module.children) ? module.children : [];
-            wrapper.innerHTML = `<button type="button" class="sidebar-module-button" aria-expanded="${active}"><span class="sidebar-module-left"><span class="sidebar-main-icon"><i class="ph ${module.icon || "ph-files"}"></i></span><span></span></span><i class="ph ph-caret-down sidebar-caret ${active ? "rotate" : ""}"></i></button><ul class="sidebar-children ${active ? "open" : ""}"></ul>`;
+            wrapper.innerHTML = `<button type="button" class="sidebar-module-button" aria-expanded="${active}"><span class="sidebar-module-left"><span class="sidebar-main-icon"><i class="ph ${safeIcon(module.icon)}"></i></span><span></span></span><i class="ph ph-caret-down sidebar-caret ${active ? "rotate" : ""}"></i></button><ul class="sidebar-children ${active ? "open" : ""}"></ul>`;
             wrapper.querySelector(".sidebar-module-left > span:last-child").textContent = module.title;
             const list = wrapper.querySelector(".sidebar-children");
             children.forEach(function (child) {
                 const item = document.createElement("li");
                 const link = document.createElement("a");
-                link.href = `${ROOT}${child.url}`;
+                link.href = `${ROOT}${safeChildUrl(child)}`;
                 link.textContent = child.title;
                 if (child.page === page || (page === "material" && new URLSearchParams(window.location.search).get("slug") === child.slug)) {
                     link.className = "active";
@@ -320,6 +322,17 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         scroll.insertBefore(fragment, footer);
         bindSidebarAccordions();
+    }
+
+    function safeIcon(value) {
+        const icon = String(value || "ph-files").trim();
+        return /^ph-[a-z0-9-]+$/i.test(icon) ? icon : "ph-files";
+    }
+
+    function safeChildUrl(child) {
+        if (child && typeof child.url === "string" && child.url.trim()) return child.url;
+        const slug = child && String(child.slug || child.page || "").trim();
+        return slug ? `material.html?slug=${encodeURIComponent(slug)}` : "index.html";
     }
 
     function bindSidebarAccordions() {
@@ -450,7 +463,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         fetch("/api/cms/modules")
             .then(function (response) { return response.ok ? response.json() : Promise.reject(new Error("CMS unavailable")); })
-            .then(function (cmsModules) { renderCmsModuleNodes(cmsModules); })
+            .then(function (cmsModules) {
+                // Keep the built-in navigation visible when the CMS has no saved tree yet.
+                if (Array.isArray(cmsModules) && cmsModules.length > 0) {
+                    renderCmsModuleNodes(cmsModules);
+                }
+            })
             .catch(function () { /* Static navigation remains available when CMS is offline. */ });
     }
 
