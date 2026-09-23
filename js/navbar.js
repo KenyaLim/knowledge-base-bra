@@ -284,6 +284,60 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    function renderCmsModuleNodes(moduleList) {
+        if (!sidebarContainer) return;
+        const scroll = sidebarContainer.querySelector(".sidebar-scroll");
+        if (!scroll) return;
+        scroll.querySelectorAll(".sidebar-module").forEach(function (moduleElement) {
+            moduleElement.remove();
+        });
+
+        const footer = sidebarContainer.querySelector(".sidebar-footer");
+        const fragment = document.createDocumentFragment();
+        moduleList.forEach(function (module) {
+            const wrapper = document.createElement("div");
+            const active = moduleHasActivePage(module);
+            wrapper.className = `sidebar-module ${active ? "module-active" : ""}`;
+            wrapper.dataset.moduleId = module.slug || module.id;
+            const children = Array.isArray(module.children) ? module.children : [];
+            wrapper.innerHTML = `<button type="button" class="sidebar-module-button" aria-expanded="${active}"><span class="sidebar-module-left"><span class="sidebar-main-icon"><i class="ph ${module.icon || "ph-files"}"></i></span><span></span></span><i class="ph ph-caret-down sidebar-caret ${active ? "rotate" : ""}"></i></button><ul class="sidebar-children ${active ? "open" : ""}"></ul>`;
+            wrapper.querySelector(".sidebar-module-left > span:last-child").textContent = module.title;
+            const list = wrapper.querySelector(".sidebar-children");
+            children.forEach(function (child) {
+                const item = document.createElement("li");
+                const link = document.createElement("a");
+                link.href = `${ROOT}${child.url}`;
+                link.textContent = child.title;
+                if (child.page === page || (page === "material" && new URLSearchParams(window.location.search).get("slug") === child.slug)) {
+                    link.className = "active";
+                    wrapper.classList.add("module-active");
+                    list.classList.add("open");
+                }
+                item.appendChild(link);
+                list.appendChild(item);
+            });
+            fragment.appendChild(wrapper);
+        });
+        scroll.insertBefore(fragment, footer);
+        bindSidebarAccordions();
+    }
+
+    function bindSidebarAccordions() {
+        sidebarContainer.querySelectorAll(".sidebar-module-button").forEach(function (button) {
+            if (button.dataset.bound === "true") return;
+            button.dataset.bound = "true";
+            button.addEventListener("click", function () {
+                const module = button.closest(".sidebar-module");
+                const children = module.querySelector(".sidebar-children");
+                const caret = button.querySelector(".sidebar-caret");
+                const isOpen = children.classList.contains("open");
+                children.classList.toggle("open", !isOpen);
+                caret.classList.toggle("rotate", !isOpen);
+                button.setAttribute("aria-expanded", String(!isOpen));
+            });
+        });
+    }
+
     /*
         =========================
         SIDEBAR
@@ -394,31 +448,9 @@ document.addEventListener("DOMContentLoaded", function () {
             </div>
         `;
 
-        fetch("/api/cms/content")
-            .then(function (response) { return response.ok ? response.json() : []; })
-            .then(function (materials) {
-                materials.forEach(function (material) {
-                    const moduleId = String(material.module_id || material.module || "").toLowerCase();
-                    const parent = sidebarContainer.querySelector(`[data-module-id="${CSS.escape(moduleId)}"]`);
-                    const children = parent && parent.querySelector(".sidebar-children");
-                    if (!children) return;
-                    const item = document.createElement("li");
-                    const link = document.createElement("a");
-                    link.href = `${ROOT}material.html?slug=${encodeURIComponent(material.slug)}`;
-                    link.textContent = material.title;
-                    if (page === "material" && new URLSearchParams(window.location.search).get("slug") === material.slug) {
-                        link.className = "active";
-                        parent.classList.add("module-active");
-                        children.classList.add("open");
-                        const button = parent.querySelector(".sidebar-module-button");
-                        const caret = parent.querySelector(".sidebar-caret");
-                        if (button) button.setAttribute("aria-expanded", "true");
-                        if (caret) caret.classList.add("rotate");
-                    }
-                    item.appendChild(link);
-                    children.appendChild(item);
-                });
-            })
+        fetch("/api/cms/modules")
+            .then(function (response) { return response.ok ? response.json() : Promise.reject(new Error("CMS unavailable")); })
+            .then(function (cmsModules) { renderCmsModuleNodes(cmsModules); })
             .catch(function () { /* Static navigation remains available when CMS is offline. */ });
     }
 

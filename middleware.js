@@ -246,7 +246,7 @@ async function handleCmsModules(request) {
                 title: module.title,
                 icon: module.icon || "ph-files",
                 sort_order: Number(module.sort_order) || 0,
-                children: children.length ? children : defaultChildrenForModule(module.slug)
+                children: children
             };
         })
         : defaultModuleTree();

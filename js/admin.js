@@ -5,10 +5,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const moduleConfigStatus = document.getElementById("moduleConfigStatus");
     const moduleEditor = document.getElementById("moduleEditor");
     const contentEditor = document.getElementById("contentEditor");
+    const formFieldIds = ["materialId", "slug", "title", "module", "kind", "summary", "content", "pdfUrl", "imageUrl", "sortOrder", "published"];
+    let materials = [];
     let modules = [];
     let savedSelection = null;
 
     loadAdminMaterials();
+    loadModuleTree();
     document.getElementById("newMaterial").addEventListener("click", clearForm);
     document.getElementById("deleteMaterial").addEventListener("click", deleteMaterial);
     document.getElementById("fileUpload").addEventListener("change", uploadFile);
@@ -73,8 +76,9 @@ document.addEventListener("DOMContentLoaded", function () {
     async function loadAdminMaterials() {
         try {
             const response = await fetch("/api/cms/admin/content");
-            const materials = await response.json();
-            if (!response.ok) throw new Error(materials.error || "Load failed");
+            const loadedMaterials = await response.json();
+            if (!response.ok) throw new Error(loadedMaterials.error || "Load failed");
+            materials = loadedMaterials;
             list.replaceChildren();
             materials.forEach(function (material) {
                 const button = document.createElement("button");
@@ -120,6 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || "Save failed");
             moduleConfigStatus.textContent = "Module tree saved.";
+            await loadAdminMaterials();
             await loadModuleTree();
         } catch (error) {
             moduleConfigStatus.textContent = error.message;
@@ -130,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("materialId").value = material.id || "";
         document.getElementById("slug").value = material.slug || "";
         document.getElementById("title").value = material.title || "";
-        document.getElementById("module").value = material.module || "";
+        document.getElementById("module").value = material.module_id || material.module || "";
         document.getElementById("kind").value = material.kind || "detail";
         document.getElementById("summary").value = material.summary || "";
         contentEditor.innerHTML = material.content || "";
@@ -144,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function clearForm() {
-        fields.forEach(function (id) {
+        formFieldIds.forEach(function (id) {
             const field = document.getElementById(id);
             if (field.type === "checkbox") field.checked = false;
             else field.value = id === "sortOrder" ? "0" : "";
@@ -247,8 +252,14 @@ document.addEventListener("DOMContentLoaded", function () {
     function appendChildEditor(container, child, index) {
         const row = document.createElement("div");
         row.className = "module-child";
-        row.innerHTML = `<input data-field="title" placeholder="Page title" value="${escapeAttribute(child.title || "")}"><input data-field="slug" placeholder="page-slug" value="${escapeAttribute(child.slug || child.page || "")}"><button type="button" class="cms-icon-button remove-child" title="Remove page"><i class="ph ph-x"></i></button>`;
+        row.innerHTML = `<input data-field="title" placeholder="Page title" value="${escapeAttribute(child.title || "")}"><input data-field="slug" placeholder="page-slug" value="${escapeAttribute(child.slug || child.page || "")}"><button type="button" class="cms-secondary-button edit-child">Edit content</button><button type="button" class="cms-icon-button remove-child" title="Remove page"><i class="ph ph-x"></i></button>`;
         container.appendChild(row);
+        row.querySelector(".edit-child").addEventListener("click", function () {
+            const slug = row.querySelector('[data-field="slug"]').value.trim();
+            const material = materials.find(function (item) { return item.slug === slug; });
+            if (material) fillForm(material);
+            else status.textContent = "Save the module tree first to create this page, then edit its content here.";
+        });
         row.querySelector(".remove-child").addEventListener("click", function () { row.remove(); });
     }
 
