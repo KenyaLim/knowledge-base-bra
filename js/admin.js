@@ -9,8 +9,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let savedSelection = null;
 
     loadAdminMaterials();
-    loadModuleTree();
-
     document.getElementById("newMaterial").addEventListener("click", clearForm);
     document.getElementById("deleteMaterial").addEventListener("click", deleteMaterial);
     document.getElementById("fileUpload").addEventListener("change", uploadFile);
@@ -66,7 +64,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!response.ok) throw new Error(result.error || "Save failed");
             status.textContent = "Saved and published to the CMS.";
             await loadAdminMaterials();
-            await loadModuleTree();
             fillForm(result);
         } catch (error) {
             status.textContent = error.message;
@@ -133,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("materialId").value = material.id || "";
         document.getElementById("slug").value = material.slug || "";
         document.getElementById("title").value = material.title || "";
-        document.getElementById("module").value = material.module_id || material.module || "order";
+        document.getElementById("module").value = material.module || "";
         document.getElementById("kind").value = material.kind || "detail";
         document.getElementById("summary").value = material.summary || "";
         contentEditor.innerHTML = material.content || "";
@@ -172,7 +169,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         clearForm();
         await loadAdminMaterials();
-        await loadModuleTree();
         status.textContent = "Deleted.";
     }
 
