@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMS Admin | Knowledge Base</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="admin">
+    <div id="navbar"></div>
+    <div class="app-layout">
+        <aside id="sidebar"></aside>
+        <main class="main-content">
+            <section class="hero">
+                <div class="hero-content">
+                    <p class="eyebrow">CONTENT MANAGEMENT</p>
+                    <h1>Materials</h1>
+                    <p class="hero-description">Create, edit, publish, and attach PDF materials without changing the HTML pages.</p>
+                </div>
+            </section>
+            <section class="section cms-admin-layout">
+                <div class="cms-panel">
+                    <div class="section-heading"><i class="ph ph-files"></i><h2>Saved materials</h2></div>
+                    <div id="materialList" class="cms-material-list" aria-live="polite"></div>
+                </div>
+                <form id="materialForm" class="cms-panel cms-form">
+                    <div class="section-heading"><i class="ph ph-pencil-simple"></i><h2>Edit material</h2></div>
+                    <input type="hidden" id="materialId">
+                    <label>Slug<input id="slug" required placeholder="mrp-material"></label>
+                    <label>Title<input id="title" required placeholder="Material Requirement"></label>
+                    <label>Module<select id="module" required>
+                        <option value="stage">Order</option>
+                        <option value="mrp">MRP</option>
+                        <option value="purchase">Purchase</option>
+                        <option value="inventory">Inventory</option>
+                        <option value="production">Production</option>
+                        <option value="shipment">Shipment</option>
+                    </select></label>
+                    <label>Jenis materi<select id="kind">
+                        <option value="detail">Detail</option>
+                        <option value="overview">Overview (tanpa gambar)</option>
+                    </select></label>
+                    <label>Summary<textarea id="summary" rows="2"></textarea></label>
+                    <label>Content<textarea id="content" rows="12" placeholder="Tulis materi di sini. Satu paragraf per baris."></textarea></label>
+                    <label>PDF URL<input id="pdfUrl" type="url" placeholder="https://.../materi.pdf"></label>
+                    <label>Gambar URL<input id="imageUrl" type="url" placeholder="https://.../materi.jpg"></label>
+                    <label>Upload PDF/gambar<input id="fileUpload" type="file" accept="application/pdf,image/png,image/jpeg,image/webp,image/gif"></label>
+                    <label>Urutan<input id="sortOrder" type="number" value="0"></label>
+                    <label class="cms-checkbox"><input id="published" type="checkbox"> Published</label>
+                    <div class="cms-form-actions">
+                        <button type="button" id="newMaterial" class="cms-secondary-button">New</button>
+                        <button type="button" id="deleteMaterial" class="cms-secondary-button" hidden>Delete</button>
+                        <button type="submit" class="navbar-signin">Save material</button>
+                    </div>
+                    <p id="formStatus" class="search-status" aria-live="polite"></p>
+                </form>
+            </section>
+        </main>
+    </div>
+    <script src="js/navbar.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

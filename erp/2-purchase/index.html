@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuBase | Purchase</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+
+<body data-page="purchase">
+
+    <div id="navbar"></div>
+
+    <div class="app-layout">
+        <aside id="sidebar"></aside>
+
+        <main class="main-content">
+            <section class="hero">
+                <div class="hero-content">
+                    <p class="eyebrow">ERP KNOWLEDGE BASE</p>
+                    <h1>Purchase</h1>
+                    <p class="hero-description">Purchasing raw materials after the MRP requirement is known.</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-heading">
+                    <i class="ph ph-file-text"></i>
+                    <h2>Documentation</h2>
+                </div>
+
+                <div class="documentation">
+                    <article class="doc-block">
+                        <span class="doc-label">Bahasa Indonesia</span>
+                        <h3>3. Purchase</h3>
+                        <p>Purchase digunakan untuk membeli material setelah kebutuhan dari MRP diketahui. Purchase dibagi menjadi <strong>Domestic</strong> untuk supplier lokal dan <strong>Import</strong> untuk supplier luar negeri. Kode <strong>P</strong> menunjukkan lokal, sedangkan <strong>I</strong> menunjukkan internasional.</p>
+                        <h4>Jenis purchase</h4>
+                        <ul>
+                            <li><strong>Regular</strong>: pembelian berkaitan dengan satu SPI tertentu dan SPI terlihat pada PO.</li>
+                            <li><strong>Combined</strong>: beberapa kebutuhan material atau SPI digabung dalam satu PO.</li>
+                            <li><strong>General</strong>: kebutuhan umum yang tidak berkaitan langsung dengan SPI tertentu.</li>
+                        </ul>
+                        <h4>Informasi RM Purchase</h4>
+                        <p>Data purchase dapat berkaitan dengan supplier, buyer, order number, material, quantity, currency, dan PO number. BOM berisi daftar material, quantity, dan spesifikasi yang diperlukan untuk membuat produk.</p>
+                        <p>Contoh Combined: SPI 001 membutuhkan Fabric A, SPI 002 membutuhkan Fabric B, dan SPI 003 membutuhkan Fabric C. Ketiganya dapat digabung dalam satu proses purchase.</p>
+                        <div class="doc-english">
+                            <span class="doc-label">English</span>
+                            <h3>3. Purchase</h3>
+                            <p>Purchase is used to buy materials after the MRP requirement is known. Purchase is divided into <strong>Domestic</strong> for local suppliers and <strong>Import</strong> for overseas suppliers. Code <strong>P</strong> identifies local materials and <strong>I</strong> identifies international materials.</p>
+                            <h4>Purchase types</h4>
+                            <ul>
+                                <li><strong>Regular</strong>: the purchase is related to one SPI and the SPI appears on the PO.</li>
+                                <li><strong>Combined</strong>: several material requirements or SPIs are combined in one PO.</li>
+                                <li><strong>General</strong>: a general requirement not directly related to a specific SPI.</li>
+                            </ul>
+                            <h4>RM Purchase information</h4>
+                            <p>Purchase data may include supplier, buyer, order number, material, quantity, currency, and PO number. BOM lists the materials, quantities, and specifications required to make a product.</p>
+                            <p>Example of Combined: SPI 001 needs Fabric A, SPI 002 needs Fabric B, and SPI 003 needs Fabric C. These requirements can be combined into one purchase process.</p>
+                        </div>
+                    </article>
+                </div>
+                <article class="doc-block glossary">
+                    <span class="doc-label">Glossarium / Glossary</span>
+                    <h3>Istilah penting</h3>
+                    <dl><dt><strong>Domestic</strong></dt><dd>Pembelian dari supplier lokal.</dd><dt><strong>Import</strong></dt><dd>Pembelian dari supplier luar negeri.</dd><dt><strong>Regular</strong></dt><dd>Pembelian untuk satu SPI.</dd><dt><strong>Combined</strong></dt><dd>Beberapa kebutuhan atau SPI dalam satu PO.</dd><dt><strong>General</strong></dt><dd>Kebutuhan umum yang tidak terkait SPI tertentu.</dd></dl>
+                </article>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="../../js/navbar.js"></script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuBase | MRP</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+
+<body data-page="mrp">
+
+    <div id="navbar"></div>
+
+    <div class="app-layout">
+        <aside id="sidebar"></aside>
+
+        <main class="main-content">
+            <section class="hero">
+                <div class="hero-content">
+                    <p class="eyebrow">ERP KNOWLEDGE BASE</p>
+                    <h1>MRP</h1>
+                    <p class="hero-description">Material planning based on production orders and material specifications.</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-heading">
+                    <i class="ph ph-file-text"></i>
+                    <h2>Documentation</h2>
+                </div>
+
+                <div class="documentation">
+                    <article class="doc-block">
+                        <span class="doc-label">Bahasa Indonesia</span>
+                        <h3>2. MRP (Material Requirement Planning)</h3>
+                        <p>MRP adalah sistem digital yang merencanakan kebutuhan material produksi berdasarkan order produksi. BOM menjadi salah satu dasar MRP karena berisi material, jumlah, dan spesifikasinya.</p>
+                        <h4>Fabric dan Trims</h4>
+                        <ul>
+                            <li><strong>Fabric</strong>: kain sebagai material utama garment.</li>
+                            <li><strong>Trims</strong>: material pendukung seperti benang, label, renda, strap, dan foam cup.</li>
+                        </ul>
+                        <p>RM Specifications digunakan untuk melihat material, article, color, size, position, dan consumption. Article membedakan material, sedangkan color membedakan variasinya.</p>
+                        <p>Consumption menunjukkan kebutuhan material untuk satu unit. Contoh: consumption <strong>0.1338 yard/pcs</strong> dan order quantity <strong>1.540 pcs</strong>, maka kebutuhan material adalah <strong>1.540 x 0.1338 = 206.052 yard</strong>. Consumption dapat berbeda berdasarkan size.</p>
+                        <h4>Langkah menu</h4>
+                        <ol>
+                            <li>Buka menu <strong>MRP</strong>.</li>
+                            <li>Klik <strong>Specifications</strong>.</li>
+                            <li>Pilih <strong>View</strong>.</li>
+                            <li>Tekan <strong>F8</strong> untuk filter berdasarkan SPI atau nomor PO.</li>
+                            <li>Pilih SPI, lalu pilih Fabric atau Trims.</li>
+                        </ol>
+                        <div class="doc-english">
+                            <span class="doc-label">English</span>
+                            <h3>2. MRP (Material Requirement Planning)</h3>
+                            <p>MRP is a digital system that plans production material requirements based on production orders. BOM is one of the foundations of MRP because it lists the required materials, quantities, and specifications.</p>
+                            <h4>Fabric and Trims</h4>
+                            <ul>
+                                <li><strong>Fabric</strong>: the main garment material.</li>
+                                <li><strong>Trims</strong>: supporting materials such as thread, labels, lace, straps, and foam cups.</li>
+                            </ul>
+                            <p>RM Specifications displays material, article, color, size, position, and consumption. Article identifies the material, while color identifies its variation.</p>
+                            <p>Consumption is the material needed for one unit. For 0.1338 yard/pcs and 1,540 pcs, the requirement is <strong>1,540 x 0.1338 = 206.052 yards</strong>. Consumption may vary by size.</p>
+                            <h4>Menu steps</h4>
+                            <ol>
+                                <li>Open <strong>MRP</strong>, click <strong>Specifications</strong>, then choose <strong>View</strong>.</li>
+                                <li>Press <strong>F8</strong> to filter by SPI or PO number.</li>
+                                <li>Select the SPI and choose Fabric or Trims.</li>
+                            </ol>
+                        </div>
+                    </article>
+                </div>
+                <article class="doc-block glossary">
+                    <span class="doc-label">Glossarium / Glossary</span>
+                    <h3>Istilah penting</h3>
+                    <dl><dt><strong>MRP</strong></dt><dd>Material Requirement Planning.</dd><dt><strong>BOM</strong></dt><dd>Bill of Material, daftar material produk.</dd><dt><strong>Fabric</strong></dt><dd>Kain sebagai material utama.</dd><dt><strong>Trims</strong></dt><dd>Material pendukung garment.</dd><dt><strong>Consumption</strong></dt><dd>Kebutuhan material untuk satu unit produk.</dd></dl>
+                </article>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../js/navbar.js"></script>
+</body>
+</html>
