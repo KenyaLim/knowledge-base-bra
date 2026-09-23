@@ -53,8 +53,8 @@ async function loadMaterial() {
         document.getElementById("materialModule").textContent = material.module || "KNOWLEDGE BASE";
         document.getElementById("materialTitle").textContent = material.title;
         document.getElementById("materialSummary").textContent = material.summary;
-        renderPlainText(document.getElementById("materialContent"), material.content);
-        if (material.image_url) {
+        renderContent(document.getElementById("materialContent"), material.content);
+        if (material.image_url && material.kind !== "overview") {
             const imageUrl = safeUrl(material.image_url);
             if (imageUrl) {
                 const image = document.createElement("img");
@@ -76,13 +76,44 @@ async function loadMaterial() {
     }
 }
 
-function renderPlainText(container, value) {
+function renderContent(container, value) {
     container.replaceChildren();
-    String(value || "").split(/\n\s*\n/).filter(Boolean).forEach(function (paragraph) {
-        const element = document.createElement("p");
-        element.textContent = paragraph.trim();
-        container.appendChild(element);
+    const source = String(value || "").trim();
+    if (!source) return;
+    const template = document.createElement("template");
+    template.innerHTML = source;
+    const allowed = ["P", "BR", "STRONG", "B", "EM", "I", "U", "H2", "H3", "H4", "UL", "OL", "LI", "A", "IMG", "VIDEO"];
+    const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_ELEMENT);
+    const elements = [];
+    let node;
+    while ((node = walker.nextNode())) elements.push(node);
+    elements.forEach(function (element) {
+        if (!allowed.includes(element.tagName)) {
+            element.replaceWith(...Array.from(element.childNodes));
+            return;
+        }
+        Array.from(element.attributes).forEach(function (attribute) {
+            if (attribute.name !== "href" && attribute.name !== "src" && attribute.name !== "alt" && attribute.name !== "controls") {
+                element.removeAttribute(attribute.name);
+            }
+        });
+        ["href", "src"].forEach(function (attributeName) {
+            if (!element.hasAttribute(attributeName)) return;
+            const safe = safeUrl(element.getAttribute(attributeName));
+            if (safe) element.setAttribute(attributeName, safe);
+            else element.removeAttribute(attributeName);
+        });
+        if (element.tagName === "A") {
+            element.target = "_blank";
+            element.rel = "noreferrer";
+        }
+        if (element.tagName === "IMG") element.loading = "lazy";
+        if (element.tagName === "VIDEO") {
+            element.controls = true;
+            element.preload = "metadata";
+        }
     });
+    container.appendChild(template.content);
 }
 
 function safeUrl(value) {

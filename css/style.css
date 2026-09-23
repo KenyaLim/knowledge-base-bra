@@ -1073,6 +1073,109 @@ input {
     line-height: 1.5;
 }
 
+.cms-editor {
+    margin: 6px 0 14px;
+    border: 1px solid #bdbdbd;
+    background: #fafafa;
+}
+
+.cms-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px;
+    border-bottom: 1px solid #d4d4d4;
+    background: white;
+}
+
+.cms-toolbar button,
+.cms-icon-button {
+    border: 1px solid #d4d4d4;
+    background: white;
+    color: #333333;
+    min-width: 32px;
+    min-height: 32px;
+    padding: 5px 8px;
+    cursor: pointer;
+}
+
+.cms-toolbar button:hover,
+.cms-icon-button:hover {
+    border-color: #111111;
+    color: #111111;
+}
+
+.cms-editor-input {
+    min-height: 280px;
+    padding: 14px;
+    outline: 0;
+    background: white;
+    line-height: 1.7;
+}
+
+.cms-editor-input:empty::before {
+    content: attr(data-placeholder);
+    color: #999999;
+}
+
+.cms-editor-input img,
+.cms-editor-input video {
+    display: block;
+    max-width: 100%;
+    max-height: 460px;
+    margin: 14px 0;
+}
+
+.module-editor {
+    display: grid;
+    gap: 14px;
+}
+
+.module-editor-card {
+    border: 1px solid #d4d4d4;
+    padding: 16px;
+    background: #fafafa;
+}
+
+.module-editor-heading,
+.module-child {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.module-editor-heading {
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.module-editor-fields {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1.5fr 80px;
+    gap: 8px;
+}
+
+.module-editor-fields label {
+    margin-bottom: 0;
+}
+
+.module-children {
+    display: grid;
+    gap: 8px;
+    margin: 14px 0 10px 18px;
+    padding-left: 14px;
+    border-left: 2px solid #d4d4d4;
+}
+
+.module-child input {
+    min-width: 0;
+    flex: 1;
+}
+
+.module-editor-card > .cms-secondary-button {
+    margin-left: 18px;
+}
+
 .cms-checkbox {
     display: flex !important;
     align-items: center;
@@ -1141,9 +1244,37 @@ input {
     object-fit: contain;
 }
 
+.documentation img,
+.documentation video {
+    max-width: 100%;
+    height: auto;
+}
+
+.documentation video {
+    display: block;
+    width: min(100%, 760px);
+    margin: 18px 0;
+    background: #111111;
+}
+
+.documentation h2,
+.documentation h3,
+.documentation h4 {
+    margin: 22px 0 10px;
+}
+
+.documentation a {
+    color: #144f8a;
+    text-decoration: underline;
+}
+
 @media (max-width: 760px) {
     .cms-admin-layout {
         grid-template-columns: 1fr;
+    }
+
+    .module-editor-fields {
+        grid-template-columns: 1fr 1fr;
     }
 }
 

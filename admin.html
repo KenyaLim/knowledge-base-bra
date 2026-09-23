@@ -39,10 +39,26 @@
                     </select></label>
                     <input type="hidden" id="kind" value="detail">
                     <label>Summary<textarea id="summary" rows="2"></textarea></label>
-                    <label>Content<textarea id="content" rows="12" placeholder="Tulis materi di sini. Satu paragraf per baris."></textarea></label>
+                    <label>Content</label>
+                    <div class="cms-editor" id="contentEditorShell">
+                        <div class="cms-toolbar" role="toolbar" aria-label="Content formatting">
+                            <button type="button" data-command="bold" title="Bold"><i class="ph ph-text-b"></i></button>
+                            <button type="button" data-command="italic" title="Italic"><i class="ph ph-text-italic"></i></button>
+                            <button type="button" data-command="underline" title="Underline"><i class="ph ph-text-underline"></i></button>
+                            <button type="button" data-command="insertUnorderedList" title="Bullet list"><i class="ph ph-list-bullets"></i></button>
+                            <button type="button" data-command="insertOrderedList" title="Numbered list"><i class="ph ph-list-numbers"></i></button>
+                            <button type="button" data-block="h2" title="Heading">H2</button>
+                            <button type="button" id="insertImage" title="Insert image"><i class="ph ph-image"></i></button>
+                            <button type="button" id="insertVideo" title="Insert video"><i class="ph ph-video-camera"></i></button>
+                            <button type="button" id="clearFormatting" title="Clear formatting"><i class="ph ph-eraser"></i></button>
+                        </div>
+                        <div id="contentEditor" class="cms-editor-input" contenteditable="true" data-placeholder="Tulis isi materi, langkah-langkah, dan penjelasan di sini..."></div>
+                    </div>
+                    <input id="content" type="hidden">
+                    <input id="mediaUpload" type="file" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm" hidden>
                     <label>PDF URL<input id="pdfUrl" type="url" placeholder="https://.../materi.pdf"></label>
                     <label>Gambar URL<input id="imageUrl" type="url" placeholder="https://.../materi.jpg"></label>
-                    <label>Upload PDF/gambar<input id="fileUpload" type="file" accept="application/pdf,image/png,image/jpeg,image/webp,image/gif"></label>
+                    <label>Upload PDF / gambar / video<input id="fileUpload" type="file" accept="application/pdf,image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm"></label>
                     <label>Urutan<input id="sortOrder" type="number" value="0"></label>
                     <label class="cms-checkbox"><input id="published" type="checkbox"> Published</label>
                     <div class="cms-form-actions">
@@ -56,10 +72,10 @@
             <section class="section cms-admin-layout">
                 <div class="cms-panel cms-form">
                     <div class="section-heading"><i class="ph ph-sitemap"></i><h2>Module & child configuration</h2></div>
-                    <p class="admin-help">Edit JSON di bawah untuk mengubah judul modul, ikon, urutan, serta child modul yang tampil di sidebar. Setiap child punya slug, judul, dan konten yang bisa dibuat dengan form materi di atas.</p>
-                    <textarea id="moduleConfigJson" rows="18" spellcheck="false"></textarea>
+                    <p class="admin-help">Atur nama dan ikon modul, lalu kelola laman child yang muncul di sidebar. Semua perubahan akan terlihat setelah disimpan.</p>
+                    <div id="moduleEditor" class="module-editor"></div>
                     <div class="cms-form-actions">
-                        <button type="button" id="loadModuleConfig" class="cms-secondary-button">Reload</button>
+                        <button type="button" id="addModule" class="cms-secondary-button"><i class="ph ph-plus"></i> Add module</button>
                         <button type="button" id="saveModuleConfig" class="navbar-signin">Save module tree</button>
                     </div>
                     <p id="moduleConfigStatus" class="search-status" aria-live="polite"></p>
