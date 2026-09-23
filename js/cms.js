@@ -54,7 +54,7 @@ async function loadMaterial() {
         document.getElementById("materialTitle").textContent = material.title;
         document.getElementById("materialSummary").textContent = material.summary;
         renderPlainText(document.getElementById("materialContent"), material.content);
-        if (material.image_url && material.kind !== "overview") {
+        if (material.image_url) {
             const imageUrl = safeUrl(material.image_url);
             if (imageUrl) {
                 const image = document.createElement("img");

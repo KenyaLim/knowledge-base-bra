@@ -308,11 +308,11 @@ async function handleCmsAdminModules(request, method) {
                 title: String(child.title || childSlug).trim(),
                 module: savedModule.title,
                 module_id: savedModule.slug,
-                kind: child.kind === "overview" ? "overview" : "detail",
+                kind: "detail",
                 summary: String(child.summary || "").trim(),
                 content: String(child.content || ""),
                 pdf_url: String(child.pdf_url || "").trim(),
-                image_url: child.kind === "overview" ? "" : String(child.image_url || "").trim(),
+                image_url: String(child.image_url || "").trim(),
                 published: true,
                 sort_order: Number.isFinite(Number(child.sort_order)) ? Number(child.sort_order) : childIndex
             };
@@ -336,7 +336,7 @@ async function handleCmsAdminModules(request, method) {
                     title: child.title || child.slug || child.page || "Untitled",
                     page: String(child.slug || child.page || child.title || "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-"),
                     url: `material.html?slug=${encodeURIComponent(String(child.slug || child.page || child.title || "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-"))}`,
-                    kind: child.kind === "overview" ? "overview" : "detail",
+                    kind: "detail",
                     summary: child.summary || "",
                     content: child.content || "",
                     pdf_url: child.pdf_url || "",
@@ -353,31 +353,25 @@ async function handleCmsAdminModules(request, method) {
 function defaultChildrenForModule(moduleSlug) {
     const defaults = {
         order: [
-            { slug: "order-overview", title: "Overview", kind: "overview" },
             { slug: "order-entry", title: "Order", kind: "detail" }
         ],
         mrp: [
-            { slug: "mrp-overview", title: "Overview", kind: "overview" },
             { slug: "mrp-material-requirement", title: "Material Requirement", kind: "detail" }
         ],
         purchase: [
-            { slug: "purchase-overview", title: "Overview", kind: "overview" },
             { slug: "purchase-order", title: "Purchase Order", kind: "detail" },
             { slug: "purchase-material", title: "Purchase Material", kind: "detail" },
             { slug: "goods-receipt", title: "Goods Receipt", kind: "detail" }
         ],
         inventory: [
-            { slug: "inventory-overview", title: "Overview", kind: "overview" },
             { slug: "inventory-stock", title: "Stock", kind: "detail" },
             { slug: "inventory-grn", title: "Goods Receipt", kind: "detail" }
         ],
         production: [
-            { slug: "production-overview", title: "Overview", kind: "overview" },
             { slug: "production-cutting", title: "Cutting", kind: "detail" },
             { slug: "production-sewing", title: "Sewing", kind: "detail" }
         ],
         shipment: [
-            { slug: "shipment-overview", title: "Overview", kind: "overview" },
             { slug: "shipment-packing", title: "Packing", kind: "detail" },
             { slug: "shipment-export", title: "Export", kind: "detail" }
         ]
@@ -453,11 +447,11 @@ async function handleCmsAdminContent(request, method) {
         title: material.title.trim(),
         module: String(material.module || "").trim(),
         module_id: String(material.module_id || material.module || "").trim().toLowerCase(),
-        kind: material.kind === "overview" ? "overview" : "detail",
+        kind: "detail",
         summary: String(material.summary || "").trim(),
         content: String(material.content || ""),
         pdf_url: String(material.pdf_url || "").trim(),
-        image_url: material.kind === "overview" ? "" : String(material.image_url || "").trim(),
+        image_url: String(material.image_url || "").trim(),
         published: Boolean(material.published),
         sort_order: Number.isFinite(Number(material.sort_order)) ? Number(material.sort_order) : 0
     };

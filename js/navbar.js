@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
         index.html:
         js/navbar.js -> ../
 
-        erp/purchase/index.html:
+        erp/2-purchase/purchase-order.html:
         js/navbar.js -> ../../../
     */
     function getRootPath() {
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-rocket",
             children: [
                 {
-                    title: "Overview",
+                    title: "Configuration",
                     page: "configuration",
                     url: "getting-started/configuration.html"
                 }
@@ -166,11 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
             title: "Order",
             icon: "ph-shopping-cart",
             children: [
-                {
-                    title: "Overview",
-                    page: "stage",
-                    url: "erp/0-order/index.html"
-                },
                 {
                     title: "Order",
                     page: "stage-order",
@@ -184,11 +179,6 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-chart-bar",
             children: [
                 {
-                    title: "Overview",
-                    page: "mrp",
-                    url: "erp/1-mrp/index.html"
-                },
-                {
                     title: "Material Requirement",
                     page: "mrp-material",
                     url: "erp/1-mrp/material-requirement.html"
@@ -200,11 +190,6 @@ document.addEventListener("DOMContentLoaded", function () {
             title: "Purchase",
             icon: "ph-receipt",
             children: [
-                {
-                    title: "Overview",
-                    page: "purchase",
-                    url: "erp/2-purchase/index.html"
-                },
                 {
                     title: "Purchase Order",
                     page: "purchase-order",
@@ -228,11 +213,6 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-package",
             children: [
                 {
-                    title: "Overview",
-                    page: "inventory",
-                    url: "erp/inventory/index.html"
-                },
-                {
                     title: "Stock",
                     page: "inventory-stock",
                     url: "erp/inventory/stock.html"
@@ -249,11 +229,6 @@ document.addEventListener("DOMContentLoaded", function () {
             title: "Production",
             icon: "ph-factory",
             children: [
-                {
-                    title: "Overview",
-                    page: "production",
-                    url: "erp/production/index.html"
-                },
                 {
                     title: "Cutting",
                     page: "production-cutting",
@@ -272,11 +247,6 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-truck",
             children: [
                 {
-                    title: "Overview",
-                    page: "shipment",
-                    url: "erp/shipment/index.html"
-                },
-                {
                     title: "Packing",
                     page: "shipment-packing",
                     url: "erp/shipment/packing.html"
@@ -294,7 +264,7 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-question",
             children: [
                 {
-                    title: "Overview",
+                    title: "FAQ",
                     page: "faq",
                     url: "getting-started/faq.html"
                 }

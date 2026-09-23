@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const status = document.getElementById("formStatus");
     const moduleConfigStatus = document.getElementById("moduleConfigStatus");
     const moduleConfigJson = document.getElementById("moduleConfigJson");
-    const fields = ["materialId", "slug", "title", "module", "kind", "summary", "content", "pdfUrl", "imageUrl", "sortOrder", "published"];
+    const fields = ["materialId", "slug", "title", "module", "summary", "content", "pdfUrl", "imageUrl", "sortOrder", "published"];
 
     loadAdminMaterials();
     loadModuleTree();
@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("newMaterial").addEventListener("click", clearForm);
     document.getElementById("deleteMaterial").addEventListener("click", deleteMaterial);
     document.getElementById("fileUpload").addEventListener("change", uploadFile);
-    document.getElementById("kind").addEventListener("change", syncKindFields);
     document.getElementById("loadModuleConfig").addEventListener("click", loadModuleTree);
     document.getElementById("saveModuleConfig").addEventListener("click", saveModuleTree);
 
@@ -24,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
             title: document.getElementById("title").value,
             module: document.getElementById("module").value,
             module_id: document.getElementById("module").value,
-            kind: document.getElementById("kind").value,
+            kind: "detail",
             summary: document.getElementById("summary").value,
             content: document.getElementById("content").value,
             pdf_url: document.getElementById("pdfUrl").value,
@@ -101,7 +100,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("slug").value = material.slug || "";
         document.getElementById("title").value = material.title || "";
         document.getElementById("module").value = material.module_id || material.module || "order";
-        document.getElementById("kind").value = material.kind || "detail";
         document.getElementById("summary").value = material.summary || "";
         document.getElementById("content").value = material.content || "";
         document.getElementById("pdfUrl").value = material.pdf_url || "";
@@ -109,7 +107,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("sortOrder").value = material.sort_order || 0;
         document.getElementById("published").checked = Boolean(material.published);
         document.getElementById("deleteMaterial").hidden = !material.id;
-        syncKindFields();
     }
 
     function clearForm() {
@@ -121,7 +118,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("module").value = "order";
         status.textContent = "New material.";
         document.getElementById("deleteMaterial").hidden = true;
-        syncKindFields();
     }
 
     async function deleteMaterial() {
@@ -157,9 +153,4 @@ document.addEventListener("DOMContentLoaded", function () {
         status.textContent = "File uploaded.";
     }
 
-    function syncKindFields() {
-        const overview = document.getElementById("kind").value === "overview";
-        document.getElementById("imageUrl").disabled = overview;
-        if (overview) document.getElementById("imageUrl").value = "";
-    }
 });
