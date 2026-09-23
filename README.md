@@ -18,16 +18,6 @@ published materials are added as children in that module's sidebar. Use
 `Overview` for a module summary without an image and `Detail` for richer
 content with text, image, video, and/or PDF.
 
-## Admin editor
-
-Open `admin.html` after signing in with an address listed in
-`CMS_ADMIN_EMAILS`. The editor supports:
-
-- Rich text formatting, headings, lists, inline images, and MP4/WebM videos.
-- PDF, cover image, and media uploads through the `cms-materials` bucket.
-- Adding, renaming, ordering, and removing modules and sidebar pages without
-	editing JSON or HTML.
-
-The implementation uses Supabase Storage and database tables through the
-existing Vercel middleware endpoints, so PHP is not required. Run the SQL
-migration before the first save and redeploy after changing server-side code.
+The CMS database and API scaffolding remain available for a future admin
+interface, but the admin page is temporarily disabled while the public
+navigation is stabilized.

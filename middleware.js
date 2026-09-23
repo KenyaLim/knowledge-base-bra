@@ -52,10 +52,6 @@ export default async function middleware(request) {
     const secret = process.env.AUTH_SECRET || "";
     const session = await readSession(request, secret);
 
-    if (path === "/admin.html" && !isCmsAdmin(session)) {
-        return redirectTo(new URL("/index.html", url.origin).toString());
-    }
-
     if (path === "/login.html") {
         if (session) {
             return redirectTo(safeNext(url.searchParams.get("next"), url.origin));
