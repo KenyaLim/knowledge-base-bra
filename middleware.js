@@ -29,8 +29,16 @@ export default async function middleware(request) {
         return handleCmsContent(request);
     }
 
+    if (path === "/api/cms/modules" && method === "GET") {
+        return handleCmsModules(request);
+    }
+
     if (path === "/api/cms/admin/content" && ["GET", "POST", "DELETE"].includes(method)) {
         return handleCmsAdminContent(request, method);
+    }
+
+    if (path === "/api/cms/admin/modules" && ["GET", "POST"].includes(method)) {
+        return handleCmsAdminModules(request, method);
     }
 
     if (path === "/api/cms/admin/upload" && method === "POST") {
@@ -191,6 +199,215 @@ async function handleCmsContent(request) {
 
     if (!result.ok) return jsonResponse({ error: "CMS database request failed" }, 502);
     return jsonResponse(slug ? (result.data[0] || null) : result.data);
+}
+
+async function handleCmsModules(request) {
+    const session = await readSession(request, process.env.AUTH_SECRET || "");
+    if (!session) return jsonResponse({ error: "Unauthorized" }, 401);
+
+    const modulesResult = await supabaseRequest(
+        "GET",
+        "/rest/v1/cms_modules?select=*&order=sort_order.asc,created_at.asc"
+    );
+
+    const materialsResult = await supabaseRequest(
+        "GET",
+        "/rest/v1/cms_materials?select=*&published=eq.true&order=sort_order.asc,created_at.asc"
+    );
+
+    if (!modulesResult.ok || !materialsResult.ok) {
+        return jsonResponse(defaultModuleTree(), 200);
+    }
+
+    const modules = modulesResult.data || [];
+    const materials = materialsResult.data || [];
+    const list = modules.length
+        ? modules.map(function (module) {
+            const children = materials
+                .filter(function (material) {
+                    return (material.module_id || material.module || "").toLowerCase() === String(module.slug || "").toLowerCase();
+                })
+                .map(function (material) {
+                    return {
+                        slug: material.slug,
+                        title: material.title,
+                        page: material.slug,
+                        url: `material.html?slug=${encodeURIComponent(material.slug)}`,
+                        kind: material.kind || "detail",
+                        summary: material.summary || "",
+                        content: material.content || "",
+                        pdf_url: material.pdf_url || "",
+                        image_url: material.image_url || "",
+                        sort_order: Number(material.sort_order) || 0
+                    };
+                });
+            return {
+                slug: module.slug,
+                title: module.title,
+                icon: module.icon || "ph-files",
+                sort_order: Number(module.sort_order) || 0,
+                children: children.length ? children : defaultChildrenForModule(module.slug)
+            };
+        })
+        : defaultModuleTree();
+
+    return jsonResponse(list);
+}
+
+async function handleCmsAdminModules(request, method) {
+    const session = await readSession(request, process.env.AUTH_SECRET || "");
+    if (!isCmsAdmin(session)) return jsonResponse({ error: "Forbidden" }, 403);
+
+    if (method === "GET") {
+        return handleCmsModules(request);
+    }
+
+    let modules;
+    try {
+        modules = await request.json();
+    } catch {
+        return jsonResponse({ error: "Invalid JSON" }, 400);
+    }
+
+    if (!Array.isArray(modules)) {
+        return jsonResponse({ error: "Expected an array of modules" }, 400);
+    }
+
+    const saved = [];
+    for (let index = 0; index < modules.length; index += 1) {
+        const module = modules[index];
+        const moduleSlug = String(module.slug || module.id || module.title || "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-");
+        if (!moduleSlug) continue;
+
+        const modulePayload = {
+            slug: moduleSlug,
+            title: String(module.title || moduleSlug).trim(),
+            icon: String(module.icon || "ph-files").trim() || "ph-files",
+            sort_order: Number.isFinite(Number(module.sort_order)) ? Number(module.sort_order) : index
+        };
+
+        const moduleUpsert = await supabaseRequest(
+            "POST",
+            "/rest/v1/cms_modules?on_conflict=slug",
+            modulePayload,
+            { Prefer: "resolution=merge-duplicates,return=representation" }
+        );
+
+        if (!moduleUpsert.ok) {
+            return jsonResponse({ error: "Could not save module config" }, 502);
+        }
+
+        const savedModule = (moduleUpsert.data && moduleUpsert.data[0]) || modulePayload;
+        const children = Array.isArray(module.children) ? module.children : [];
+        for (let childIndex = 0; childIndex < children.length; childIndex += 1) {
+            const child = children[childIndex];
+            const childSlug = String(child.slug || child.page || child.title || "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-");
+            if (!childSlug) continue;
+            const pagePayload = {
+                slug: childSlug,
+                title: String(child.title || childSlug).trim(),
+                module: savedModule.title,
+                module_id: savedModule.slug,
+                kind: child.kind === "overview" ? "overview" : "detail",
+                summary: String(child.summary || "").trim(),
+                content: String(child.content || ""),
+                pdf_url: String(child.pdf_url || "").trim(),
+                image_url: child.kind === "overview" ? "" : String(child.image_url || "").trim(),
+                published: true,
+                sort_order: Number.isFinite(Number(child.sort_order)) ? Number(child.sort_order) : childIndex
+            };
+
+            const childUpsert = await supabaseRequest(
+                "POST",
+                "/rest/v1/cms_materials?on_conflict=slug",
+                pagePayload,
+                { Prefer: "resolution=merge-duplicates,return=representation" }
+            );
+            if (!childUpsert.ok) {
+                return jsonResponse({ error: "Could not save module child content" }, 502);
+            }
+        }
+
+        saved.push({
+            ...savedModule,
+            children: children.map(function (child) {
+                return {
+                    slug: String(child.slug || child.page || child.title || "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-"),
+                    title: child.title || child.slug || child.page || "Untitled",
+                    page: String(child.slug || child.page || child.title || "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-"),
+                    url: `material.html?slug=${encodeURIComponent(String(child.slug || child.page || child.title || "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-"))}`,
+                    kind: child.kind === "overview" ? "overview" : "detail",
+                    summary: child.summary || "",
+                    content: child.content || "",
+                    pdf_url: child.pdf_url || "",
+                    image_url: child.image_url || "",
+                    sort_order: child.sort_order || 0
+                };
+            })
+        });
+    }
+
+    return jsonResponse(saved, 200);
+}
+
+function defaultChildrenForModule(moduleSlug) {
+    const defaults = {
+        order: [
+            { slug: "order-overview", title: "Overview", kind: "overview" },
+            { slug: "order-entry", title: "Order", kind: "detail" }
+        ],
+        mrp: [
+            { slug: "mrp-overview", title: "Overview", kind: "overview" },
+            { slug: "mrp-material-requirement", title: "Material Requirement", kind: "detail" }
+        ],
+        purchase: [
+            { slug: "purchase-overview", title: "Overview", kind: "overview" },
+            { slug: "purchase-order", title: "Purchase Order", kind: "detail" },
+            { slug: "purchase-material", title: "Purchase Material", kind: "detail" },
+            { slug: "goods-receipt", title: "Goods Receipt", kind: "detail" }
+        ],
+        inventory: [
+            { slug: "inventory-overview", title: "Overview", kind: "overview" },
+            { slug: "inventory-stock", title: "Stock", kind: "detail" },
+            { slug: "inventory-grn", title: "Goods Receipt", kind: "detail" }
+        ],
+        production: [
+            { slug: "production-overview", title: "Overview", kind: "overview" },
+            { slug: "production-cutting", title: "Cutting", kind: "detail" },
+            { slug: "production-sewing", title: "Sewing", kind: "detail" }
+        ],
+        shipment: [
+            { slug: "shipment-overview", title: "Overview", kind: "overview" },
+            { slug: "shipment-packing", title: "Packing", kind: "detail" },
+            { slug: "shipment-export", title: "Export", kind: "detail" }
+        ]
+    };
+
+    return (defaults[moduleSlug] || []).map(function (child) {
+        return {
+            slug: child.slug,
+            title: child.title,
+            page: child.slug,
+            url: `material.html?slug=${encodeURIComponent(child.slug)}`,
+            kind: child.kind || "detail",
+            pdf_url: "",
+            image_url: "",
+            summary: "",
+            content: "",
+            sort_order: 0
+        };
+    });
+}
+
+function defaultModuleTree() {
+    return [
+        { slug: "order", title: "Order", icon: "ph-shopping-cart", sort_order: 0, children: defaultChildrenForModule("order") },
+        { slug: "mrp", title: "MRP", icon: "ph-chart-bar", sort_order: 1, children: defaultChildrenForModule("mrp") },
+        { slug: "purchase", title: "Purchase", icon: "ph-receipt", sort_order: 2, children: defaultChildrenForModule("purchase") },
+        { slug: "inventory", title: "Inventory", icon: "ph-package", sort_order: 3, children: defaultChildrenForModule("inventory") },
+        { slug: "production", title: "Production", icon: "ph-factory", sort_order: 4, children: defaultChildrenForModule("production") },
+        { slug: "shipment", title: "Shipment", icon: "ph-truck", sort_order: 5, children: defaultChildrenForModule("shipment") }
+    ];
 }
 
 async function handleCmsAdminContent(request, method) {

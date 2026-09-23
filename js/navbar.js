@@ -144,20 +144,16 @@ document.addEventListener("DOMContentLoaded", function () {
         SIDEBAR DATA
         =========================
 
-        Tambah modul baru cukup di bagian ini.
+        Modul utama dan child diambil dari CMS. Jika API tidak tersedia,
+        akan fallback ke konfigurasi statis default.
     */
 
-    const modules = [
+    const defaultModules = [
         {
             id: "getting-started",
             title: "Quick Configuration",
             icon: "ph-rocket",
             children: [
-                // {
-                //     title: "Installation",
-                //     page: "installation",
-                //     url: "getting-started/installation.html"
-                // },
                 {
                     title: "Overview",
                     page: "configuration",
@@ -165,25 +161,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             ]
         },
-
         {
-            id: "stage",
+            id: "order",
             title: "Order",
             icon: "ph-shopping-cart",
             children: [
                 {
                     title: "Overview",
-                    page: "stage",
-                    url: "erp/0-order/index.html"
+                    page: "order-overview",
+                    url: "material.html?slug=order-overview"
                 },
                 {
                     title: "Order",
-                    page: "stage-order",
-                    url: "erp/0-order/order.html"
+                    page: "order-entry",
+                    url: "material.html?slug=order-entry"
                 }
             ]
         },
-
         {
             id: "mrp",
             title: "MRP",
@@ -191,17 +185,16 @@ document.addEventListener("DOMContentLoaded", function () {
             children: [
                 {
                     title: "Overview",
-                    page: "mrp",
-                    url: "erp/1-mrp/index.html"
+                    page: "mrp-overview",
+                    url: "material.html?slug=mrp-overview"
                 },
                 {
                     title: "Material Requirement",
-                    page: "mrp-material",
-                    url: "erp/1-mrp/material-requirement.html"
+                    page: "mrp-material-requirement",
+                    url: "material.html?slug=mrp-material-requirement"
                 }
             ]
         },
-
         {
             id: "purchase",
             title: "Purchase",
@@ -209,27 +202,26 @@ document.addEventListener("DOMContentLoaded", function () {
             children: [
                 {
                     title: "Overview",
-                    page: "purchase",
-                    url: "erp/2-purchase/index.html"
+                    page: "purchase-overview",
+                    url: "material.html?slug=purchase-overview"
                 },
                 {
                     title: "Purchase Order",
                     page: "purchase-order",
-                    url: "erp/2-purchase/purchase-order.html"
+                    url: "material.html?slug=purchase-order"
                 },
                 {
                     title: "Purchase Material",
                     page: "purchase-material",
-                    url: "erp/2-purchase/purchase-material.html"
+                    url: "material.html?slug=purchase-material"
                 },
                 {
                     title: "Goods Receipt",
                     page: "goods-receipt",
-                    url: "erp/2-purchase/goods-receipt.html"
+                    url: "material.html?slug=goods-receipt"
                 }
             ]
         },
-
         {
             id: "inventory",
             title: "Inventory",
@@ -237,22 +229,21 @@ document.addEventListener("DOMContentLoaded", function () {
             children: [
                 {
                     title: "Overview",
-                    page: "inventory",
-                    url: "erp/inventory/index.html"
+                    page: "inventory-overview",
+                    url: "material.html?slug=inventory-overview"
                 },
                 {
                     title: "Stock",
                     page: "inventory-stock",
-                    url: "erp/inventory/stock.html"
+                    url: "material.html?slug=inventory-stock"
                 },
                 {
                     title: "Goods Receipt",
                     page: "inventory-grn",
-                    url: "erp/inventory/goods-receipt.html"
+                    url: "material.html?slug=inventory-grn"
                 }
             ]
         },
-
         {
             id: "production",
             title: "Production",
@@ -260,22 +251,21 @@ document.addEventListener("DOMContentLoaded", function () {
             children: [
                 {
                     title: "Overview",
-                    page: "production",
-                    url: "erp/production/index.html"
+                    page: "production-overview",
+                    url: "material.html?slug=production-overview"
                 },
                 {
                     title: "Cutting",
                     page: "production-cutting",
-                    url: "erp/production/cutting.html"
+                    url: "material.html?slug=production-cutting"
                 },
                 {
                     title: "Sewing",
                     page: "production-sewing",
-                    url: "erp/production/sewing.html"
+                    url: "material.html?slug=production-sewing"
                 }
             ]
         },
-
         {
             id: "shipment",
             title: "Shipment",
@@ -283,22 +273,21 @@ document.addEventListener("DOMContentLoaded", function () {
             children: [
                 {
                     title: "Overview",
-                    page: "shipment",
-                    url: "erp/shipment/index.html"
+                    page: "shipment-overview",
+                    url: "material.html?slug=shipment-overview"
                 },
                 {
                     title: "Packing",
                     page: "shipment-packing",
-                    url: "erp/shipment/packing.html"
+                    url: "material.html?slug=shipment-packing"
                 },
                 {
                     title: "Export",
                     page: "shipment-export",
-                    url: "erp/shipment/export.html"
+                    url: "material.html?slug=shipment-export"
                 }
             ]
         },
-
         {
             id: "faq",
             title: "FAQ",
@@ -312,6 +301,8 @@ document.addEventListener("DOMContentLoaded", function () {
             ]
         }
     ];
+
+    let modules = defaultModules;
 
     /*
         Cari modul yang sedang aktif.

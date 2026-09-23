@@ -30,7 +30,7 @@
                     <label>Slug<input id="slug" required placeholder="mrp-material"></label>
                     <label>Title<input id="title" required placeholder="Material Requirement"></label>
                     <label>Module<select id="module" required>
-                        <option value="stage">Order</option>
+                        <option value="order">Order</option>
                         <option value="mrp">MRP</option>
                         <option value="purchase">Purchase</option>
                         <option value="inventory">Inventory</option>
@@ -55,6 +55,18 @@
                     </div>
                     <p id="formStatus" class="search-status" aria-live="polite"></p>
                 </form>
+            </section>
+            <section class="section cms-admin-layout">
+                <div class="cms-panel cms-form">
+                    <div class="section-heading"><i class="ph ph-sitemap"></i><h2>Module & child configuration</h2></div>
+                    <p class="admin-help">Edit JSON di bawah untuk mengubah judul modul, ikon, urutan, serta child modul yang tampil di sidebar. Setiap child punya slug, judul, dan konten yang bisa dibuat dengan form materi di atas.</p>
+                    <textarea id="moduleConfigJson" rows="18" spellcheck="false"></textarea>
+                    <div class="cms-form-actions">
+                        <button type="button" id="loadModuleConfig" class="cms-secondary-button">Reload</button>
+                        <button type="button" id="saveModuleConfig" class="navbar-signin">Save module tree</button>
+                    </div>
+                    <p id="moduleConfigStatus" class="search-status" aria-live="polite"></p>
+                </div>
             </section>
         </main>
     </div>

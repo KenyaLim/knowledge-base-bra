@@ -2,13 +2,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("materialForm");
     const list = document.getElementById("materialList");
     const status = document.getElementById("formStatus");
+    const moduleConfigStatus = document.getElementById("moduleConfigStatus");
+    const moduleConfigJson = document.getElementById("moduleConfigJson");
     const fields = ["materialId", "slug", "title", "module", "kind", "summary", "content", "pdfUrl", "imageUrl", "sortOrder", "published"];
 
     loadAdminMaterials();
+    loadModuleTree();
+
     document.getElementById("newMaterial").addEventListener("click", clearForm);
     document.getElementById("deleteMaterial").addEventListener("click", deleteMaterial);
     document.getElementById("fileUpload").addEventListener("change", uploadFile);
     document.getElementById("kind").addEventListener("change", syncKindFields);
+    document.getElementById("loadModuleConfig").addEventListener("click", loadModuleTree);
+    document.getElementById("saveModuleConfig").addEventListener("click", saveModuleTree);
+
     form.addEventListener("submit", async function (event) {
         event.preventDefault();
         status.textContent = "Saving...";
@@ -35,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!response.ok) throw new Error(result.error || "Save failed");
             status.textContent = "Saved.";
             await loadAdminMaterials();
+            await loadModuleTree();
             fillForm(result);
         } catch (error) {
             status.textContent = error.message;
@@ -60,11 +68,39 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    async function loadModuleTree() {
+        try {
+            const response = await fetch("/api/cms/modules");
+            const modules = await response.json();
+            if (!response.ok) throw new Error((modules && modules.error) || "Load failed");
+            moduleConfigJson.value = JSON.stringify(modules, null, 2);
+        } catch (error) {
+            moduleConfigStatus.textContent = error.message;
+        }
+    }
+
+    async function saveModuleTree() {
+        try {
+            const payload = JSON.parse(moduleConfigJson.value || "[]");
+            const response = await fetch("/api/cms/admin/modules", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || "Save failed");
+            moduleConfigStatus.textContent = "Module tree saved.";
+            await loadModuleTree();
+        } catch (error) {
+            moduleConfigStatus.textContent = error.message;
+        }
+    }
+
     function fillForm(material) {
         document.getElementById("materialId").value = material.id || "";
         document.getElementById("slug").value = material.slug || "";
         document.getElementById("title").value = material.title || "";
-        document.getElementById("module").value = material.module || "";
+        document.getElementById("module").value = material.module_id || material.module || "order";
         document.getElementById("kind").value = material.kind || "detail";
         document.getElementById("summary").value = material.summary || "";
         document.getElementById("content").value = material.content || "";
@@ -82,6 +118,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (field.type === "checkbox") field.checked = false;
             else field.value = id === "sortOrder" ? "0" : "";
         });
+        document.getElementById("module").value = "order";
         status.textContent = "New material.";
         document.getElementById("deleteMaterial").hidden = true;
         syncKindFields();
@@ -99,6 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         clearForm();
         await loadAdminMaterials();
+        await loadModuleTree();
         status.textContent = "Deleted.";
     }
 

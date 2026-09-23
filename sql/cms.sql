@@ -15,7 +15,18 @@ create table if not exists public.cms_materials (
     updated_at timestamptz not null default now()
 );
 
+create table if not exists public.cms_modules (
+    id uuid primary key default gen_random_uuid(),
+    slug text unique not null,
+    title text not null,
+    icon text not null default 'ph-files',
+    sort_order integer not null default 0,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
 alter table public.cms_materials enable row level security;
+alter table public.cms_modules enable row level security;
 
 alter table public.cms_materials add column if not exists module_id text not null default '';
 alter table public.cms_materials add column if not exists kind text not null default 'detail';
