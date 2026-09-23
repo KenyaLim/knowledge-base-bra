@@ -273,6 +273,21 @@ async function handleCmsAdminModules(request, method) {
         return jsonResponse({ error: "Expected an array of modules" }, 400);
     }
 
+    const existingResult = await supabaseRequest(
+        "GET",
+        "/rest/v1/cms_materials?select=*&limit=1000"
+    );
+    const existingBySlug = new Map(
+        (existingResult.ok && Array.isArray(existingResult.data) ? existingResult.data : [])
+            .map((material) => [material.slug, material])
+    );
+    const existingModulesResult = await supabaseRequest(
+        "GET",
+        "/rest/v1/cms_modules?select=slug&limit=1000"
+    );
+    const existingModuleSlugs = existingModulesResult.ok && Array.isArray(existingModulesResult.data)
+        ? existingModulesResult.data.map((module) => module.slug)
+        : [];
     const saved = [];
     for (let index = 0; index < modules.length; index += 1) {
         const module = modules[index];
@@ -299,21 +314,24 @@ async function handleCmsAdminModules(request, method) {
 
         const savedModule = (moduleUpsert.data && moduleUpsert.data[0]) || modulePayload;
         const children = Array.isArray(module.children) ? module.children : [];
+        const childSlugs = [];
         for (let childIndex = 0; childIndex < children.length; childIndex += 1) {
             const child = children[childIndex];
             const childSlug = String(child.slug || child.page || child.title || "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-");
             if (!childSlug) continue;
+            childSlugs.push(childSlug);
+            const existing = existingBySlug.get(childSlug) || {};
             const pagePayload = {
                 slug: childSlug,
                 title: String(child.title || childSlug).trim(),
                 module: savedModule.title,
                 module_id: savedModule.slug,
-                kind: child.kind === "overview" ? "overview" : "detail",
-                summary: String(child.summary || "").trim(),
-                content: String(child.content || ""),
-                pdf_url: String(child.pdf_url || "").trim(),
-                image_url: child.kind === "overview" ? "" : String(child.image_url || "").trim(),
-                published: true,
+                kind: child.kind || existing.kind || "detail",
+                summary: child.summary === undefined ? String(existing.summary || "") : String(child.summary || "").trim(),
+                content: child.content === undefined ? String(existing.content || "") : String(child.content || ""),
+                pdf_url: child.pdf_url === undefined ? String(existing.pdf_url || "") : String(child.pdf_url || "").trim(),
+                image_url: (child.kind || existing.kind) === "overview" ? "" : (child.image_url === undefined ? String(existing.image_url || "") : String(child.image_url || "").trim()),
+                published: child.published === undefined ? existing.published !== false : Boolean(child.published),
                 sort_order: Number.isFinite(Number(child.sort_order)) ? Number(child.sort_order) : childIndex
             };
 
@@ -326,6 +344,12 @@ async function handleCmsAdminModules(request, method) {
             if (!childUpsert.ok) {
                 return jsonResponse({ error: "Could not save module child content" }, 502);
             }
+        }
+
+        const removedChildren = (existingResult.ok && Array.isArray(existingResult.data) ? existingResult.data : [])
+            .filter((material) => material.module_id === savedModule.slug && !childSlugs.includes(material.slug));
+        for (const removedChild of removedChildren) {
+            await supabaseRequest("DELETE", `/rest/v1/cms_materials?slug=eq.${encodeURIComponent(removedChild.slug)}`);
         }
 
         saved.push({
@@ -345,6 +369,13 @@ async function handleCmsAdminModules(request, method) {
                 };
             })
         });
+    }
+
+    const savedSlugs = saved.map((module) => module.slug);
+    for (const oldSlug of existingModuleSlugs) {
+        if (!savedSlugs.includes(oldSlug)) {
+            await supabaseRequest("DELETE", `/rest/v1/cms_modules?slug=eq.${encodeURIComponent(oldSlug)}`);
+        }
     }
 
     return jsonResponse(saved, 200);
@@ -490,8 +521,8 @@ async function handleCmsAdminUpload(request) {
     if (file.size > 15 * 1024 * 1024) {
         return jsonResponse({ error: "File size must be 15 MB or less" }, 400);
     }
-    if (!/^application\/pdf$|^image\/(png|jpeg|jpg|webp|gif)$/.test(file.type)) {
-        return jsonResponse({ error: "Only PDF and image files are supported" }, 400);
+    if (!/^application\/pdf$|^image\/(png|jpeg|jpg|webp|gif)$|^video\/(mp4|webm)$/.test(file.type)) {
+        return jsonResponse({ error: "Only PDF, image, MP4, and WebM files are supported" }, 400);
     }
 
     const extension = file.name.includes(".") ? file.name.split(".").pop().toLowerCase() : "bin";
