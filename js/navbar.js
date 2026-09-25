@@ -24,6 +24,18 @@ document.addEventListener("DOMContentLoaded", function () {
     const navbarContainer = document.getElementById("navbar");
     const sidebarContainer = document.getElementById("sidebar");
 
+    function escapeHtml(value) {
+        return String(value || "").replace(/[&<>"']/g, function (character) {
+            return {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            }[character];
+        });
+    }
+
     /*
         Menentukan lokasi root website.
 
@@ -343,7 +355,7 @@ document.addEventListener("DOMContentLoaded", function () {
     */
 
     function moduleHasActivePage(module) {
-        return module.children.some(function (child) {
+        return Array.isArray(module.children) && module.children.some(function (child) {
             return child.page === page;
         });
     }
@@ -373,7 +385,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     </a>
 
 
-                    ${modules.map(function (module) {
+                    ${modules.filter(function (module) {
+                        return module && module.id && Array.isArray(module.children) && module.children.length;
+                    }).map(function (module) {
 
                         const active = moduleHasActivePage(module);
 
@@ -612,18 +626,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     textNode.nodeValue.slice(lastIndex)
                 ));
                 textNode.replaceWith(fragment);
-            });
-        }
-
-        function escapeHtml(value) {
-            return value.replace(/[&<>"']/g, function (character) {
-                return {
-                    "&": "&amp;",
-                    "<": "&lt;",
-                    ">": "&gt;",
-                    "\"": "&quot;",
-                    "'": "&#039;"
-                }[character];
             });
         }
 
