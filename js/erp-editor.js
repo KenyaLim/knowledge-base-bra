@@ -34,13 +34,14 @@
             const sessionResponse = await fetch("/api/session", { headers: { Accept: "application/json" } });
             const session = await sessionResponse.json();
             setEditorAccess(Boolean(session.isAdmin));
-            if (!session.isAdmin) return;
-
-            const response = await fetch(`/api/cms/admin/content?slug=${encodeURIComponent(slug)}`);
+            const endpoint = session.isAdmin
+                ? `/api/cms/admin/content?slug=${encodeURIComponent(slug)}`
+                : `/api/cms/content?slug=${encodeURIComponent(slug)}`;
+            const response = await fetch(endpoint);
             const material = await response.json();
             if (!response.ok) throw new Error(material.error || "Gagal memuat dokumentasi");
             if (material && material.content) content.innerHTML = material.content;
-            status.textContent = "Terhubung ke Supabase";
+            status.textContent = session.isAdmin ? "Terhubung ke Supabase" : "Mode baca saja";
         } catch (error) {
             setEditorAccess(false);
             status.textContent = error.message;
@@ -56,8 +57,8 @@
             body: JSON.stringify({
                 slug: slug,
                 title: document.querySelector(".hero h1")?.textContent.trim() || slug,
-                module: document.body.dataset.page || "erp",
-                module_id: document.body.dataset.page || "erp",
+                module: "ERP",
+                module_id: slug,
                 kind: "detail",
                 summary: "ERP documentation",
                 content: content.innerHTML,

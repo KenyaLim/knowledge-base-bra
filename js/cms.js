@@ -9,7 +9,11 @@ async function loadMaterials() {
     try {
         const response = await fetch("/api/cms/content");
         if (!response.ok) throw new Error("Could not load materials");
-        const materials = await response.json();
+        const materials = (await response.json()).filter(function (material) {
+            return material.module !== "ERP"
+                && !String(material.module_id || "").startsWith("erp-")
+                && !String(material.slug || "").startsWith("erp-");
+        });
         grid.replaceChildren();
         if (!materials.length) {
             status.textContent = "Belum ada materi yang dipublish.";
