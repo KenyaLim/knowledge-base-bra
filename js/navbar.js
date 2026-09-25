@@ -19,6 +19,7 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     const page = document.body.dataset.page || "dashboard";
+    const NAVIGATION_STORAGE_KEY = "knowledge-base-navigation";
 
     const navbarContainer = document.getElementById("navbar");
     const sidebarContainer = document.getElementById("sidebar");
@@ -147,7 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
         Tambah modul baru cukup di bagian ini.
     */
 
-    const modules = [
+    const defaultModules = [
         {
             id: "getting-started",
             title: "Quick Configuration",
@@ -313,6 +314,30 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     ];
 
+    function loadNavigation() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(NAVIGATION_STORAGE_KEY));
+            if (Array.isArray(saved) && saved.length) return saved;
+        } catch (error) {
+            // Use the built-in navigation when browser storage is unavailable.
+        }
+        return structuredClone(defaultModules);
+    }
+
+    const modules = loadNavigation();
+
+    window.KBNavigation = {
+        get: loadNavigation,
+        save: function (navigation) {
+            localStorage.setItem(NAVIGATION_STORAGE_KEY, JSON.stringify(navigation));
+            window.location.reload();
+        },
+        reset: function () {
+            localStorage.removeItem(NAVIGATION_STORAGE_KEY);
+            window.location.reload();
+        }
+    };
+
     /*
         Cari modul yang sedang aktif.
     */
@@ -366,7 +391,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                                 <i class="ph ${module.icon}"></i>
                                             </span>
 
-                                            <span>${module.title}</span>
+                                            <span>${escapeHtml(module.title)}</span>
                                         </span>
                                     </a>
                                 </div>
@@ -388,7 +413,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                             <i class="ph ${module.icon}"></i>
                                         </span>
 
-                                        <span>${module.title}</span>
+                                        <span>${escapeHtml(module.title)}</span>
 
                                     </span>
 
@@ -408,7 +433,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                                     href="${ROOT}${child.url}"
                                                     class="${childActive ? "active" : ""}"
                                                 >
-                                                    ${child.title}
+                                                    ${escapeHtml(child.title)}
                                                 </a>
                                             </li>
                                         `;

@@ -53,7 +53,7 @@ async function loadMaterial() {
         document.getElementById("materialModule").textContent = material.module || "KNOWLEDGE BASE";
         document.getElementById("materialTitle").textContent = material.title;
         document.getElementById("materialSummary").textContent = material.summary;
-        renderPlainText(document.getElementById("materialContent"), material.content);
+        renderContent(document.getElementById("materialContent"), material.content);
         if (material.image_url && material.kind !== "overview") {
             const imageUrl = safeUrl(material.image_url);
             if (imageUrl) {
@@ -82,6 +82,40 @@ function renderPlainText(container, value) {
         const element = document.createElement("p");
         element.textContent = paragraph.trim();
         container.appendChild(element);
+    });
+}
+
+function renderContent(container, value) {
+    if (!/<[a-z][\s\S]*>/i.test(String(value || ""))) {
+        renderPlainText(container, value);
+        return;
+    }
+
+    const template = document.createElement("template");
+    template.innerHTML = String(value || "");
+    const allowedTags = new Set(["A", "BR", "EM", "H2", "I", "IMG", "IFRAME", "LI", "OL", "P", "STRONG", "U", "UL"]);
+    const allowedAttributes = new Set(["alt", "href", "src", "target", "rel", "title"]);
+
+    function clean(node) {
+        if (node.nodeType === Node.TEXT_NODE) return document.createTextNode(node.nodeValue);
+        if (node.nodeType !== Node.ELEMENT_NODE || !allowedTags.has(node.tagName)) return null;
+        const cleanNode = document.createElement(node.tagName.toLowerCase());
+        Array.from(node.attributes).forEach(function (attribute) {
+            if (!allowedAttributes.has(attribute.name.toLowerCase())) return;
+            if (["href", "src"].includes(attribute.name.toLowerCase()) && !safeUrl(attribute.value)) return;
+            cleanNode.setAttribute(attribute.name, attribute.value);
+        });
+        Array.from(node.childNodes).forEach(function (child) {
+            const cleanChild = clean(child);
+            if (cleanChild) cleanNode.appendChild(cleanChild);
+        });
+        return cleanNode;
+    }
+
+    container.replaceChildren();
+    Array.from(template.content.childNodes).forEach(function (node) {
+        const cleanNode = clean(node);
+        if (cleanNode) container.appendChild(cleanNode);
     });
 }
 

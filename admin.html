@@ -19,6 +19,17 @@
                     <p class="hero-description">Create, edit, publish, and attach PDF materials without changing the HTML pages.</p>
                 </div>
             </section>
+            <section class="section">
+                <div class="section-heading"><i class="ph ph-list-bullets"></i><h2>Navigation</h2></div>
+                <div class="cms-panel">
+                    <div id="navigationList" class="cms-material-list" aria-live="polite"></div>
+                    <div class="cms-form-actions">
+                        <button type="button" id="addNavigationParent" class="cms-secondary-button">Add parent</button>
+                        <button type="button" id="resetNavigation" class="cms-secondary-button">Reset navigation</button>
+                    </div>
+                    <p id="navigationStatus" class="search-status" aria-live="polite"></p>
+                </div>
+            </section>
             <section class="section cms-admin-layout">
                 <div class="cms-panel">
                     <div class="section-heading"><i class="ph ph-files"></i><h2>Saved materials</h2></div>
@@ -42,7 +53,19 @@
                         <option value="overview">Overview (tanpa gambar)</option>
                     </select></label>
                     <label>Summary<textarea id="summary" rows="2"></textarea></label>
-                    <label>Content<textarea id="content" rows="12" placeholder="Tulis materi di sini. Satu paragraf per baris."></textarea></label>
+                    <label>Content
+                        <div class="cms-form-actions">
+                            <button type="button" class="cms-secondary-button" data-editor-command="strong">Bold</button>
+                            <button type="button" class="cms-secondary-button" data-editor-command="em">Italic</button>
+                            <button type="button" class="cms-secondary-button" data-editor-command="u">Underline</button>
+                            <button type="button" class="cms-secondary-button" data-editor-command="h2">Heading</button>
+                            <button type="button" class="cms-secondary-button" data-editor-command="ul">List</button>
+                            <button type="button" class="cms-secondary-button" data-editor-command="link">Link</button>
+                            <button type="button" class="cms-secondary-button" data-editor-command="image">Image</button>
+                            <button type="button" class="cms-secondary-button" data-editor-command="pdf">PDF</button>
+                        </div>
+                        <textarea id="content" rows="12" placeholder="Tulis materi di sini. Satu paragraf per baris."></textarea>
+                    </label>
                     <label>PDF URL<input id="pdfUrl" type="url" placeholder="https://.../materi.pdf"></label>
                     <label>Gambar URL<input id="imageUrl" type="url" placeholder="https://.../materi.jpg"></label>
                     <label>Upload PDF/gambar<input id="fileUpload" type="file" accept="application/pdf,image/png,image/jpeg,image/webp,image/gif"></label>
