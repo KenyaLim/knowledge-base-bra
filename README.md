@@ -2,6 +2,11 @@
 
 ## CMS setup
 
+FEATURES NOW
+V EDITABLE IN HTML ADMIN
+V STORAGE SUPABASE
+V SEARCH BAR
+
 Run `sql/cms.sql` in Supabase SQL Editor. The migration creates the CMS fields and
 the public `cms-materials` Storage bucket used for PDF and image uploads.
 
