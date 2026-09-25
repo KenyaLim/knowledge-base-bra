@@ -721,6 +721,69 @@ input {
     display: none;
 }
 
+.erp-editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 12px;
+    border: 1px solid #d4d4d4;
+    background: #f7f7f7;
+}
+
+.erp-editor-toolbar button,
+.erp-editor-file,
+.erp-editor-toolbar input {
+    min-height: 36px;
+    padding: 7px 10px;
+    border: 1px solid #bdbdbd;
+    background: #ffffff;
+    color: #222222;
+    font: inherit;
+}
+
+.erp-editor-toolbar button,
+.erp-editor-file {
+    cursor: pointer;
+}
+
+.erp-editor-file input {
+    display: none;
+}
+
+.erp-editor-toolbar input[type="url"] {
+    min-width: 210px;
+}
+
+.erp-editor [contenteditable="true"] {
+    min-height: 260px;
+    padding: 18px;
+    border: 1px solid #c7c7c7;
+    background: #ffffff;
+    outline: none;
+}
+
+.erp-editor [contenteditable="true"]:focus {
+    border-color: #555555;
+    box-shadow: 0 0 0 2px #e5e5e5;
+}
+
+.erp-editor-image {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    max-height: 560px;
+    margin: 18px 0;
+    object-fit: contain;
+}
+
+.editor-status {
+    min-height: 18px;
+    margin: 8px 0 0;
+    color: #666666;
+    font-size: 12px;
+}
+
 .glossary dl {
     display: grid;
     grid-template-columns: minmax(130px, 0.35fr) 1fr;

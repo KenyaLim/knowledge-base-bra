@@ -198,12 +198,16 @@ async function handleCmsAdminContent(request, method) {
     if (!isCmsAdmin(session)) return jsonResponse({ error: "Forbidden" }, 403);
 
     if (method === "GET") {
+        const slug = new URL(request.url).searchParams.get("slug");
+        const query = slug
+            ? `/rest/v1/cms_materials?select=*&slug=eq.${encodeURIComponent(slug)}&limit=1`
+            : "/rest/v1/cms_materials?select=*&order=sort_order.asc,created_at.asc";
         const result = await supabaseRequest(
             "GET",
-            "/rest/v1/cms_materials?select=*&order=sort_order.asc,created_at.asc"
+            query
         );
         if (!result.ok) return jsonResponse({ error: "CMS database request failed" }, 502);
-        return jsonResponse(result.data);
+        return jsonResponse(slug ? (result.data[0] || null) : result.data);
     }
 
     if (method === "DELETE") {
