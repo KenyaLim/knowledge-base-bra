@@ -1,4 +1,3 @@
-# Modul Costing - Ringkasan dalam Bahasa Indonesia
 
 ## 1. Pendahuluan
 
