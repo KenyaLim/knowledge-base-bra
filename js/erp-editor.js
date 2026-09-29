@@ -24,8 +24,8 @@
         content.contentEditable = enabled ? "true" : "false";
         toolbar.hidden = !enabled;
         if (!enabled) {
-            content.title = "Hanya admin yang dapat mengedit dokumentasi";
-            status.textContent = "Mode baca saja";
+            content.title = "Admin";
+            status.textContent = "View";
         }
     }
 
