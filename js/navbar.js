@@ -161,23 +161,6 @@ document.addEventListener("DOMContentLoaded", function () {
     */
 
     const defaultModules = [
-        // {
-        //     id: "getting-started",
-        //     title: "Quick Configuration",
-        //     icon: "ph-rocket",
-        //     children: [
-        //         // {
-        //         //     title: "Installation",
-        //         //     page: "installation",
-        //         //     url: "getting-started/installation.html"
-        //         // },
-        //         // {
-        //         //     title: "Overview",
-        //         //     page: "configuration",
-        //         //     url: "getting-started/configuration.html"
-        //         // }
-        //     ]
-        // },
 
         {
             id: "stage",
@@ -350,9 +333,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    /*
-        Cari modul yang sedang aktif.
-    */
 
     function moduleHasActivePage(module) {
         return Array.isArray(module.children) && module.children.some(function (child) {
