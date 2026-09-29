@@ -171,11 +171,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 //     page: "installation",
                 //     url: "getting-started/installation.html"
                 // },
-                {
-                    title: "Overview",
-                    page: "configuration",
-                    url: "getting-started/configuration.html"
-                }
+                // {
+                //     title: "Overview",
+                //     page: "configuration",
+                //     url: "getting-started/configuration.html"
+                // }
             ]
         },
 
@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     url: "erp/0-order/index.html"
                 },
                 {
-                    title: "Order",
+                    title: "Order Detail",
                     page: "stage-order",
                     url: "erp/0-order/order.html"
                 }
