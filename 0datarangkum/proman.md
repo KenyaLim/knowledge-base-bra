@@ -72,12 +72,12 @@ Menyimpan jenis mesin yang digunakan di unit.
 
 Contoh:
 
-```text
+
 Single Needle
 Overlock
 Flatlock
 Button Hole
-```
+
 
 Data ini digunakan oleh Machine dan Time Study. 
 
@@ -132,13 +132,12 @@ Menyimpan operasi yang dilakukan pada garment.
 
 Contoh:
 
-```text
 Shoulder Join
 Side Seam
 Sleeve Attach
 Hem
 Label Attach
-```
+
 
 Setiap operasi dapat memiliki Grade dan Operation Code. 
 
@@ -150,7 +149,7 @@ Menghubungkan employee dengan operasi yang mereka kerjakan serta efisiensinya.
 
 Menghubungkan:
 
-```text
+
 Garment
    ↓
 Sub Classification
@@ -162,7 +161,7 @@ Operation
 Machine Type
    ↓
 SMV
-```
+
 
 Data ini sangat penting untuk Time Study dan Production. 
 
@@ -190,12 +189,11 @@ Mengatur slot waktu kerja.
 
 Contohnya:
 
-```text
+
 Period 1
 Period 2
 Period 3
-...
-```
+
 
 Setiap period dapat berupa Regular atau Overtime. 
 
@@ -223,7 +221,7 @@ Time Study digunakan untuk menentukan waktu yang dibutuhkan untuk setiap operasi
 
 Sebelum membuat Time Study, beberapa Master harus sudah tersedia:
 
-```text
+
 Garment
 ↓
 Sub Classification
@@ -233,19 +231,19 @@ Garment Parts
 Operation Master
 ↓
 Garment Wise Operation
-```
+
 
 Kemudian setiap operasi dimasukkan sesuai urutan pengerjaan garment. 
 
 Contohnya:
 
-```text
+
 1. Shoulder Join
 2. Side Seam
 3. Sleeve Attach
 4. Hem
 5. Final Operation
-```
+
 
 Urutan ini penting karena akan digunakan dalam Hourly Production. 
 
@@ -270,7 +268,7 @@ Setelah Time Study tersedia, perusahaan menentukan bagaimana order akan diproduk
 
 Production Planning menentukan:
 
-```text
+
 Work Order
 ↓
 Line
@@ -282,18 +280,18 @@ End Date
 Target
 ↓
 Quantity
-```
+
 
 Target produksi dihitung berdasarkan:
 
-```text
+
 No. Mesin
 × Line Efficiency
 × Working Hours
 × 60
 ------------------------------
 Sampling Time × 100
-```
+
 
 
 
@@ -313,14 +311,14 @@ Modul ini menangani penerimaan material dan pengecekan kualitasnya.
 
 Material utama:
 
-```text
+
 Fabric
 Trims
-```
+
 
 Proses Fabric:
 
-```text
+
 Fabric Inward
       ↓
 Fabric QC
@@ -328,7 +326,7 @@ Fabric QC
 Confirmed / Non Confirmed
       ↓
 Fabric Issue
-```
+
 
 Fabric Inward mencatat material yang masuk ke warehouse. 
 
@@ -343,10 +341,10 @@ Fabric QC mengecek:
 
 Setelah QC, roll dikategorikan:
 
-```text
+
 C  = Confirmed
 NC = Non Confirmed
-```
+
 
 Hanya roll yang Confirmed yang dapat dikirim ke proses Cutting. 
 
@@ -374,7 +372,7 @@ PROMAN menyediakan konfigurasi seperti:
 
 Contoh:
 
-```text
+
 Fabric
   ↓
 Lay
@@ -388,7 +386,7 @@ Bundle
 Sticker
   ↓
 Line
-```
+
 
 Bundle digunakan untuk mengelompokkan potongan garment sebelum masuk ke proses produksi.
 
@@ -398,11 +396,11 @@ Production mencatat hasil produksi.
 
 PROMAN dapat dikonfigurasi menggunakan:
 
-```text
+
 Hourly Production
 atau
 Daily Production
-```
+
 
 Fitur penting:
 
@@ -423,12 +421,12 @@ Bundle Track misalnya mencegah bundle yang sama diproses dua kali untuk operasi 
 
 PROMAN mendukung barcode untuk beberapa proses:
 
-```text
+
 Line Issue
 Production
 QC
 Garment Issue
-```
+
 
 Barcode dapat digunakan untuk mengidentifikasi employee, bundle, production, dan transaksi terkait. 
 
@@ -440,7 +438,7 @@ Garment Issue digunakan untuk memindahkan garment dari satu proses ke proses ber
 
 Contoh:
 
-```text
+
 Production
     ↓
 Finishing Dispatch
@@ -448,7 +446,7 @@ Finishing Dispatch
 Outsource Process
     ↓
 Finishing
-```
+
 
 Sistem dapat meminta acknowledgement sebelum garment dapat diteruskan ke proses berikutnya. 
 
@@ -460,7 +458,7 @@ QC memastikan hasil proses memenuhi standar.
 
 Contoh validasi:
 
-```text
+
 Cut Quantity
 ↓
 Production
@@ -468,7 +466,7 @@ Production
 QC
 ↓
 Passed / Reject
-```
+
 
 PROMAN dapat melakukan validasi berdasarkan:
 
@@ -486,13 +484,13 @@ Finishing menjadi tahap akhir produksi sebelum garment masuk ke warehouse atau p
 
 PROMAN dapat terhubung dengan STAGE untuk memperbarui:
 
-```text
+
 Production
 ↓
 Finishing
 ↓
 Warehouse
-```
+
 
 Jika Finishing menggunakan STAGE, End Batch Summary dapat otomatis memperbarui inventory dan QC. 
 
@@ -577,9 +575,7 @@ SECURITY
 
 PROMAN adalah sistem yang menghubungkan data master, perencanaan produksi, material, cutting, produksi, QC, perpindahan garment, finishing, barcode, dan reporting dalam satu alur produksi garment. 
 
-Kalau tujuan Anda adalah memahami PROMAN untuk kebutuhan knowledge base perusahaan, struktur modulnya paling mudah dibuat menjadi:
 
-```text
 PROMAN
 │
 ├── Security
@@ -594,6 +590,4 @@ PROMAN
 ├── Finishing
 ├── Barcode
 └── Reports
-```
 
-Struktur ini cocok dijadikan Navbar Parent dan Children pada website knowledge base yang sedang Anda buat.
