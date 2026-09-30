@@ -2,23 +2,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("materialForm");
     const list = document.getElementById("materialList");
     const status = document.getElementById("formStatus");
-    const navigationList = document.getElementById("navigationList");
-    const navigationStatus = document.getElementById("navigationStatus");
     const fields = ["materialId", "slug", "title", "module", "kind", "summary", "content", "pdfUrl", "imageUrl", "sortOrder", "published"];
 
     loadAdminMaterials();
-    renderNavigationEditor();
+    updateImagePreview();
     document.querySelectorAll("[data-editor-command]").forEach(function (button) {
         button.addEventListener("click", function () {
             editContent(button.dataset.editorCommand);
         });
     });
-    document.getElementById("addNavigationParent").addEventListener("click", addParent);
-    document.getElementById("resetNavigation").addEventListener("click", resetNavigation);
     document.getElementById("newMaterial").addEventListener("click", clearForm);
     document.getElementById("deleteMaterial").addEventListener("click", deleteMaterial);
     document.getElementById("fileUpload").addEventListener("change", uploadFile);
     document.getElementById("kind").addEventListener("change", syncKindFields);
+    document.getElementById("imageUrl").addEventListener("input", updateImagePreview);
     form.addEventListener("submit", async function (event) {
         event.preventDefault();
         status.textContent = "Saving...";
@@ -80,6 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("content").value = material.content || "";
         document.getElementById("pdfUrl").value = material.pdf_url || "";
         document.getElementById("imageUrl").value = material.image_url || "";
+        updateImagePreview();
         document.getElementById("sortOrder").value = material.sort_order || 0;
         document.getElementById("published").checked = Boolean(material.published);
         document.getElementById("deleteMaterial").hidden = !material.id;
@@ -126,6 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         const field = file.type === "application/pdf" ? "pdfUrl" : "imageUrl";
         document.getElementById(field).value = result.url;
+        if (field === "imageUrl") updateImagePreview();
         status.textContent = "File uploaded.";
     }
 
@@ -133,6 +132,14 @@ document.addEventListener("DOMContentLoaded", function () {
         const overview = document.getElementById("kind").value === "overview";
         document.getElementById("imageUrl").disabled = overview;
         if (overview) document.getElementById("imageUrl").value = "";
+        updateImagePreview();
+    }
+
+    function updateImagePreview() {
+        const image = document.getElementById("imagePreview");
+        const url = document.getElementById("imageUrl").value.trim();
+        image.hidden = !url;
+        image.src = url;
     }
 
     function editContent(command) {
@@ -166,117 +173,4 @@ document.addEventListener("DOMContentLoaded", function () {
         content.focus();
     }
 
-    function getNavigation() {
-        return window.KBNavigation ? window.KBNavigation.get() : [];
-    }
-
-    function saveNavigation(navigation) {
-        if (!window.KBNavigation) return;
-        window.KBNavigation.save(navigation);
-    }
-
-    function navigationButton(label, action, parentId, childId) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "cms-secondary-button";
-        button.textContent = label;
-        button.addEventListener("click", function () {
-            editNavigation(action, parentId, childId);
-        });
-        return button;
-    }
-
-    function renderNavigationEditor() {
-        if (!navigationList) return;
-        navigationList.replaceChildren();
-        getNavigation().forEach(function (parent) {
-            const parentItem = document.createElement("div");
-            parentItem.className = "cms-material-item";
-            const parentTitle = document.createElement("strong");
-            parentTitle.textContent = parent.title;
-            parentItem.appendChild(parentTitle);
-            parentItem.appendChild(navigationButton("Rename", "rename-parent", parent.id));
-            parentItem.appendChild(navigationButton("Add child", "add-child", parent.id));
-            parentItem.appendChild(navigationButton("Delete", "delete-parent", parent.id));
-
-            (parent.children || []).forEach(function (child) {
-                const childItem = document.createElement("div");
-                childItem.className = "cms-material-item";
-                childItem.style.marginTop = "8px";
-                childItem.style.marginLeft = "16px";
-                childItem.textContent = child.title;
-                childItem.appendChild(navigationButton("Rename", "rename-child", parent.id, child.id));
-                childItem.appendChild(navigationButton("Delete", "delete-child", parent.id, child.id));
-                parentItem.appendChild(childItem);
-            });
-            navigationList.appendChild(parentItem);
-        });
-    }
-
-    function askNavigationValue(message, initial) {
-        const value = window.prompt(message, initial || "");
-        return value ? value.trim() : "";
-    }
-
-    function editNavigation(action, parentId, childId) {
-        const navigation = getNavigation();
-        const parent = navigation.find(function (item) { return item.id === parentId; });
-        if (!parent) return;
-
-        if (action === "rename-parent") {
-            const title = askNavigationValue("Nama parent baru:", parent.title);
-            if (!title) return;
-            parent.title = title;
-        } else if (action === "add-child") {
-            const title = askNavigationValue("Nama child baru:");
-            const url = askNavigationValue("URL halaman child:", "index.html");
-            if (!title || !url) return;
-            parent.children.push({ id: makeNavigationId("child"), title: title, page: makeNavigationId("page"), url: url });
-        } else if (action === "delete-parent") {
-            if (navigation.length === 1) {
-                navigationStatus.textContent = "Minimal satu parent harus tersedia.";
-                return;
-            }
-            if (!window.confirm("Hapus parent beserta seluruh child di dalamnya?")) return;
-            navigation.splice(navigation.indexOf(parent), 1);
-        } else if (action === "rename-child") {
-            const child = parent.children.find(function (item) { return item.id === childId; });
-            const title = child && askNavigationValue("Nama child baru:", child.title);
-            if (!child || !title) return;
-            child.title = title;
-        } else if (action === "delete-child") {
-            if (parent.children.length === 1) {
-                navigationStatus.textContent = "Minimal satu child harus tersedia di setiap parent.";
-                return;
-            }
-            if (!window.confirm("Hapus child ini?")) return;
-            parent.children = parent.children.filter(function (item) { return item.id !== childId; });
-        }
-
-        saveNavigation(navigation);
-    }
-
-    function addParent() {
-        const title = askNavigationValue("Nama parent baru:");
-        const childTitle = askNavigationValue("Nama child pertama:");
-        const url = askNavigationValue("URL halaman child:", "index.html");
-        if (!title || !childTitle || !url) return;
-        const navigation = getNavigation();
-        navigation.push({
-            id: makeNavigationId("parent"),
-            title: title,
-            icon: "ph-folder",
-            children: [{ id: makeNavigationId("child"), title: childTitle, page: makeNavigationId("page"), url: url }]
-        });
-        saveNavigation(navigation);
-    }
-
-    function resetNavigation() {
-        if (!window.confirm("Kembalikan navigasi ke konfigurasi awal?")) return;
-        window.KBNavigation.reset();
-    }
-
-    function makeNavigationId(prefix) {
-        return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    }
 });

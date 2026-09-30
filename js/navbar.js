@@ -19,8 +19,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     const page = document.body.dataset.page || "dashboard";
-    const NAVIGATION_STORAGE_KEY = "knowledge-base-navigation";
-
     const navbarContainer = document.getElementById("navbar");
     const sidebarContainer = document.getElementById("sidebar");
 
@@ -309,29 +307,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     ];
 
-    function loadNavigation() {
-        try {
-            const saved = JSON.parse(localStorage.getItem(NAVIGATION_STORAGE_KEY));
-            if (Array.isArray(saved) && saved.length) return saved;
-        } catch (error) {
-            // Use the built-in navigation when browser storage is unavailable.
-        }
-        return structuredClone(defaultModules);
-    }
-
-    const modules = loadNavigation();
-
-    window.KBNavigation = {
-        get: loadNavigation,
-        save: function (navigation) {
-            localStorage.setItem(NAVIGATION_STORAGE_KEY, JSON.stringify(navigation));
-            window.location.reload();
-        },
-        reset: function () {
-            localStorage.removeItem(NAVIGATION_STORAGE_KEY);
-            window.location.reload();
-        }
-    };
+    const modules = defaultModules;
 
 
     function moduleHasActivePage(module) {
@@ -452,33 +428,30 @@ document.addEventListener("DOMContentLoaded", function () {
             </div>
         `;
 
-        fetch("/api/cms/content")
-            .then(function (response) { return response.ok ? response.json() : []; })
-            .then(function (materials) {
-                materials.forEach(function (material) {
-                    const moduleId = String(material.module_id || material.module || "").toLowerCase();
-                    const parent = sidebarContainer.querySelector(`[data-module-id="${CSS.escape(moduleId)}"]`);
-                    const children = parent && parent.querySelector(".sidebar-children");
-                    if (!children) return;
-                    const item = document.createElement("li");
-                    const link = document.createElement("a");
-                    link.href = `${ROOT}material.html?slug=${encodeURIComponent(material.slug)}`;
-                    link.textContent = material.title;
-                    if (page === "material" && new URLSearchParams(window.location.search).get("slug") === material.slug) {
-                        link.className = "active";
-                        parent.classList.add("module-active");
-                        children.classList.add("open");
-                        const button = parent.querySelector(".sidebar-module-button");
-                        const caret = parent.querySelector(".sidebar-caret");
-                        if (button) button.setAttribute("aria-expanded", "true");
-                        if (caret) caret.classList.add("rotate");
-                    }
-                    item.appendChild(link);
-                    children.appendChild(item);
-                });
-            })
-            .catch(function () { /* Static navigation remains available when CMS is offline. */ });
     }
+
+    document.addEventListener("click", function (event) {
+        const image = event.target.closest(".documentation img, .cms-image-preview");
+        if (!image || image.hidden || !image.currentSrc) return;
+
+        let preview = document.getElementById("imagePreviewDialog");
+        if (!preview) {
+            preview = document.createElement("dialog");
+            preview.id = "imagePreviewDialog";
+            preview.className = "image-preview-dialog";
+            preview.innerHTML = '<button type="button" class="image-preview-close" aria-label="Close image preview"><i class="ph ph-x"></i></button><img alt="">';
+            document.body.appendChild(preview);
+            preview.querySelector(".image-preview-close").addEventListener("click", function () { preview.close(); });
+            preview.addEventListener("click", function (closeEvent) {
+                if (closeEvent.target === preview) preview.close();
+            });
+        }
+
+        const previewImage = preview.querySelector("img");
+        previewImage.src = image.currentSrc;
+        previewImage.alt = image.alt || "Image preview";
+        preview.showModal();
+    });
 
     /*
         =========================
