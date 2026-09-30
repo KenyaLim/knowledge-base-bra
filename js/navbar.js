@@ -162,6 +162,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
         {
             id: "stage",
+            title: "Costing",
+            icon: "ph-money",
+            children: [
+                {
+                    title: "Overview",
+                    page: "stage",
+                    url: "erp/0-order/index.html"
+                },
+                {
+                    title: "Order Detail",
+                    page: "stage-order",
+                    url: "erp/0-order/order.html"
+                }
+            ]
+        },
+
+        {
+            id: "stage",
             title: "Order",
             icon: "ph-shopping-cart",
             children: [
@@ -227,6 +245,29 @@ document.addEventListener("DOMContentLoaded", function () {
         {
             id: "inventory",
             title: "Inventory",
+            icon: "ph-box-arrow-down",
+            children: [
+                {
+                    title: "Overview",
+                    page: "inventory",
+                    url: "erp/inventory/index.html"
+                },
+                {
+                    title: "Stock",
+                    page: "inventory-stock",
+                    url: "erp/inventory/stock.html"
+                },
+                {
+                    title: "Goods Receipt",
+                    page: "inventory-grn",
+                    url: "erp/inventory/goods-receipt.html"
+                }
+            ]
+        },
+
+        {
+            id: "inventory",
+            title: "Packing",
             icon: "ph-package",
             children: [
                 {
@@ -248,32 +289,32 @@ document.addEventListener("DOMContentLoaded", function () {
         },
 
         {
-            id: "production",
-            title: "Production",
-            icon: "ph-factory",
+            id: "shipment",
+            title: "Shipping",
+            icon: "ph-truck",
             children: [
                 {
                     title: "Overview",
-                    page: "production",
-                    url: "erp/production/index.html"
+                    page: "shipment",
+                    url: "erp/shipment/index.html"
                 },
                 {
-                    title: "Cutting",
-                    page: "production-cutting",
-                    url: "erp/production/cutting.html"
+                    title: "Packing",
+                    page: "shipment-packing",
+                    url: "erp/shipment/packing.html"
                 },
                 {
-                    title: "Sewing",
-                    page: "production-sewing",
-                    url: "erp/production/sewing.html"
+                    title: "Export",
+                    page: "shipment-export",
+                    url: "erp/shipment/export.html"
                 }
             ]
         },
 
         {
             id: "shipment",
-            title: "Shipment",
-            icon: "ph-truck",
+            title: "Address",
+            icon: "ph-address-book",
             children: [
                 {
                     title: "Overview",
