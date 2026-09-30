@@ -19,17 +19,6 @@
                     <p class="hero-description">Create, edit, publish, and attach PDF materials without changing the HTML pages.</p>
                 </div>
             </section>
-            <section class="section">
-                <div class="section-heading"><i class="ph ph-list-bullets"></i><h2>Navigation</h2></div>
-                <div class="cms-panel">
-                    <div id="navigationList" class="cms-material-list" aria-live="polite"></div>
-                    <div class="cms-form-actions">
-                        <button type="button" id="addNavigationParent" class="cms-secondary-button">Add parent</button>
-                        <button type="button" id="resetNavigation" class="cms-secondary-button">Reset navigation</button>
-                    </div>
-                    <p id="navigationStatus" class="search-status" aria-live="polite"></p>
-                </div>
-            </section>
             <section class="section cms-admin-layout">
                 <div class="cms-panel">
                     <div class="section-heading"><i class="ph ph-files"></i><h2>Saved materials</h2></div>
@@ -67,7 +56,7 @@
                         <textarea id="content" rows="12" placeholder="Tulis materi di sini. Satu paragraf per baris."></textarea>
                     </label>
                     <label>PDF URL<input id="pdfUrl" type="url" placeholder="https://.../materi.pdf"></label>
-                    <label>Gambar URL<input id="imageUrl" type="url" placeholder="https://.../materi.jpg"></label>
+                    <label>Gambar URL<input id="imageUrl" type="url" placeholder="https://.../materi.jpg"><img id="imagePreview" class="cms-image-preview" alt="Preview gambar" hidden></label>
                     <label>Upload PDF/gambar<input id="fileUpload" type="file" accept="application/pdf,image/png,image/jpeg,image/webp,image/gif"></label>
                     <label>Urutan<input id="sortOrder" type="number" value="0"></label>
                     <label class="cms-checkbox"><input id="published" type="checkbox"> Published</label>

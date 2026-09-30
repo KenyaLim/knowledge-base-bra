@@ -8,6 +8,12 @@
     const status = editor.querySelector("[data-editor-status]");
     const toolbar = editor.querySelector(".erp-editor-toolbar");
     const slug = `erp-${document.body.dataset.page || location.pathname}`;
+    const loadingScreen = document.createElement("div");
+    loadingScreen.className = "erp-loading-screen";
+    loadingScreen.setAttribute("role", "status");
+    loadingScreen.setAttribute("aria-live", "polite");
+    loadingScreen.innerHTML = '<span class="erp-loading-spinner" aria-hidden="true"></span><span>Memuat dokumentasi...</span>';
+    document.body.appendChild(loadingScreen);
     let isAdmin = false;
     let saveTimer;
 
@@ -45,6 +51,8 @@
         } catch (error) {
             setEditorAccess(false);
             status.textContent = error.message;
+        } finally {
+            loadingScreen.remove();
         }
     }
 
