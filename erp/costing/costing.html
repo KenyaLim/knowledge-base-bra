@@ -34,8 +34,27 @@
                     <article class="doc-block">
                         <span class="doc-label">Dokumentasi yang bisa diedit</span>
                         <div contenteditable="true" spellcheck="true">
-                            <p>Gunakan halaman ini untuk mendokumentasikan informasi biaya produk dan catatan costing yang terkait dengan order.</p>
-                            <p>Tambahkan langkah kerja, referensi, atau screenshot yang diperlukan untuk proses costing.</p>
+                            <h3>1. Tujuan dan Alur Costing</h3>
+                            <p>Modul Costing membuat quotation untuk buyer/vendor dan budget biaya per style atau order. Modul ini menghubungkan Merchandising dengan Order, BOM, Purchase, Production, dan laporan keuangan.</p>
+                            <p><strong>Alur:</strong> Quote → Confirm → Order → BOM → Budget → Approval → Purchase / Production → Actual Cost → Reporting.</p>
+                            <h3>2. Menu Utama</h3>
+                            <ul><li><strong>New / Next:</strong> membuat quote baru atau menyalin quote yang ada.</li><li><strong>Modify / View:</strong> mengubah quote yang belum dikunci atau melihat detail.</li><li><strong>Delete / ChkDel:</strong> menghapus atau memulihkan quote sesuai statusnya.</li><li><strong>Confirm:</strong> mengesahkan quote agar dapat dipakai pada Order.</li><li><strong>Budget / Budget Approval:</strong> membuat budget dari BOM dan menjalankan persetujuan.</li><li><strong>Print:</strong> mencetak quote, budget, dan laporan perbandingan.</li></ul>
+                            <h3>3. Quotation</h3>
+                            <p>Data quote meliputi Company, Buyer/Vendor, Style, buyer reference, tanggal order dan quote, quote number/revision, currency, component, garment, size, season, country, terms (FOB/CIF), target price, quantity, lead days, SAM, category, dan description. Nomor quote dibuat sistem. Status awal adalah <strong>Not Confirmed</strong>.</p>
+                            <p>Company dan Buyer berasal dari Address Module; currency mengikuti Exchange Rate pada Order. Component dapat berupa Single atau Multiple. Aktifkan Sizewise bila costing perlu dihitung per ukuran. Quote yang sudah Confirm atau memiliki budget tidak boleh diubah atau dihapus.</p>
+                            <h3>4. Komponen Biaya</h3>
+                            <ul><li><strong>Fabric:</strong> position, description, consumption, unit, price, currency/rate, source, vendor, process, allowance, shortage, bank commission, dan excise duty. Fabric process dapat mencakup dyeing, printing, embroidery, atau brushing. Bank charge berlaku untuk source Import.</li><li><strong>Accessories / Trims:</strong> button, label, thread, poly bag, carton, hanger, zipper, lace, strap, dan proses tambahannya.</li><li><strong>Manufacturing:</strong> production, cutting, sewing, printing, embroidery, finishing, serta proses garment lain.</li><li><strong>Other Cost:</strong> rejection, overhead, interest, vendor margin, freight, quota, clearing, agency commission, value loss, dan working capital.</li></ul>
+                            <p>Rate Master dapat mengambil harga dari PO sebelumnya, quote sebelumnya, atau Negotiation Rate Master. Fabric knitted dapat dihitung dari GSM, diameter, panjang, dan allowance; fitur Convert into Grams/Kilograms mengubah ukuran menjadi konsumsi berat.</p>
+                            <h3>5. Perhitungan</h3>
+                            <p><strong>CM / CMP</strong> = (SAM / (60 × Efficiency × 0.01)) × Rate. Contoh manual: SAM 20, efficiency 50%, hourly rate USD 2.75, exchange rate 45.5, dan Cut Make Charges INR 75.</p>
+                            <p><strong>Component Cost</strong> = Fabric + Manufacturing + Accessories + Other Cost + Quota + Freight + Value Loss + Clearing Expense + Agency Commission.</p>
+                            <p><strong>Profit Auto (%)</strong> = ((Target Price × Target Exchange Rate) − Component Cost) × 100 / (Target Price × Target Exchange Rate). Garment Cost = Component Cost + Profit Value + Working Capital Value. Konversi umum: Converted Value = Value × Rate asal / Rate tujuan.</p>
+                            <h3>6. Confirm, Budget, dan Approval</h3>
+                            <p>Confirm mengubah status quote menjadi Confirmed sehingga quote dapat dipilih pada Order. Budget hanya dibuat setelah quote dikonfirmasi dan BOM tersedia. Budget mengambil order, BOM, spesifikasi fabric/trims, proses, biaya lain, quantity, target price, currency, dan exchange rate.</p>
+                            <p><strong>To be done</strong> menampilkan quote confirmed yang belum dibudgetkan. <strong>Amendment</strong> memperbarui budget setelah BOM berubah; item yang berubah perlu disetujui ulang. <strong>Repeat</strong> menyalin rate budget lama berdasarkan item code yang sama. Approval dapat dilakukan per item, proses, atau keseluruhan budget, hingga tiga level sesuai parameter.</p>
+                            <h3>7. Sizewise dan Laporan</h3>
+                            <p>Sizewise costing mencatat article, size code, ratio quantity, consumption, unit cost, quota/freight, target price, profit, dan total garment cost per ukuran. Ringkasan halaman utama menampilkan rata-ratanya. Multiple Component menyimpan perhitungan, approval, dan laporan per component.</p>
+                            <p>Laporan mencakup Quote, Budget, Quote-Budget Comparison, Costing Actual Comparison, Budget Actual Comparison, Order Closing, Profitability, Costing Summary, Trading Account, dan Sizewise. Actual cost dibandingkan dengan data PO, GRN, QC, dan proses terkait order; laporan dapat dicetak atau diekspor ke Excel/PDF.</p>
                         </div>
                     </article>
                     <p class="editor-status" data-editor-status aria-live="polite"></p>
