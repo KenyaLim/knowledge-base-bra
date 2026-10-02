@@ -166,9 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Inventory",
                         icon: "ph-box-arrow-down",
                         children: [
-                            { title: "Issue / Receipt", page: "inventory-stock", url: "erp/inventory/issuereceipt.html" },
-                            { title: "", page: "inventory-grn", url: "erp/inventory/.html" }
-                        ]
+                            { title: "Issue / Receipt", page: "inventory-stock", url: "erp/inventory/issuereceipt.html" }                        ]
                     },
                     {
                         id: "stage-packing",
