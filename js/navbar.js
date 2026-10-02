@@ -1,20 +1,4 @@
-/*
-    navbar.js
 
-    File ini menangani:
-    1. Navbar
-    2. Sidebar
-    3. Active page
-    4. Accordion sidebar
-    5. Mobile sidebar
-
-    Setiap halaman cukup memiliki:
-    <div id="navbar"></div>
-    <aside id="sidebar"></aside>
-
-    Lalu:
-    <script src="../js/navbar.js"></script>
-*/
 
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -250,8 +234,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 ]
             },
             {
-                id: "other",
-                title: "",
+                // id: "other",
+                // title: "",
                 modules: [
                     {
                         id: "faq",
