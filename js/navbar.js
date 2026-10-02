@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Costing",
                         icon: "ph-money",
                         children: [
-                            { title: "Costing", page: "costing", url: "erp/costing/costing.html" }
+                            { title: "Costing Detail", page: "costing", url: "erp/costing/costing.html" }
                         ]
                     },
                     {
@@ -138,7 +138,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "MRP",
                         icon: "ph-chart-bar",
                         children: [
-                            { title: "Material Requirement", page: "mrp-material", url: "erp/1-mrp/material-requirement.html" }
+                            { title: "Process Selection", page: "mrp-material", url: "erp/1-mrp/procselect.html" },
+                            { title: "Specifications", page: "mrp-material", url: "erp/1-mrp/matrequire.html" },
+                            { title: "General BOM", page: "mrp-material", url: "erp/1-mrp/genbom.html" },
+                            { title: "Process Material", page: "mrp-material", url: "erp/1-mrp/procmat.html" },
+                            { title: "Material List", page: "mrp-material", url: "erp/1-mrp/matlist.html" }
                         ]
                     },
                     {
@@ -147,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         icon: "ph-receipt",
                         children: [
                             { title: "Purchase Order", page: "purchase-order", url: "erp/2-purchase/purchase-order.html" },
-                            { title: "Purchase Material", page: "purchase-material", url: "erp/2-purchase/purchase-material.html" }
+                            { title: "Impor / Ekspor", page: "purchase-material", url: "erp/2-purchase/imporekspor.html" }
                         ]
                     },
                     {
@@ -155,8 +159,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Inventory",
                         icon: "ph-box-arrow-down",
                         children: [
-                            { title: "Stock", page: "inventory-stock", url: "erp/inventory/stock.html" },
-                            { title: "Goods Receipt", page: "inventory-grn", url: "erp/inventory/goods-receipt.html" }
+                            { title: "Issue / Receipt", page: "inventory-stock", url: "erp/inventory/issuereceipt.html" },
+                            { title: "", page: "inventory-grn", url: "erp/inventory/.html" }
                         ]
                     },
                     {
@@ -164,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Packing",
                         icon: "ph-package",
                         children: [
-                            { title: "Shipment Packing", page: "shipment-packing", url: "erp/shipment/packing.html" }
+                            { title: "Packing Instruction", page: "shipment-packing", url: "erp/packing/packing.html" }
                         ]
                     },
                     {
@@ -172,7 +176,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Shipping",
                         icon: "ph-truck",
                         children: [
-                            { title: "Export", page: "shipment-export", url: "erp/shipment/export.html" }
+                            { title: "Export", page: "shipment-export", url: "erp/shipment/export.html" },
+                            { title: "Invoice", page: "shipment-export", url: "erp/shipment/export.html" }
                         ]
                     },
                     {
@@ -180,7 +185,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Address",
                         icon: "ph-address-book",
                         children: [
-                            { title: "Address", page: "stage-address", url: "material.html?slug=stage-address" }
+                            { title: "Address", page: "stage-address", url: "erp/address/address.html" }
                         ]
                     }
                 ]
@@ -194,7 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Time Study",
                         icon: "ph-timer",
                         children: [
-                            { title: "Time Study", page: "proman-time-study", url: "material.html?slug=proman-time-study" }
+                            { title: "Time Study", page: "proman-time-study", url: "proman/timestudy/timestud.html" }
                         ]
                     },
                     {
@@ -202,7 +207,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Fabric & Trims Inward",
                         icon: "ph-package",
                         children: [
-                            { title: "Goods Receipt", page: "inventory-grn", url: "erp/inventory/goods-receipt.html" }
+                            { title: "Fabric Trims Inward Detail", page: "inventory-grn", url: "proman/fabrictime/fabtime.html" }
                         ]
                     },
                     {
@@ -210,7 +215,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Fabric Issue",
                         icon: "ph-arrow-square-up",
                         children: [
-                            { title: "Stock", page: "inventory-stock", url: "erp/inventory/stock.html" }
+                            { title: "Fabric Issue Detail", page: "inventory-stock", url: "proman/fabricissue/fab.html" }
                         ]
                     },
                     {
@@ -218,7 +223,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Cutting",
                         icon: "ph-scissors",
                         children: [
-                            { title: "Cutting", page: "proman-cutting", url: "material.html?slug=proman-cutting" }
+                            { title: "Cutting Detail", page: "proman-cutting", url: "proman/cutting/cut.html" }
                         ]
                     },
                     {
@@ -226,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Production",
                         icon: "ph-factory",
                         children: [
-                            { title: "Production", page: "proman-production", url: "material.html?slug=proman-production" }
+                            { title: "Production Detail", page: "proman-production", url: "proman/production/prod.html" }
                         ]
                     },
                     {
@@ -234,7 +239,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Quality Control",
                         icon: "ph-check-circle",
                         children: [
-                            { title: "Quality Control", page: "proman-quality-control", url: "material.html?slug=proman-quality-control" }
+                            { title: "Quality Control Detail", page: "proman-quality-control", url: "proman/qc/qc.html" }
                         ]
                     }
                 ]
