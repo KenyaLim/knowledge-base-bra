@@ -91,11 +91,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     </a>
 
-                    <nav class="navbar-apps" aria-label="Aplikasi">
-                        <a class="navbar-app navbar-app-stage" href="${ROOT}erp/0-order/index.html">STAGE</a>
-                        <a class="navbar-app navbar-app-proman" href="${ROOT}erp/1-mrp/index.html">PROMAN</a>
-                    </nav>
-
                 </div>
 
                 <div class="navbar-right">
@@ -127,8 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Order",
                         icon: "ph-shopping-cart",
                         children: [
-                            { title: "Order", page: "stage", url: "erp/0-order/index.html" },
-                            { title: "Stage Order", page: "stage-order", url: "erp/0-order/order.html" }
+                            { title: "Order Detail", page: "stage-order", url: "erp/0-order/order.html" }
                         ]
                     },
                     {
@@ -144,7 +138,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "MRP",
                         icon: "ph-chart-bar",
                         children: [
-                            { title: "MRP", page: "mrp", url: "erp/1-mrp/index.html" },
                             { title: "Material Requirement", page: "mrp-material", url: "erp/1-mrp/material-requirement.html" }
                         ]
                     },
@@ -248,7 +241,7 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             {
                 id: "other",
-                title: "LAINNYA",
+                title: "",
                 modules: [
                     {
                         id: "faq",
@@ -330,7 +323,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             <i class="ph-fill ph-house-line"></i>
                         </span>
 
-                        <span>Dashboard</span>
                     </a>
 
                     ${appGroups.map(function (group) {
