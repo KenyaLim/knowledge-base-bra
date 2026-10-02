@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DocuBase | Specifications</title>
+	<script src="https://unpkg.com/@phosphor-icons/web"></script>
+	<link rel="stylesheet" href="../../css/style.css">
+</head>
+<body data-page="mrp-specifications">
+	<div id="navbar"></div>
+	<div class="app-layout">
+		<aside id="sidebar"></aside>
+		<main class="main-content">
+			<section class="hero"><div class="hero-content"><p class="eyebrow">STAGE | MRP</p><h1>Raw Material Specifications</h1><p class="hero-description">Spesifikasi kebutuhan fabric dan trims per order.</p></div></section>
+			<section class="section">
+				<div class="section-heading"><i class="ph ph-file-text"></i><h2>Documentation</h2></div>
+				<div class="documentation erp-editor" data-erp-editor>
+					<div class="erp-editor-toolbar" aria-label="Alat edit dokumentasi" hidden><button type="button" data-command="bold"><strong>B</strong></button><button type="button" data-command="italic"><em>I</em></button><button type="button" data-command="insertUnorderedList">List</button><label class="erp-editor-file">Pilih gambar<input type="file" accept="image/*" data-image-file></label><input type="url" placeholder="Tempel URL gambar" data-image-url><button type="button" data-insert-image>Masukkan gambar</button><button type="button" data-reset-editor>Reset</button></div>
+					<article class="doc-block"><span class="doc-label">Stage | Specifications</span><div contenteditable="true" spellcheck="true"><h3>Raw Material Specifications</h3><p>Spesifikasi menjadi acuan MRP untuk material, article, color, size, position, dan consumption. Fabric adalah material utama; Trims mencakup material pendukung seperti benang, label, renda, strap, dan foam cup.</p><h3>Filter dan pemeriksaan</h3><p>Pilih View untuk meninjau data spesifikasi. Gunakan F8 untuk mencari berdasarkan SPI atau nomor PO, lalu pilih Fabric atau Trims. Pastikan article, warna, posisi, dan size sesuai order sebelum material requirement digunakan.</p><h3>Consumption</h3><p>Consumption menunjukkan kebutuhan material per unit dan dapat berbeda menurut size. Contoh: 0.1338 yard/pcs × 1,540 pcs = 206.052 yard.</p></div></article>
+					<p class="editor-status" data-editor-status aria-live="polite"></p>
+				</div>
+			</section>
+		</main>
+	</div>
+	<script src="../../js/navbar.js"></script><script src="../../js/erp-editor.js"></script>
+</body>
+</html>

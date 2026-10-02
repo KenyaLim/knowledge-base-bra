@@ -7,7 +7,10 @@
     const imageUrl = editor.querySelector("[data-image-url]");
     const status = editor.querySelector("[data-editor-status]");
     const toolbar = editor.querySelector(".erp-editor-toolbar");
-    const slug = `erp-${document.body.dataset.page || location.pathname}`;
+    const moduleName = document.body.dataset.module || "ERP";
+    const slug = editor.dataset.cmsSlug
+        || document.body.dataset.cmsSlug
+        || `erp-${document.body.dataset.page || location.pathname}`;
     const loadingScreen = document.createElement("div");
     loadingScreen.className = "erp-loading-screen";
     loadingScreen.setAttribute("role", "status");
@@ -37,24 +40,36 @@
     }
 
     async function load() {
+        let sessionResolved = false;
         try {
             const sessionResponse = await fetch("/api/session", { headers: { Accept: "application/json" } });
-            const session = await sessionResponse.json();
+            const session = sessionResponse.ok
+                ? await sessionResponse.json().catch(function () { return {}; })
+                : {};
+            sessionResolved = true;
             setEditorAccess(Boolean(session.isAdmin));
             const endpoint = session.isAdmin
                 ? `/api/cms/admin/content?slug=${encodeURIComponent(slug)}`
                 : `/api/cms/content?slug=${encodeURIComponent(slug)}`;
             const response = await fetch(endpoint);
+            if (!response.ok) {
+                if (!session.isAdmin) {
+                    status.textContent = "Mode baca saja";
+                    return;
+                }
+                const errorResult = await response.json().catch(function () { return {}; });
+                throw new Error(errorResult.error || "Gagal memuat dokumentasi");
+            }
             const material = await response.json();
-            if (!response.ok) throw new Error(material.error || "Gagal memuat dokumentasi");
             if (material && material.content) content.innerHTML = material.content;
             status.textContent = session.isAdmin
                 ? (material ? "Tersimpan di Supabase" : "Belum tersimpan di Supabase")
                 : "Mode baca saja";
         } catch (error) {
-            setEditorAccess(false);
-            status.textContent = error.message;
+            if (!sessionResolved) setEditorAccess(false);
+            status.textContent = isAdmin ? error.message : "Mode baca saja";
         } finally {
+            document.body.classList.add("erp-editor-ready");
             loadingScreen.remove();
         }
     }
@@ -69,7 +84,7 @@
             body: JSON.stringify({
                 slug: slug,
                 title: document.querySelector(".hero h1")?.textContent.trim() || slug,
-                module: "ERP",
+                module: moduleName,
                 module_id: slug,
                 kind: "detail",
                 summary: "ERP documentation",

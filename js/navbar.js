@@ -55,6 +55,13 @@ document.addEventListener("DOMContentLoaded", function () {
             return path.substring(0, markerIndex + 1);
         }
 
+        const promanMarker = "/proman/";
+        const promanIndex = path.indexOf(promanMarker);
+
+        if (promanIndex !== -1) {
+            return path.substring(0, promanIndex + 1);
+        }
+
         const gettingStartedMarker = "/getting-started/";
         const gsIndex = path.indexOf(gettingStartedMarker);
 
@@ -138,11 +145,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "MRP",
                         icon: "ph-chart-bar",
                         children: [
-                            { title: "Process Selection", page: "mrp-material", url: "erp/1-mrp/procselect.html" },
-                            { title: "Specifications", page: "mrp-material", url: "erp/1-mrp/matrequire.html" },
-                            { title: "General BOM", page: "mrp-material", url: "erp/1-mrp/genbom.html" },
-                            { title: "Process Material", page: "mrp-material", url: "erp/1-mrp/procmat.html" },
-                            { title: "Material List", page: "mrp-material", url: "erp/1-mrp/matlist.html" }
+                            { title: "Process Selection", page: "mrp-process-selection", url: "erp/1-mrp/procselect.html" },
+                            { title: "Specifications", page: "mrp-specifications", url: "erp/1-mrp/matrequire.html" },
+                            { title: "General BOM", page: "mrp-general-bom", url: "erp/1-mrp/genbom.html" },
+                            { title: "Process Material", page: "mrp-process-material", url: "erp/1-mrp/procmat.html" },
+                            { title: "Material List", page: "mrp-material-list", url: "erp/1-mrp/matlist.html" }
                         ]
                     },
                     {
@@ -207,7 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Fabric & Trims Inward",
                         icon: "ph-package",
                         children: [
-                            { title: "Fabric Trims Inward Detail", page: "inventory-grn", url: "proman/fabrictime/fabtime.html" }
+                            { title: "Fabric Trims Inward Detail", page: "proman-fabric-trims-inward", url: "proman/fabrictime/fabtime.html" }
                         ]
                     },
                     {
@@ -215,7 +222,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Fabric Issue",
                         icon: "ph-arrow-square-up",
                         children: [
-                            { title: "Fabric Issue Detail", page: "inventory-stock", url: "proman/fabricissue/fab.html" }
+                            { title: "Fabric Issue Detail", page: "proman-fabric-issue", url: "proman/fabricissue/fab.html" }
                         ]
                     },
                     {

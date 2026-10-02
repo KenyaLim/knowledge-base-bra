@@ -984,6 +984,14 @@ input {
     background: #f7f7f7;
 }
 
+.erp-editor-toolbar[hidden] {
+    display: none;
+}
+
+body:not(.erp-editor-ready) .erp-editor-toolbar {
+    display: none;
+}
+
 .erp-editor-toolbar button,
 .erp-editor-file,
 .erp-editor-toolbar input {
