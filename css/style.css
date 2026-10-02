@@ -1030,6 +1030,7 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 
 .erp-editor [contenteditable] :not(i):not(code) {
     font-family: inherit !important;
+    background-color: transparent !important;
 }
 
 .erp-editor [contenteditable="true"]:focus {
