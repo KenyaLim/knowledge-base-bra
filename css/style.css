@@ -1016,19 +1016,19 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
     min-width: 210px;
 }
 
-.erp-editor [contenteditable="true"] {
+.erp-editor [contenteditable] {
     min-height: 260px;
     max-height: 70vh;
     overflow-y: auto;
     overflow-wrap: anywhere;
-    font-family: inherit;
+    font-family: inherit !important;
     padding: 18px;
     border: 1px solid #c7c7c7;
-    background: #ffffff;
+    background: #ffffff !important;
     outline: none;
 }
 
-.erp-editor [contenteditable="true"] :not(i):not(code) {
+.erp-editor [contenteditable] :not(i):not(code) {
     font-family: inherit !important;
 }
 
