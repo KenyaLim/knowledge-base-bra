@@ -18,7 +18,9 @@
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const page = document.body.dataset.page || "dashboard";
+    const page = document.body.dataset.page === "material"
+        ? new URLSearchParams(window.location.search).get("slug") || "material"
+        : document.body.dataset.page || "dashboard";
     const navbarContainer = document.getElementById("navbar");
     const sidebarContainer = document.getElementById("sidebar");
 
@@ -136,15 +138,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         children: [
                             { title: "Costing", page: "costing", url: "erp/costing/costing.html" }
                         ]
-                    }
-                ]
-            },
-            {
-                id: "proman",
-                title: "PROMAN",
-                modules: [
+                    },
                     {
-                        id: "proman-mrp",
+                        id: "stage-mrp",
                         title: "MRP",
                         icon: "ph-chart-bar",
                         children: [
@@ -153,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         ]
                     },
                     {
-                        id: "proman-purchase",
+                        id: "stage-purchase",
                         title: "Purchase",
                         icon: "ph-receipt",
                         children: [
@@ -162,7 +158,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         ]
                     },
                     {
-                        id: "proman-inventory",
+                        id: "stage-inventory",
                         title: "Inventory",
                         icon: "ph-box-arrow-down",
                         children: [
@@ -171,12 +167,81 @@ document.addEventListener("DOMContentLoaded", function () {
                         ]
                     },
                     {
-                        id: "proman-shipment",
-                        title: "Shipment",
+                        id: "stage-packing",
+                        title: "Packing",
+                        icon: "ph-package",
+                        children: [
+                            { title: "Shipment Packing", page: "shipment-packing", url: "erp/shipment/packing.html" }
+                        ]
+                    },
+                    {
+                        id: "stage-shipping",
+                        title: "Shipping",
                         icon: "ph-truck",
                         children: [
-                            { title: "Shipment Packing", page: "shipment-packing", url: "erp/shipment/packing.html" },
                             { title: "Export", page: "shipment-export", url: "erp/shipment/export.html" }
+                        ]
+                    },
+                    {
+                        id: "stage-address",
+                        title: "Address",
+                        icon: "ph-address-book",
+                        children: [
+                            { title: "Address", page: "stage-address", url: "material.html?slug=stage-address" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "proman",
+                title: "PROMAN",
+                modules: [
+                    {
+                        id: "proman-time-study",
+                        title: "Time Study",
+                        icon: "ph-timer",
+                        children: [
+                            { title: "Time Study", page: "proman-time-study", url: "material.html?slug=proman-time-study" }
+                        ]
+                    },
+                    {
+                        id: "proman-fabric-trims-inward",
+                        title: "Fabric & Trims Inward",
+                        icon: "ph-package",
+                        children: [
+                            { title: "Goods Receipt", page: "inventory-grn", url: "erp/inventory/goods-receipt.html" }
+                        ]
+                    },
+                    {
+                        id: "proman-fabric-issue",
+                        title: "Fabric Issue",
+                        icon: "ph-arrow-square-up",
+                        children: [
+                            { title: "Stock", page: "inventory-stock", url: "erp/inventory/stock.html" }
+                        ]
+                    },
+                    {
+                        id: "proman-cutting",
+                        title: "Cutting",
+                        icon: "ph-scissors",
+                        children: [
+                            { title: "Cutting", page: "proman-cutting", url: "material.html?slug=proman-cutting" }
+                        ]
+                    },
+                    {
+                        id: "proman-production",
+                        title: "Production",
+                        icon: "ph-factory",
+                        children: [
+                            { title: "Production", page: "proman-production", url: "material.html?slug=proman-production" }
+                        ]
+                    },
+                    {
+                        id: "proman-quality-control",
+                        title: "Quality Control",
+                        icon: "ph-check-circle",
+                        children: [
+                            { title: "Quality Control", page: "proman-quality-control", url: "material.html?slug=proman-quality-control" }
                         ]
                     }
                 ]
