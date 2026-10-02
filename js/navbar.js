@@ -171,9 +171,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     url: "erp/0-order/index.html"
                 },
                 {
-                    title: "Order Detail",
+                    title: "Costing Detail",
                     page: "stage-order",
-                    url: "erp/0-order/order.html"
+                    url: "erp/costing/costing.html"
                 }
             ]
         },
@@ -220,11 +220,6 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-receipt",
             children: [
                 {
-                    title: "Overview",
-                    page: "purchase",
-                    url: "erp/2-purchase/index.html"
-                },
-                {
                     title: "Purchase Order",
                     page: "purchase-order",
                     url: "erp/2-purchase/purchase-order.html"
@@ -248,11 +243,6 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-box-arrow-down",
             children: [
                 {
-                    title: "Overview",
-                    page: "inventory",
-                    url: "erp/inventory/index.html"
-                },
-                {
                     title: "Stock",
                     page: "inventory-stock",
                     url: "erp/inventory/stock.html"
@@ -270,11 +260,6 @@ document.addEventListener("DOMContentLoaded", function () {
             title: "Packing",
             icon: "ph-package",
             children: [
-                {
-                    title: "Overview",
-                    page: "inventory",
-                    url: "erp/inventory/index.html"
-                },
                 {
                     title: "Stock",
                     page: "inventory-stock",
@@ -294,11 +279,6 @@ document.addEventListener("DOMContentLoaded", function () {
             icon: "ph-truck",
             children: [
                 {
-                    title: "Overview",
-                    page: "shipment",
-                    url: "erp/shipment/index.html"
-                },
-                {
                     title: "Packing",
                     page: "shipment-packing",
                     url: "erp/shipment/packing.html"
@@ -316,11 +296,6 @@ document.addEventListener("DOMContentLoaded", function () {
             title: "Address",
             icon: "ph-address-book",
             children: [
-                {
-                    title: "Overview",
-                    page: "shipment",
-                    url: "erp/shipment/index.html"
-                },
                 {
                     title: "Packing",
                     page: "shipment-packing",
