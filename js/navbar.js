@@ -228,11 +228,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     title: "Purchase Material",
                     page: "purchase-material",
                     url: "erp/2-purchase/purchase-material.html"
-                },
-                {
-                    title: "Goods Receipt",
-                    page: "goods-receipt",
-                    url: "erp/2-purchase/goods-receipt.html"
                 }
             ]
         },
