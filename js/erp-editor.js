@@ -20,6 +20,7 @@
     let isAdmin = false;
     let saveTimer;
     let editVersion = 0;
+    let savedRange = null;
 
     content.contentEditable = "false";
     toolbar.hidden = true;
@@ -109,6 +110,21 @@
         }, 800);
     }
 
+    function rememberSelection() {
+        const selection = window.getSelection();
+        if (!selection || !selection.rangeCount) return;
+        const range = selection.getRangeAt(0);
+        if (content.contains(range.commonAncestorContainer)) savedRange = range.cloneRange();
+    }
+
+    function restoreSelection() {
+        if (!savedRange || !content.contains(savedRange.commonAncestorContainer)) return;
+        content.focus();
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(savedRange);
+    }
+
     async function uploadImage(file) {
         const formData = new FormData();
         formData.append("file", file);
@@ -119,6 +135,7 @@
     }
 
     function insertImage(source, alt) {
+        restoreSelection();
         const image = document.createElement("img");
         image.src = source;
         image.alt = alt || "Screenshot dokumentasi";
@@ -134,16 +151,23 @@
             range.collapse(true);
             selection.removeAllRanges();
             selection.addRange(range);
+            savedRange = range.cloneRange();
         }
         saveLater();
     }
 
     editor.querySelectorAll("[data-command]").forEach(function (button) {
         button.addEventListener("click", function () {
+            restoreSelection();
             content.focus();
             document.execCommand(button.dataset.command, false, null);
+            rememberSelection();
             saveLater();
         });
+    });
+
+    toolbar.addEventListener("mousedown", function (event) {
+        if (event.target.closest("[data-command], [data-insert-image]")) event.preventDefault();
     });
 
     imageFile.addEventListener("change", function () {
@@ -161,6 +185,9 @@
     });
 
     content.addEventListener("input", saveLater);
+    content.addEventListener("mouseup", rememberSelection);
+    content.addEventListener("keyup", rememberSelection);
+    document.addEventListener("selectionchange", rememberSelection);
     content.addEventListener("paste", function (event) {
         const image = Array.from(event.clipboardData.files || []).find(function (file) {
             return file.type.startsWith("image/");

@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         icon: "ph-truck",
                         children: [
                             { title: "Export", page: "shipment-export", url: "erp/shipment/export.html" },
-                            { title: "Invoice", page: "shipment-export", url: "erp/shipment/export.html" }
+                            { title: "Invoice", page: "shipment-invoice", url: "erp/shipment/invoice.html" }
                         ]
                     },
                     {

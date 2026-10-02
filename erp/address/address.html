@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DocuBase | Address</title>
+	<script src="https://unpkg.com/@phosphor-icons/web"></script>
+	<link rel="stylesheet" href="../../css/style.css">
+</head>
+<body data-page="stage-address" data-module="STAGE" data-cms-slug="stage-address">
+	<div id="navbar"></div>
+	<div class="app-layout"><aside id="sidebar"></aside><main class="main-content">
+		<section class="hero"><div class="hero-content"><p class="eyebrow">STAGE</p><h1>Address</h1><p class="hero-description">Referensi company, buyer, dan supplier untuk transaksi.</p></div></section>
+		<section class="section"><div class="section-heading"><i class="ph ph-file-text"></i><h2>Documentation</h2></div>
+			<div class="documentation erp-editor" data-erp-editor>
+				<div class="erp-editor-toolbar" aria-label="Alat edit dokumentasi" hidden><button type="button" data-command="bold"><strong>B</strong></button><button type="button" data-command="italic"><em>I</em></button><button type="button" data-command="insertUnorderedList">List</button><label class="erp-editor-file">Pilih gambar<input type="file" accept="image/*" data-image-file></label><input type="url" placeholder="Tempel URL gambar" data-image-url><button type="button" data-insert-image>Masukkan gambar</button><button type="button" data-reset-editor>Reset</button></div>
+				<article class="doc-block"><span class="doc-label">Stage | Address Master</span><div contenteditable="true" spellcheck="true"><h3>Fungsi Address</h3><p>Address menjadi referensi pihak yang terlibat dalam transaksi Stage, termasuk Company, Buyer, dan Supplier/Vendor. Data ini digunakan kembali oleh Costing dan Purchase.</p><h3>Penggunaan di Costing</h3><p>Company dan Buyer dipilih dari Address Module saat membuat quotation. Pastikan pihak yang dipilih sesuai dengan buyer atau vendor pada style dan order terkait.</p><h3>Penggunaan di Purchase</h3><p>Supplier dan Buyer menjadi referensi saat membuat purchase order. Cocokkan nama serta informasi lokasi dan kontak pada master dengan dokumen order sebelum melanjutkan transaksi.</p><h3>Pemeliharaan data</h3><p>Jaga agar setiap pihak memiliki satu record yang konsisten dan informasi kontak/alamat tetap mutakhir. Rincian field dan alur perubahan mengikuti konfigurasi Address di perusahaan.</p></div></article>
+				<p class="editor-status" data-editor-status aria-live="polite"></p>
+			</div>
+		</section>
+	</main></div>
+	<script src="../../js/navbar.js"></script><script src="../../js/erp-editor.js"></script>
+</body>
+</html>

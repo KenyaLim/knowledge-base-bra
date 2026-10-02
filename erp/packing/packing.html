@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DocuBase | Packing Instruction</title>
+	<script src="https://unpkg.com/@phosphor-icons/web"></script>
+	<link rel="stylesheet" href="../../css/style.css">
+</head>
+<body data-page="shipment-packing" data-module="STAGE">
+	<div id="navbar"></div>
+	<div class="app-layout"><aside id="sidebar"></aside><main class="main-content">
+		<section class="hero"><div class="hero-content"><p class="eyebrow">STAGE</p><h1>Packing Instruction</h1><p class="hero-description">Panduan packing order sampai carton siap dikirim.</p></div></section>
+		<section class="section"><div class="section-heading"><i class="ph ph-file-text"></i><h2>Documentation</h2></div>
+			<div class="documentation erp-editor" data-erp-editor>
+				<div class="erp-editor-toolbar" aria-label="Alat edit dokumentasi" hidden><button type="button" data-command="bold"><strong>B</strong></button><button type="button" data-command="italic"><em>I</em></button><button type="button" data-command="insertUnorderedList">List</button><label class="erp-editor-file">Pilih gambar<input type="file" accept="image/*" data-image-file></label><input type="url" placeholder="Tempel URL gambar" data-image-url><button type="button" data-insert-image>Masukkan gambar</button><button type="button" data-reset-editor>Reset</button></div>
+				<article class="doc-block"><span class="doc-label">Stage | Packing</span><div contenteditable="true" spellcheck="true"><h3>Packing Chart</h3><p>Packing Chart menetapkan pembagian quantity Buyer PO per carton. Pilih Ratio Packing, Solid Color / Assorted Size, atau Solid Color / Solid Size sesuai instruksi order. Solid Color / Solid Size menghitung sisa quantity, sehingga dibuat setelah chart lainnya.</p><h3>Pre-pack dan Packing Slip</h3><p>Pre-pack mengemas garment ke inner carton atau kemasan kecil sebelum carton utama. Packing Slip merealisasikan chart setelah quantity finishing diketahui. Nomor carton dapat dibuat otomatis menggunakan prefix, nomor awal, dan suffix.</p><h3>Carton Packing</h3><p>Tandai carton yang siap dikirim dan lengkapi dimensi serta gross, net, dan net-net weight. Jika pemeriksaan inventory aktif, isi carton harus tersedia di stock. Carton dapat dipilih untuk delivery menggunakan barcode.</p><h3>Perhitungan berat</h3><p>Net Weight = jumlah pcs × berat net garment. Net-net Weight = jumlah pcs × berat net-net garment. Gross Weight = Net Weight + berat carton.</p></div></article>
+				<p class="editor-status" data-editor-status aria-live="polite"></p>
+			</div>
+		</section>
+	</main></div>
+	<script src="../../js/navbar.js"></script><script src="../../js/erp-editor.js"></script>
+</body>
+</html>

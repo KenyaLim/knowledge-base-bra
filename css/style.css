@@ -1021,10 +1021,15 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
     max-height: 70vh;
     overflow-y: auto;
     overflow-wrap: anywhere;
+    font-family: inherit;
     padding: 18px;
     border: 1px solid #c7c7c7;
     background: #ffffff;
     outline: none;
+}
+
+.erp-editor [contenteditable="true"] :not(i):not(code) {
+    font-family: inherit !important;
 }
 
 .erp-editor [contenteditable="true"]:focus {
