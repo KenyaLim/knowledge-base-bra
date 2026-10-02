@@ -89,6 +89,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     </a>
 
+                    <nav class="navbar-apps" aria-label="Aplikasi">
+                        <a class="navbar-app navbar-app-stage" href="${ROOT}erp/0-order/index.html">STAGE</a>
+                        <a class="navbar-app navbar-app-proman" href="${ROOT}erp/1-mrp/index.html">PROMAN</a>
+                    </nav>
+
                 </div>
 
                 <div class="navbar-right">
@@ -108,7 +113,91 @@ document.addEventListener("DOMContentLoaded", function () {
 
             </header>
         `;
+    }
 
+        const appGroups = [
+            {
+                id: "stage",
+                title: "STAGE",
+                modules: [
+                    {
+                        id: "stage-order",
+                        title: "Order",
+                        icon: "ph-shopping-cart",
+                        children: [
+                            { title: "Order", page: "stage", url: "erp/0-order/index.html" },
+                            { title: "Stage Order", page: "stage-order", url: "erp/0-order/order.html" }
+                        ]
+                    },
+                    {
+                        id: "stage-costing",
+                        title: "Costing",
+                        icon: "ph-money",
+                        children: [
+                            { title: "Costing", page: "costing", url: "erp/costing/costing.html" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "proman",
+                title: "PROMAN",
+                modules: [
+                    {
+                        id: "proman-mrp",
+                        title: "MRP",
+                        icon: "ph-chart-bar",
+                        children: [
+                            { title: "MRP", page: "mrp", url: "erp/1-mrp/index.html" },
+                            { title: "Material Requirement", page: "mrp-material", url: "erp/1-mrp/material-requirement.html" }
+                        ]
+                    },
+                    {
+                        id: "proman-purchase",
+                        title: "Purchase",
+                        icon: "ph-receipt",
+                        children: [
+                            { title: "Purchase Order", page: "purchase-order", url: "erp/2-purchase/purchase-order.html" },
+                            { title: "Purchase Material", page: "purchase-material", url: "erp/2-purchase/purchase-material.html" }
+                        ]
+                    },
+                    {
+                        id: "proman-inventory",
+                        title: "Inventory",
+                        icon: "ph-box-arrow-down",
+                        children: [
+                            { title: "Stock", page: "inventory-stock", url: "erp/inventory/stock.html" },
+                            { title: "Goods Receipt", page: "inventory-grn", url: "erp/inventory/goods-receipt.html" }
+                        ]
+                    },
+                    {
+                        id: "proman-shipment",
+                        title: "Shipment",
+                        icon: "ph-truck",
+                        children: [
+                            { title: "Shipment Packing", page: "shipment-packing", url: "erp/shipment/packing.html" },
+                            { title: "Export", page: "shipment-export", url: "erp/shipment/export.html" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "other",
+                title: "LAINNYA",
+                modules: [
+                    {
+                        id: "faq",
+                        title: "FAQ",
+                        icon: "ph-question",
+                        children: [
+                            { title: "Frequently Asked Questions", page: "faq", url: "getting-started/faq.html" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+    if (navbarContainer) {
         fetch("/api/session", { headers: { Accept: "application/json" } })
             .then(function (response) {
                 if (!response.ok) throw new Error("Session unavailable");
@@ -125,9 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (emailElement && session.name) emailElement.textContent = email;
                 const adminLink = document.getElementById("navbar-admin-link");
                 if (adminLink && session.isAdmin) adminLink.hidden = false;
-                if (welcomeElement) {
-                    welcomeElement.textContent = `Welcome, ${email}`;
-                }
+                if (welcomeElement) welcomeElement.textContent = `Welcome, ${email}`;
             })
             .catch(function () {
                 const nameElement = document.getElementById("navbar-user-name");
@@ -149,176 +236,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         resetIdleTimer();
     }
-
-    /*
-        =========================
-        SIDEBAR DATA
-        =========================
-
-        Tambah modul baru cukup di bagian ini.
-    */
-
-    const defaultModules = [
-
-        {
-            id: "stage",
-            title: "Costing",
-            icon: "ph-money",
-            children: [
-                {
-                    title: "Overview",
-                    page: "stage",
-                    url: "erp/0-order/index.html"
-                },
-                {
-                    title: "Costing Detail",
-                    page: "stage-order",
-                    url: "erp/costing/costing.html"
-                }
-            ]
-        },
-
-        {
-            id: "stage",
-            title: "Order",
-            icon: "ph-shopping-cart",
-            children: [
-                {
-                    title: "Overview",
-                    page: "stage",
-                    url: "erp/0-order/index.html"
-                },
-                {
-                    title: "Order Detail",
-                    page: "stage-order",
-                    url: "erp/0-order/order.html"
-                }
-            ]
-        },
-
-        {
-            id: "mrp",
-            title: "MRP",
-            icon: "ph-chart-bar",
-            children: [
-                {
-                    title: "Overview",
-                    page: "mrp",
-                    url: "erp/1-mrp/index.html"
-                },
-                {
-                    title: "Material Requirement",
-                    page: "mrp-material",
-                    url: "erp/1-mrp/material-requirement.html"
-                }
-            ]
-        },
-
-        {
-            id: "purchase",
-            title: "Purchase",
-            icon: "ph-receipt",
-            children: [
-                {
-                    title: "Purchase Order",
-                    page: "purchase-order",
-                    url: "erp/2-purchase/purchase-order.html"
-                },
-                {
-                    title: "Purchase Material",
-                    page: "purchase-material",
-                    url: "erp/2-purchase/purchase-material.html"
-                }
-            ]
-        },
-
-        {
-            id: "inventory",
-            title: "Inventory",
-            icon: "ph-box-arrow-down",
-            children: [
-                {
-                    title: "Stock",
-                    page: "inventory-stock",
-                    url: "erp/inventory/stock.html"
-                },
-                {
-                    title: "Goods Receipt",
-                    page: "inventory-grn",
-                    url: "erp/inventory/goods-receipt.html"
-                }
-            ]
-        },
-
-        {
-            id: "inventory",
-            title: "Packing",
-            icon: "ph-package",
-            children: [
-                {
-                    title: "Stock",
-                    page: "inventory-stock",
-                    url: "erp/inventory/stock.html"
-                },
-                {
-                    title: "Goods Receipt",
-                    page: "inventory-grn",
-                    url: "erp/inventory/goods-receipt.html"
-                }
-            ]
-        },
-
-        {
-            id: "shipment",
-            title: "Shipping",
-            icon: "ph-truck",
-            children: [
-                {
-                    title: "Packing",
-                    page: "shipment-packing",
-                    url: "erp/shipment/packing.html"
-                },
-                {
-                    title: "Export",
-                    page: "shipment-export",
-                    url: "erp/shipment/export.html"
-                }
-            ]
-        },
-
-        {
-            id: "shipment",
-            title: "Address",
-            icon: "ph-address-book",
-            children: [
-                {
-                    title: "Packing",
-                    page: "shipment-packing",
-                    url: "erp/shipment/packing.html"
-                },
-                {
-                    title: "Export",
-                    page: "shipment-export",
-                    url: "erp/shipment/export.html"
-                }
-            ]
-        },
-
-        {
-            id: "faq",
-            title: "FAQ",
-            icon: "ph-question",
-            children: [
-                {
-                    title: "Overview",
-                    page: "faq",
-                    url: "getting-started/faq.html"
-                }
-            ]
-        }
-    ];
-
-    const modules = defaultModules;
 
 
     function moduleHasActivePage(module) {
@@ -348,39 +265,18 @@ document.addEventListener("DOMContentLoaded", function () {
                             <i class="ph-fill ph-house-line"></i>
                         </span>
 
-                        <span></span>
+                        <span>Dashboard</span>
                     </a>
 
-
-                    ${modules.filter(function (module) {
-                        return module && module.id && Array.isArray(module.children) && module.children.length;
-                    }).map(function (module) {
+                    ${appGroups.map(function (group) {
+                        return `
+                            <section class="sidebar-app-group sidebar-app-group-${group.id}">
+                                <h2 class="sidebar-app-heading">${escapeHtml(group.title)}</h2>
+                                ${group.modules.map(function (module) {
 
                         const active = moduleHasActivePage(module);
-
-                        if (module.children.length === 1) {
-                            const child = module.children[0];
-
-                            return `
-                                <div class="sidebar-module ${active ? "module-active" : ""}" data-module-id="${module.id}">
-                                    <a
-                                        href="${ROOT}${child.url}"
-                                        class="sidebar-direct-link ${active ? "active" : ""}"
-                                    >
-                                        <span class="sidebar-module-left">
-                                            <span class="sidebar-main-icon">
-                                                <i class="ph ${module.icon}"></i>
-                                            </span>
-
-                                            <span>${escapeHtml(module.title)}</span>
-                                        </span>
-                                    </a>
-                                </div>
-                            `;
-                        }
-
                         return `
-                            <div class="sidebar-module ${active ? "module-active" : ""}" data-module-id="${module.id}">
+                            <div class="sidebar-module ${active ? "module-active" : ""}" data-module-id="${escapeHtml(module.id)}">
 
                                 <button
                                     type="button"
@@ -424,8 +320,10 @@ document.addEventListener("DOMContentLoaded", function () {
                                 </ul>
 
                             </div>
+                            `;
+                                }).join("")}
+                            </section>
                         `;
-
                     }).join("")}
 
                 </div>
@@ -534,15 +432,13 @@ document.addEventListener("DOMContentLoaded", function () {
             ".card-grid > .card, .module-grid > .module-card"
         ));
         const documentationIndex = [
-            { title: "Order Entry Detail", text: "SPI, order number, buyer, order date, order quantity, ship date, assortment, buyer PO, destination, style, color, size.", url: "erp/stage/order.html" },
-            { title: "MRP - Raw Material Specifications", text: "MRP, BOM, Fabric, Trims, article, color, size, position, consumption, SPI, PO number, F8 filter.", url: "erp/mrp/material-requirement.html" },
-            { title: "Purchase Order", text: "Regular, Combined, General, Domestic, Import, supplier, buyer, order number, material, quantity, currency, PO number.", url: "erp/purchase/purchase-order.html" },
-            { title: "RM Purchase", text: "Raw material purchase, supplier, buyer, order number, SPI, material, quantity, currency, PO number, BOM.", url: "erp/purchase/purchase-material.html" },
-            { title: "Purchase Goods Receipt", text: "GRN, Goods Receipt Note, PO Number, SPI, material, quantity, partial delivery, pending quantity.", url: "erp/purchase/goods-receipt.html" },
+            { title: "Order Entry Detail", text: "SPI, order number, buyer, order date, order quantity, ship date, assortment, buyer PO, destination, style, color, size.", url: "erp/0-order/order.html" },
+            { title: "MRP - Raw Material Specifications", text: "MRP, BOM, Fabric, Trims, article, color, size, position, consumption, SPI, PO number, F8 filter.", url: "erp/1-mrp/material-requirement.html" },
+            { title: "Purchase Order", text: "Regular, Combined, General, Domestic, Import, supplier, buyer, order number, material, quantity, currency, PO number.", url: "erp/2-purchase/purchase-order.html" },
+            { title: "RM Purchase", text: "Raw material purchase, supplier, buyer, order number, SPI, material, quantity, currency, PO number, BOM.", url: "erp/2-purchase/purchase-material.html" },
+            { title: "Purchase Goods Receipt", text: "GRN, Goods Receipt Note, PO Number, SPI, material, quantity, partial delivery, pending quantity.", url: "erp/inventory/goods-receipt.html" },
             { title: "Inventory RM Receive / GRN", text: "Inventory, Supplier, Receive, GRN, QC, Good, Stock, Reject, Return to Supplier, IDMP, ODPD, PO Number, SPI.", url: "erp/inventory/goods-receipt.html" },
             { title: "Inventory Stock", text: "RM Issue, Stock, Issue, Production, Roll Wise, Rack Wise, Stock Report, material, quantity, status stock, storage location.", url: "erp/inventory/stock.html" },
-            { title: "Production - Cutting", text: "Cutting, material, order, style, color, size, quantity.", url: "erp/production/cutting.html" },
-            { title: "Production - Sewing", text: "Sewing, garment, production line, output, quality check.", url: "erp/production/sewing.html" },
             { title: "Shipment - Export", text: "Shipment, Export, destination, ship date, quantity, shipping documents.", url: "erp/shipment/export.html" }
         ];
 

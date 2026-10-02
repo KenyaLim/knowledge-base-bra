@@ -16,6 +16,7 @@
     document.body.appendChild(loadingScreen);
     let isAdmin = false;
     let saveTimer;
+    let editVersion = 0;
 
     content.contentEditable = "false";
     toolbar.hidden = true;
@@ -47,7 +48,9 @@
             const material = await response.json();
             if (!response.ok) throw new Error(material.error || "Gagal memuat dokumentasi");
             if (material && material.content) content.innerHTML = material.content;
-            status.textContent = session.isAdmin ? "Terhubung ke Supabase" : "Mode baca saja";
+            status.textContent = session.isAdmin
+                ? (material ? "Tersimpan di Supabase" : "Belum tersimpan di Supabase")
+                : "Mode baca saja";
         } catch (error) {
             setEditorAccess(false);
             status.textContent = error.message;
@@ -58,6 +61,7 @@
 
     async function save() {
         if (!isAdmin) return;
+        const version = editVersion;
         status.textContent = "Menyimpan ke Supabase...";
         const response = await fetch("/api/cms/admin/content", {
             method: "POST",
@@ -76,10 +80,14 @@
         });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || "Gagal menyimpan dokumentasi");
-        status.textContent = "Tersimpan di Supabase";
+        status.textContent = version === editVersion
+            ? "Tersimpan di Supabase"
+            : "Belum tersimpan di Supabase";
     }
 
     function saveLater() {
+        editVersion += 1;
+        status.textContent = "Belum tersimpan di Supabase";
         clearTimeout(saveTimer);
         saveTimer = setTimeout(function () {
             save().catch(function (error) { status.textContent = error.message; });
@@ -148,7 +156,7 @@
     });
 
     saveButton.addEventListener("click", function () {
-        save().catch(function (error) { status.textContent = error.message; });
+        save().catch(function (error) { status.textContent = `Gagal menyimpan: ${error.message}`; });
     });
 
     editor.querySelector("[data-reset-editor]").addEventListener("click", function () {

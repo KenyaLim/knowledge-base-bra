@@ -16,9 +16,12 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("fileUpload").addEventListener("change", uploadFile);
     document.getElementById("kind").addEventListener("change", syncKindFields);
     document.getElementById("imageUrl").addEventListener("input", updateImagePreview);
+    form.addEventListener("input", function () {
+        status.textContent = "Belum tersimpan di Supabase";
+    });
     form.addEventListener("submit", async function (event) {
         event.preventDefault();
-        status.textContent = "Saving...";
+        status.textContent = "Menyimpan ke Supabase...";
         const payload = {
             slug: document.getElementById("slug").value,
             title: document.getElementById("title").value,
@@ -40,11 +43,11 @@ document.addEventListener("DOMContentLoaded", function () {
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || "Save failed");
-            status.textContent = "Saved.";
+            status.textContent = "Tersimpan di Supabase";
             await loadAdminMaterials();
             fillForm(result);
         } catch (error) {
-            status.textContent = error.message;
+            status.textContent = `Gagal menyimpan: ${error.message}`;
         }
     });
 
@@ -90,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (field.type === "checkbox") field.checked = false;
             else field.value = id === "sortOrder" ? "0" : "";
         });
-        status.textContent = "New material.";
+        status.textContent = "Materi baru belum tersimpan di Supabase";
         document.getElementById("deleteMaterial").hidden = true;
         syncKindFields();
     }

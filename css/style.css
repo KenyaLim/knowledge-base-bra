@@ -82,6 +82,29 @@ input {
     color: white;
 }
 
+.navbar-apps {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.navbar-app {
+    padding: 7px 10px;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.navbar-app-stage {
+    background: #d9f4d7;
+    color: #245c2a;
+}
+
+.navbar-app-proman {
+    background: #14532d;
+    color: #ffffff;
+}
+
 .navbar-right {
     display: flex;
     align-items: center;
@@ -192,6 +215,38 @@ input {
     overflow-y: auto;
     overflow-x: hidden;
     padding: 16px 0;
+}
+
+.sidebar-app-group {
+    padding-bottom: 8px;
+}
+
+.sidebar-app-heading {
+    width: 288px;
+    margin: 10px 0 4px;
+    padding: 8px 18px 8px 22px;
+    border-left: 4px solid transparent;
+    color: #555555;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.sidebar-app-group-stage .sidebar-app-heading {
+    border-left-color: #8acb82;
+    background: #eff9ed;
+    color: #245c2a;
+}
+
+.sidebar-app-group-proman .sidebar-app-heading {
+    border-left-color: #14532d;
+    background: #e7f0e9;
+    color: #14532d;
+}
+
+.sidebar-app-group-other .sidebar-app-heading {
+    border-left-color: #a3a3a3;
+    background: #f5f5f5;
 }
 
 .sidebar-dashboard,
@@ -318,6 +373,16 @@ input {
     font-weight: 700;
 }
 
+.sidebar-app-group-stage .sidebar-module-button:hover,
+.sidebar-app-group-stage .sidebar-children a.active {
+    background: #eff9ed;
+}
+
+.sidebar-app-group-proman .sidebar-module-button:hover,
+.sidebar-app-group-proman .sidebar-children a.active {
+    background: #e7f0e9;
+}
+
 .sidebar-footer {
     height: 56px;
     border-top: 1px solid #dddddd;
@@ -396,6 +461,111 @@ input {
     color: #555555;
     font-size: 16px;
     line-height: 1.7;
+}
+
+.application-section {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.application-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.application-panel {
+    min-width: 0;
+    background: #ffffff;
+    border: 1px solid #d4d4d4;
+    border-top: 5px solid transparent;
+}
+
+.application-panel-stage {
+    border-top-color: #8acb82;
+}
+
+.application-panel-proman {
+    border-top-color: #14532d;
+}
+
+.application-heading {
+    min-height: 104px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px;
+}
+
+.application-icon {
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    background: #eff9ed;
+    color: #245c2a;
+    font-size: 22px;
+}
+
+.application-panel-proman .application-icon {
+    background: #e7f0e9;
+    color: #14532d;
+}
+
+.application-heading > span:nth-child(2) {
+    display: grid;
+    gap: 5px;
+}
+
+.application-heading small {
+    color: #666666;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.application-heading strong {
+    font-size: 22px;
+    line-height: 1.1;
+}
+
+.application-arrow {
+    margin-left: auto;
+    color: #666666;
+    font-size: 20px;
+}
+
+.application-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid #e5e5e5;
+}
+
+.application-links a {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px;
+    color: #333333;
+    font-size: 13px;
+}
+
+.application-links a:nth-child(even) {
+    border-left: 1px solid #e5e5e5;
+}
+
+.application-links a:nth-child(n + 3) {
+    border-top: 1px solid #e5e5e5;
+}
+
+.application-links a:hover {
+    background: #f5f5f5;
+}
+
+.application-links i {
+    color: #777777;
 }
 
 .search-box {
@@ -1303,6 +1473,36 @@ input {
     margin: 14px 0 0;
     color: #333333;
     font-size: 12px;
+}
+
+@media (max-width: 760px) {
+    .application-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 520px) {
+    .top-navbar {
+        padding: 0 12px;
+    }
+
+    .navbar-left {
+        gap: 8px;
+    }
+
+    .navbar-logo {
+        gap: 0;
+        font-size: 0;
+    }
+
+    .navbar-apps {
+        gap: 4px;
+    }
+
+    .navbar-app {
+        padding: 7px 7px;
+        font-size: 9px;
+    }
 }
 
 /* =========================
