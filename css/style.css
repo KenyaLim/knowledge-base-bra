@@ -230,6 +230,15 @@ input {
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 0;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+#sidebar:hover .sidebar-app-heading,
+#sidebar.mobile-open .sidebar-app-heading {
+    visibility: visible;
+    opacity: 1;
 }
 
 .sidebar-app-group-stage .sidebar-app-heading {
@@ -1018,8 +1027,6 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 
 .erp-editor [contenteditable] {
     min-height: 260px;
-    max-height: 70vh;
-    overflow-y: auto;
     overflow-wrap: anywhere;
     font-family: inherit !important;
     padding: 18px;

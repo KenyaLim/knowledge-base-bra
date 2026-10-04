@@ -30,6 +30,22 @@
     saveButton.textContent = "Simpan ke Supabase";
     toolbar.appendChild(saveButton);
 
+    [
+        { command: "justifyLeft", label: "Rata kiri" },
+        { command: "justifyCenter", label: "Rata tengah" },
+        { command: "justifyRight", label: "Rata kanan" },
+        { command: "outdent", label: "Kurangi indent" },
+        { command: "indent", label: "Tambah indent" }
+    ].forEach(function (item) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.command = item.command;
+        button.textContent = item.label;
+        button.setAttribute("aria-label", item.label);
+        button.title = item.label;
+        toolbar.insertBefore(button, imageFile.closest(".erp-editor-file"));
+    });
+
     function setEditorAccess(enabled) {
         isAdmin = enabled;
         content.contentEditable = enabled ? "true" : "false";
