@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         icon: "ph-receipt",
                         children: [
                             { title: "Purchase Order", page: "purchase-order", url: "erp/2-purchase/purchase-order.html" },
-                            { title: "Domestik / Import", page: "purchase-material", url: "erp/2-purchase/imporekspor.html" }
+                            { title: "Domestic / Import", page: "purchase-material", url: "erp/2-purchase/imporekspor.html" }
                         ]
                     },
                     {
