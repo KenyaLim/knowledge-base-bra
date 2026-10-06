@@ -822,6 +822,12 @@ input {
     line-height: 1.7;
 }
 
+.erp-editor [contenteditable],
+.erp-editor [contenteditable] p,
+.erp-editor [contenteditable] li {
+    color: #111111;
+}
+
 .doc-block p {
     margin: 0 0 10px;
 }
@@ -1012,9 +1018,66 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
     font: inherit;
 }
 
+.erp-editor-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 5px 8px;
+    border: 1px solid #bdbdbd;
+    background: #ffffff;
+    color: #222222;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.erp-editor-control select {
+    min-width: 92px;
+    min-height: 28px;
+    padding: 3px 6px;
+    border: 1px solid #d4d4d4;
+    background: #ffffff;
+    color: #111111;
+    font: inherit;
+}
+
+.erp-editor-control input[type="color"] {
+    width: 36px;
+    min-height: 28px;
+    padding: 2px;
+    cursor: pointer;
+}
+
+.erp-editor-formatting,
+.erp-editor-alignment {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.erp-editor-alignment {
+    padding: 4px 8px;
+    border: 1px solid #d4d4d4;
+    background: #eeeeee;
+}
+
+.erp-editor-group-label {
+    padding: 0 4px;
+    color: #444444;
+    font-size: 12px;
+    font-weight: 700;
+}
+
 .erp-editor-toolbar button,
 .erp-editor-file {
     cursor: pointer;
+}
+
+.erp-editor-toolbar button:hover,
+.erp-editor-control select:focus,
+.erp-editor-control input[type="color"]:focus {
+    border-color: #555555;
 }
 
 .erp-editor-file input {
@@ -1028,7 +1091,6 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 .erp-editor [contenteditable] {
     min-height: 260px;
     overflow-wrap: anywhere;
-    font-family: inherit !important;
     padding: 18px;
     border: 1px solid #c7c7c7;
     background: #ffffff !important;
@@ -1036,9 +1098,15 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 }
 
 .erp-editor [contenteditable] :not(i):not(code) {
-    font-family: inherit !important;
     background-color: transparent !important;
 }
+
+.erp-editor [contenteditable] font[size="2"] { font-size: 12px; }
+.erp-editor [contenteditable] font[size="3"] { font-size: 14px; }
+.erp-editor [contenteditable] font[size="4"] { font-size: 16px; }
+.erp-editor [contenteditable] font[size="5"] { font-size: 18px; }
+.erp-editor [contenteditable] font[size="6"] { font-size: 24px; }
+.erp-editor [contenteditable] font[size="7"] { font-size: 32px; }
 
 .erp-editor [contenteditable="true"]:focus {
     border-color: #555555;

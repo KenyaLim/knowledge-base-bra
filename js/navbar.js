@@ -482,16 +482,95 @@ document.addEventListener("DOMContentLoaded", function () {
         const searchableItems = Array.from(document.querySelectorAll(
             ".card-grid > .card, .module-grid > .module-card"
         ));
-        const documentationIndex = [
-            { title: "Order Entry Detail", text: "SPI, order number, buyer, order date, order quantity, ship date, assortment, buyer PO, destination, style, color, size.", url: "erp/0-order/order.html" },
-            { title: "MRP - Raw Material Specifications", text: "MRP, BOM, Fabric, Trims, article, color, size, position, consumption, SPI, PO number, F8 filter.", url: "erp/1-mrp/material-requirement.html" },
-            { title: "Purchase Order", text: "Regular, Combined, General, Domestic, Import, supplier, buyer, order number, material, quantity, currency, PO number.", url: "erp/2-purchase/purchase-order.html" },
-            { title: "RM Purchase", text: "Raw material purchase, supplier, buyer, order number, SPI, material, quantity, currency, PO number, BOM.", url: "erp/2-purchase/purchase-material.html" },
-            { title: "Purchase Goods Receipt", text: "GRN, Goods Receipt Note, PO Number, SPI, material, quantity, partial delivery, pending quantity.", url: "erp/inventory/goods-receipt.html" },
-            { title: "Inventory RM Receive / GRN", text: "Inventory, Supplier, Receive, GRN, QC, Good, Stock, Reject, Return to Supplier, IDMP, ODPD, PO Number, SPI.", url: "erp/inventory/goods-receipt.html" },
-            { title: "Inventory Stock", text: "RM Issue, Stock, Issue, Production, Roll Wise, Rack Wise, Stock Report, material, quantity, status stock, storage location.", url: "erp/inventory/stock.html" },
-            { title: "Shipment - Export", text: "Shipment, Export, destination, ship date, quantity, shipping documents.", url: "erp/shipment/export.html" }
-        ];
+        const modulePages = appGroups.flatMap(function (group) {
+            return group.modules.flatMap(function (module) {
+                return module.children.map(function (child) {
+                    return {
+                        title: child.title,
+                        module: module.title,
+                        page: child.page,
+                        url: `${ROOT}${child.url}`
+                    };
+                });
+            });
+        });
+        let documentationIndex = [];
+        let searchIndexReady = false;
+        let searchIndexError = false;
+
+        function normalizeSearchText(value) {
+            return String(value || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLocaleLowerCase()
+                .replace(/[^\p{L}\p{N}]+/gu, " ")
+                .trim();
+        }
+
+        function getSearchTerms(value) {
+            return normalizeSearchText(value).split(/\s+/).filter(Boolean);
+        }
+
+        function matchesSearch(value, terms) {
+            const normalizedValue = normalizeSearchText(value);
+            return terms.every(function (term) {
+                return normalizedValue.includes(term);
+            });
+        }
+
+        async function loadDocumentationIndex() {
+            const [materialsResult, ...pageResults] = await Promise.allSettled([
+                fetch("/api/cms/content").then(function (response) {
+                    if (!response.ok) throw new Error("Could not load CMS search content");
+                    return response.json();
+                }),
+                ...modulePages.map(function (page) {
+                    return fetch(page.url).then(function (response) {
+                        if (!response.ok) throw new Error(`Could not load ${page.title}`);
+                        return response.text();
+                    });
+                })
+            ]);
+            const materials = materialsResult.status === "fulfilled"
+                ? materialsResult.value
+                : [];
+            const materialsBySlug = new Map(
+                materials.map(function (material) {
+                    return [material.slug, material];
+                })
+            );
+
+            documentationIndex = modulePages.map(function (page, index) {
+                const result = pageResults[index];
+                if (result.status !== "fulfilled") {
+                    searchIndexError = true;
+                    return null;
+                }
+
+                const parsedPage = new DOMParser().parseFromString(result.value, "text/html");
+                const slug = parsedPage.body.dataset.cmsSlug
+                    || `erp-${parsedPage.body.dataset.page || page.page}`;
+                const material = materialsBySlug.get(slug);
+                const pageTitle = parsedPage.querySelector("main h1, .hero h1")?.textContent.trim() || "";
+                const pageText = Array.from(parsedPage.querySelectorAll("[contenteditable], .doc-block"))
+                    .map(function (element) { return element.textContent; })
+                    .join(" ");
+                const storedText = material
+                    ? `${material.title} ${material.summary} ${new DOMParser().parseFromString(material.content, "text/html").body.textContent}`
+                    : "";
+
+                return {
+                    title: [page.module, page.title, material ? material.title : pageTitle].filter(Boolean).join(" "),
+                    text: material ? storedText : pageText,
+                    summary: material?.summary || pageText.replace(/\s+/g, " ").trim().slice(0, 240),
+                    url: page.url
+                };
+            }).filter(Boolean);
+
+            if (materialsResult.status === "rejected") searchIndexError = true;
+            searchIndexReady = true;
+            runSearch();
+        }
 
         function clearHighlights(item) {
             item.querySelectorAll("mark.search-highlight").forEach(function (mark) {
@@ -499,11 +578,13 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
 
-        function highlightMatches(item, keyword) {
-            if (!keyword) return;
+        function highlightMatches(item, terms) {
+            if (!terms.length) return;
 
             const matcher = new RegExp(
-                keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+                terms.map(function (term) {
+                    return term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                }).join("|"),
                 "gi"
             );
             const walker = document.createTreeWalker(item, NodeFilter.SHOW_TEXT);
@@ -540,64 +621,82 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
 
-        function highlightHtml(value, keyword) {
+        function highlightHtml(value, terms) {
             const safeValue = escapeHtml(value);
-            if (!keyword) return safeValue;
+            if (!terms.length) return safeValue;
             const matcher = new RegExp(
-                keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+                terms.map(function (term) {
+                    return term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                }).join("|"),
                 "gi"
             );
             return safeValue.replace(matcher, "<mark class=\"search-highlight\">$&</mark>");
         }
 
-        function renderDocumentationResults(keyword) {
+        function getSearchExcerpt(entry, terms) {
+            const text = entry.summary || entry.text.replace(/\s+/g, " ").trim();
+            const firstMatch = terms
+                .map(function (term) { return text.toLocaleLowerCase().indexOf(term); })
+                .filter(function (index) { return index !== -1; })
+                .sort(function (left, right) { return left - right; })[0];
+            if (firstMatch === undefined || text.length <= 240) return text;
+            const start = Math.max(0, firstMatch - 70);
+            const end = Math.min(text.length, start + 240);
+            return `${start > 0 ? "..." : ""}${text.slice(start, end)}${end < text.length ? "..." : ""}`;
+        }
+
+        function renderDocumentationResults(terms) {
             if (!searchResults) return 0;
             searchResults.innerHTML = "";
-            if (!keyword) return 0;
+            if (!terms.length) return 0;
 
             const matches = documentationIndex.filter(function (entry) {
-                return `${entry.title} ${entry.text}`.toLocaleLowerCase().includes(keyword);
+                return matchesSearch(`${entry.title} ${entry.text}`, terms);
             });
 
             matches.forEach(function (entry) {
                 const result = document.createElement("a");
                 result.className = "search-result";
                 result.href = entry.url;
-                result.innerHTML = `<strong>${highlightHtml(entry.title, keyword)}</strong><span>${highlightHtml(entry.text, keyword)}</span><i class="ph ph-arrow-up-right"></i>`;
+                result.innerHTML = `<strong>${highlightHtml(entry.title, terms)}</strong><span>${highlightHtml(getSearchExcerpt(entry, terms), terms)}</span><i class="ph ph-arrow-up-right"></i>`;
                 searchResults.appendChild(result);
             });
             return matches.length;
         }
 
         function runSearch() {
-            const keyword = searchInput.value.trim().toLocaleLowerCase();
+            const terms = getSearchTerms(searchInput.value);
             let visibleCount = 0;
-            const documentationCount = renderDocumentationResults(keyword);
+            const documentationCount = renderDocumentationResults(terms);
 
             searchableItems.forEach(function (item) {
                 clearHighlights(item);
-                const matches = !keyword || item.textContent.toLocaleLowerCase().includes(keyword);
+                const matches = !terms.length || matchesSearch(item.textContent, terms);
                 item.hidden = !matches;
                 if (matches) {
                     visibleCount += 1;
-                    highlightMatches(item, keyword);
+                    highlightMatches(item, terms);
                 }
             });
 
             document.querySelectorAll(".card-grid, .module-grid").forEach(function (grid) {
-                grid.hidden = keyword !== "" && !Array.from(grid.children).some(function (item) {
+                grid.hidden = terms.length > 0 && !Array.from(grid.children).some(function (item) {
                     return !item.hidden;
                 });
             });
 
             if (!searchStatus) return;
             const totalCount = visibleCount + documentationCount;
-            if (!keyword) {
-                searchStatus.textContent = "";
+            if (!terms.length) {
+                searchStatus.textContent = searchIndexReady && searchIndexError
+                    ? "Some documentation could not be loaded for search."
+                    : "";
+            } else if (!searchIndexReady) {
+                searchStatus.textContent = "Loading documentation...";
             } else if (totalCount === 0) {
                 searchStatus.textContent = `No results found for "${searchInput.value.trim()}".`;
             } else {
-                searchStatus.textContent = `${totalCount} result${totalCount === 1 ? "" : "s"} found.`;
+                searchStatus.textContent = `${totalCount} result${totalCount === 1 ? "" : "s"} found.${searchIndexError ? " Some documentation could not be loaded." : ""}`;
             }
         }
 
@@ -610,6 +709,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 runSearch();
             }
 
+        });
+
+        searchIndexReady = false;
+        searchStatus.textContent = "Loading documentation...";
+        loadDocumentationIndex().catch(function (error) {
+            searchIndexReady = true;
+            searchIndexError = true;
+            searchStatus.textContent = `Could not load documentation for search: ${error.message}`;
         });
     }
 

@@ -30,10 +30,76 @@
     saveButton.textContent = "Simpan ke Supabase";
     toolbar.appendChild(saveButton);
 
+    function createSelect(labelText, options, name) {
+        const label = document.createElement("label");
+        label.className = "erp-editor-control";
+        label.textContent = labelText;
+
+        const select = document.createElement("select");
+        select.dataset.format = name;
+        options.forEach(function (option) {
+            const element = document.createElement("option");
+            element.value = option.value;
+            element.textContent = option.label;
+            select.appendChild(element);
+        });
+        label.appendChild(select);
+        return label;
+    }
+
+    const fontControl = createSelect("Font", [
+        { value: "Arial", label: "Arial" },
+        { value: "Inter", label: "Inter" },
+        { value: "Georgia", label: "Georgia" },
+        { value: "Times New Roman", label: "Times New Roman" },
+        { value: "Courier New", label: "Courier New" }
+    ], "font");
+    const sizeControl = createSelect("Ukuran", [
+        { value: "2", label: "12 px" },
+        { value: "3", label: "14 px" },
+        { value: "4", label: "16 px" },
+        { value: "5", label: "18 px" },
+        { value: "6", label: "24 px" },
+        { value: "7", label: "32 px" }
+    ], "size");
+    const colorControl = document.createElement("label");
+    colorControl.className = "erp-editor-control erp-editor-color";
+    colorControl.textContent = "Warna teks";
+    const colorInput = document.createElement("input");
+    colorInput.type = "color";
+    colorInput.value = "#111111";
+    colorInput.dataset.format = "color";
+    colorInput.setAttribute("aria-label", "Warna teks");
+    colorControl.appendChild(colorInput);
+
+    const formattingControls = document.createElement("div");
+    formattingControls.className = "erp-editor-formatting";
+    formattingControls.append(fontControl, sizeControl, colorControl);
+    toolbar.insertBefore(formattingControls, toolbar.firstChild);
+
+    const alignmentGroup = document.createElement("div");
+    alignmentGroup.className = "erp-editor-alignment";
+    const alignmentLabel = document.createElement("span");
+    alignmentLabel.className = "erp-editor-group-label";
+    alignmentLabel.textContent = "Perataan";
+    alignmentGroup.appendChild(alignmentLabel);
+
     [
-        { command: "justifyLeft", label: "Rata kiri" },
-        { command: "justifyCenter", label: "Rata tengah" },
-        { command: "justifyRight", label: "Rata kanan" },
+        { command: "justifyLeft", label: "Kiri", title: "Rata kiri" },
+        { command: "justifyCenter", label: "Tengah", title: "Rata tengah" },
+        { command: "justifyRight", label: "Kanan", title: "Rata kanan" },
+        { command: "justifyFull", label: "Rata penuh", title: "Rata penuh" }
+    ].forEach(function (item) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.command = item.command;
+        button.textContent = item.label;
+        button.setAttribute("aria-label", item.title);
+        button.title = item.title;
+        alignmentGroup.appendChild(button);
+    });
+
+    [
         { command: "outdent", label: "Kurangi indent" },
         { command: "indent", label: "Tambah indent" }
     ].forEach(function (item) {
@@ -43,8 +109,9 @@
         button.textContent = item.label;
         button.setAttribute("aria-label", item.label);
         button.title = item.label;
-        toolbar.insertBefore(button, imageFile.closest(".erp-editor-file"));
+        alignmentGroup.appendChild(button);
     });
+    toolbar.insertBefore(alignmentGroup, imageFile.closest(".erp-editor-file"));
 
     function setEditorAccess(enabled) {
         isAdmin = enabled;
@@ -180,6 +247,34 @@
             rememberSelection();
             saveLater();
         });
+    });
+
+    fontControl.querySelector("select").addEventListener("change", function (event) {
+        restoreSelection();
+        content.focus();
+        document.execCommand("fontName", false, event.target.value);
+        rememberSelection();
+        saveLater();
+    });
+
+    sizeControl.querySelector("select").addEventListener("change", function (event) {
+        restoreSelection();
+        content.focus();
+        document.execCommand("fontSize", false, event.target.value);
+        rememberSelection();
+        saveLater();
+    });
+
+    colorInput.addEventListener("input", function () {
+        restoreSelection();
+        content.focus();
+        document.execCommand("foreColor", false, colorInput.value);
+        rememberSelection();
+        saveLater();
+    });
+
+    toolbar.addEventListener("mousedown", function (event) {
+        if (event.target.closest("select, input[type='color']")) rememberSelection();
     });
 
     toolbar.addEventListener("mousedown", function (event) {
