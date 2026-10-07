@@ -1082,16 +1082,10 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 
 .erp-editor-toolbar-sticky {
     position: sticky;
-    top: var(--editor-toolbar-top, 0px);
+    top: 8px;
     z-index: 50;
     margin-bottom: 12px;
     box-shadow: 0 4px 14px rgb(0 0 0 / 12%);
-}
-
-@media (max-width: 700px) {
-    .erp-editor-toolbar-sticky {
-        top: var(--editor-toolbar-top, 0px);
-    }
 }
 
 .erp-editor-toolbar-sticky[hidden] {

@@ -113,24 +113,12 @@
     alignmentGroup.setAttribute("aria-label", "Perataan teks");
     toolbar.insertBefore(alignmentGroup, imageFile.closest(".erp-editor-file"));
 
-    function updateToolbarOffset() {
-        if (!isAdmin) return;
-        const navbar = document.getElementById("navbar");
-        const navbarBottom = navbar ? navbar.getBoundingClientRect().bottom : 0;
-        toolbar.style.setProperty("--editor-toolbar-top", `${Math.max(0, navbarBottom)}px`);
-    }
-
-    window.addEventListener("scroll", updateToolbarOffset, { passive: true });
-    window.addEventListener("resize", updateToolbarOffset);
-
     function setEditorAccess(enabled) {
         isAdmin = enabled;
         content.contentEditable = enabled ? "true" : "false";
         toolbar.hidden = !enabled;
         toolbar.classList.toggle("erp-editor-toolbar-sticky", enabled);
-        if (enabled) updateToolbarOffset();
         if (!enabled) {
-            toolbar.style.removeProperty("--editor-toolbar-top");
             content.title = "Admin";
             status.textContent = "View";
         }
