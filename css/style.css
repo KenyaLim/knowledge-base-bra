@@ -1082,7 +1082,7 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 
 .erp-editor-toolbar-sticky {
     position: sticky;
-    top: 8px;
+    top: 4px;
     z-index: 50;
     margin-bottom: 12px;
     box-shadow: 0 4px 14px rgb(0 0 0 / 12%);
