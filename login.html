@@ -29,11 +29,11 @@
             <form class="login-form" method="POST" action="/api/login" autocomplete="on">
                 <input type="hidden" name="next" id="nextField" value="/index.html">
 
-                <label class="login-label" for="email">Email</label>
+                <label class="login-label" for="identity">Username atau email</label>
                 <input
-                    id="email"
-                    name="email"
-                    type="email"
+                    id="identity"
+                    name="identity"
+                    type="text"
                     required
                     autocomplete="username"
                     spellcheck="false"
@@ -69,7 +69,7 @@
 
         if (error === "invalid") {
             errorBox.hidden = false;
-            errorBox.textContent = "Email or password is incorrect.";
+            errorBox.textContent = "Username/email atau password salah.";
         }
 
         if (error === "config") {

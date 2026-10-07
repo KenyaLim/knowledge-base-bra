@@ -89,37 +89,48 @@ async function handleLogin(request, url) {
     const supabaseUrl = (process.env.SUPABASE_URL || "").replace(/\/$/, "");
     const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || "";
 
-    if (!supabaseUrl || !supabaseAnonKey || !secret) {
+    if (!secret) {
         return redirectTo(loginUrl(url.origin, "config", "/index.html"));
     }
 
-    let submittedEmail = "";
+    let submittedIdentity = "";
     let submittedPassword = "";
     let nextPath = "/index.html";
 
     try {
         const form = await request.formData();
-        submittedEmail = String(form.get("email") || "").trim();
+        submittedIdentity = String(
+            form.get("identity") || form.get("email") || ""
+        ).trim();
         submittedPassword = String(form.get("password") || "");
         nextPath = safeNext(String(form.get("next") || "/index.html"));
     } catch {
         return redirectTo(loginUrl(url.origin, "invalid", "/index.html"));
     }
 
-    const user = await authenticateWithSupabase(
-        supabaseUrl,
-        supabaseAnonKey,
-        submittedEmail,
+    let user = await authenticateWithManualUser(
+        secret,
+        submittedIdentity,
         submittedPassword
     );
+
+    if (!user && supabaseUrl && supabaseAnonKey) {
+        user = await authenticateWithSupabase(
+            supabaseUrl,
+            supabaseAnonKey,
+            submittedIdentity,
+            submittedPassword
+        );
+    }
 
     if (!user) {
         return redirectTo(loginUrl(url.origin, "invalid", nextPath));
     }
 
     const token = await createSession(secret, {
-        email: submittedEmail,
-        name: user.user_metadata?.full_name || user.user_metadata?.name || ""
+        email: user.email || submittedIdentity,
+        name: user.name || user.user_metadata?.full_name || user.user_metadata?.name || "",
+        role: user.role || "user"
     });
     const response = redirectTo(new URL(nextPath, url.origin).toString());
 
@@ -129,6 +140,48 @@ async function handleLogin(request, url) {
     );
 
     return response;
+}
+
+async function authenticateWithManualUser(secret, identity, password) {
+    if (!identity || !password) return false;
+
+    const configuredUsers = parseManualUsers(process.env.MANUAL_USERS || "");
+    const user = configuredUsers.find(
+        (candidate) => candidate.username.toLowerCase() === identity.toLowerCase()
+    );
+    if (!user || !(await secretsEqual(secret, password, user.password))) return false;
+
+    return {
+        email: user.username,
+        name: user.name,
+        role: user.role
+    };
+}
+
+function parseManualUsers(value) {
+    if (!value) return [];
+
+    try {
+        const parsed = JSON.parse(value);
+        const entries = Array.isArray(parsed)
+            ? parsed
+            : Object.entries(parsed).map(([username, details]) => ({
+                username,
+                ...(typeof details === "string" ? { password: details } : details)
+            }));
+
+        return entries
+            .filter((user) => user && typeof user === "object")
+            .map((user) => ({
+                username: String(user.username || user.user || "").trim(),
+                password: String(user.password || ""),
+                name: String(user.name || user.username || user.user || "").trim(),
+                role: user.role === "admin" ? "admin" : "user"
+            }))
+            .filter((user) => user.username && user.password);
+    } catch {
+        return [];
+    }
 }
 
 async function authenticateWithSupabase(url, anonKey, email, password) {
@@ -166,6 +219,7 @@ async function handleSession(request) {
         authenticated: true,
         email: session.e || session.u || "",
         name: session.n || "",
+        role: session.r || "user",
         isAdmin: isCmsAdmin(session)
     }, {
         headers: {
@@ -307,6 +361,7 @@ async function handleCmsAdminUpload(request) {
 
 function isCmsAdmin(session) {
     if (!session) return false;
+    if (session.r === "admin") return true;
     const admins = (process.env.CMS_ADMIN_EMAILS || "")
         .split(",")
         .map((email) => email.trim().toLowerCase())
@@ -352,6 +407,7 @@ async function createSession(secret, user) {
     const payload = encodePayload({
         e: user.email,
         n: user.name,
+        r: user.role === "admin" ? "admin" : "user",
         a: Date.now(),
         exp: Date.now() + SESSION_MS
     });
@@ -396,6 +452,7 @@ async function refreshSession(secret, session) {
     const payload = encodePayload({
         e: session.e || session.u || "",
         n: session.n || "",
+        r: session.r === "admin" ? "admin" : "user",
         a: Date.now(),
         exp: session.exp
     });
