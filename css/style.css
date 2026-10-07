@@ -1082,8 +1082,8 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 
 .erp-editor-toolbar-sticky {
     position: sticky;
-    top: 4px;
-    z-index: 50;
+    top: 64px;
+    z-index: 99;
     margin-bottom: 12px;
     box-shadow: 0 4px 14px rgb(0 0 0 / 12%);
 }
@@ -1586,6 +1586,10 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 }
 
 @media (max-width: 520px) {
+    .erp-editor-toolbar-sticky {
+        top: 64px;
+    }
+
     .top-navbar {
         padding: 0 12px;
     }
