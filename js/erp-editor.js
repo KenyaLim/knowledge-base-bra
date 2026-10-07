@@ -257,7 +257,6 @@
         const selection = window.getSelection();
         selection.removeAllRanges();
         selection.addRange(savedRange);
-        content.focus({ preventScroll: true });
         return true;
     }
 
@@ -318,7 +317,10 @@
 
     function applyCommand(command, value) {
         if (!restoreSelection()) return;
+        content.focus({ preventScroll: true });
+        document.execCommand("styleWithCSS", false, true);
         document.execCommand(command, false, value || null);
+        content.focus({ preventScroll: true });
         rememberSelection();
         saveLater();
         updateFloatingToolbar();
@@ -348,21 +350,30 @@
 
     floatingFont.querySelector("select").addEventListener("change", function (event) {
         if (!restoreSelection()) return;
+        content.focus({ preventScroll: true });
+        document.execCommand("styleWithCSS", false, true);
         document.execCommand("fontName", false, event.target.value);
+        content.focus({ preventScroll: true });
         rememberSelection();
         saveLater();
         updateFloatingToolbar();
     });
     floatingSize.querySelector("select").addEventListener("change", function (event) {
         if (!restoreSelection()) return;
+        content.focus({ preventScroll: true });
+        document.execCommand("styleWithCSS", false, true);
         document.execCommand("fontSize", false, event.target.value);
+        content.focus({ preventScroll: true });
         rememberSelection();
         saveLater();
         updateFloatingToolbar();
     });
     floatingColor.addEventListener("input", function () {
         if (!restoreSelection()) return;
+        content.focus({ preventScroll: true });
+        document.execCommand("styleWithCSS", false, true);
         document.execCommand("foreColor", false, floatingColor.value);
+        content.focus({ preventScroll: true });
         rememberSelection();
         saveLater();
         updateFloatingToolbar();
@@ -376,6 +387,7 @@
             if (!floatingToolbar.contains(document.activeElement)) floatingToolbar.hidden = true;
             return;
         }
+        if (floatingToolbar.contains(document.activeElement)) return;
 
         savedRange = selection.getRangeAt(0).cloneRange();
         const range = selection.getRangeAt(0);
