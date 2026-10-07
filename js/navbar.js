@@ -150,7 +150,18 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Inventory",
                         icon: "ph-box-arrow-down",
                         children: [
-                            { title: "Issue / Receipt", page: "inventory-stock", url: "erp/inventory/issuereceipt.html" }                        ]
+                            { title: "Issue / Receipt", page: "inventory-stock", url: "erp/inventory/issuereceipt.html" },
+                            { title: "Allowance", page: "inventory-allowance", url: "erp/inventory/allowance.html" },
+                            { title: "ASN", page: "inventory-asn", url: "erp/inventory/asn.html" },
+                            { title: "CFREP", page: "inventory-cfrep", url: "erp/inventory/cfrep.html" },
+                            { title: "Item Master", page: "inventory-item-master", url: "erp/inventory/itemmaster.html" },
+                            { title: "Material Transfer", page: "inventory-material-transfer", url: "erp/inventory/materialtransfer.html" },
+                            { title: "Opening Stock", page: "inventory-opening-stock", url: "erp/inventory/opstock.html" },
+                            { title: "Other Issue", page: "inventory-other-issue", url: "erp/inventory/otherissue.html" },
+                            { title: "QCBP", page: "inventory-qcbp", url: "erp/inventory/qcbp.html" },
+                            { title: "Sample Issue", page: "inventory-sample-issue", url: "erp/inventory/sampleissue.html" },
+                            { title: "Stock Reconciliation", page: "inventory-stock-reconciliation", url: "erp/inventory/stockrec.html" }
+                        ]
                     },
                     {
                         id: "stage-packing",
