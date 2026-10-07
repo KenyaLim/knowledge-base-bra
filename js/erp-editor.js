@@ -20,7 +20,6 @@
     let isAdmin = false;
     let saveTimer;
     let editVersion = 0;
-    let savedRange = null;
 
     content.contentEditable = "false";
     toolbar.hidden = true;
@@ -114,62 +113,24 @@
     alignmentGroup.setAttribute("aria-label", "Perataan teks");
     toolbar.insertBefore(alignmentGroup, imageFile.closest(".erp-editor-file"));
 
-    const floatingToolbar = document.createElement("div");
-    floatingToolbar.className = "erp-editor-floating-toolbar";
-    floatingToolbar.setAttribute("role", "toolbar");
-    floatingToolbar.setAttribute("aria-label", "Pemformatan pilihan teks");
-    floatingToolbar.hidden = true;
-    const floatingControls = document.createElement("div");
-    floatingControls.className = "erp-editor-floating-controls";
-    const floatingFont = createSelect("Font", [
-        { value: "Arial", label: "Arial" },
-        { value: "Inter", label: "Inter" },
-        { value: "Georgia", label: "Georgia" },
-        { value: "Times New Roman", label: "Times New Roman" },
-        { value: "Courier New", label: "Courier New" }
-    ], "floating-font");
-    const floatingSize = createSelect("Ukuran", [
-        { value: "2", label: "12 px" },
-        { value: "3", label: "14 px" },
-        { value: "4", label: "16 px" },
-        { value: "5", label: "18 px" },
-        { value: "6", label: "24 px" },
-        { value: "7", label: "32 px" }
-    ], "floating-size");
-    floatingControls.append(floatingFont, floatingSize);
-    floatingToolbar.append(floatingControls);
-    [
-        { command: "bold", label: "B", title: "Tebal" },
-        { command: "italic", label: "I", title: "Miring" },
-        { command: "underline", label: "U", title: "Garis bawah" },
-        { command: "strikeThrough", label: "S̶", title: "Coret" },
-        { command: "justifyLeft", label: "☰", title: "Rata kiri" },
-        { command: "justifyCenter", label: "☷", title: "Rata tengah" },
-        { command: "justifyRight", label: "☰", title: "Rata kanan" },
-        { command: "insertUnorderedList", label: "•≡", title: "Daftar berpoin" },
-        { command: "insertOrderedList", label: "1.≡", title: "Daftar bernomor" }
-    ].forEach(function (item) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.dataset.command = item.command;
-        button.textContent = item.label;
-        button.setAttribute("aria-label", item.title);
-        button.title = item.title;
-        floatingToolbar.appendChild(button);
-    });
-    const floatingColor = document.createElement("input");
-    floatingColor.type = "color";
-    floatingColor.value = "#111111";
-    floatingColor.setAttribute("aria-label", "Warna teks");
-    floatingColor.title = "Warna teks";
-    floatingToolbar.appendChild(floatingColor);
-    editor.appendChild(floatingToolbar);
+    function updateToolbarOffset() {
+        if (!isAdmin) return;
+        const navbar = document.getElementById("navbar");
+        const navbarBottom = navbar ? navbar.getBoundingClientRect().bottom : 0;
+        toolbar.style.setProperty("--editor-toolbar-top", `${Math.max(0, navbarBottom)}px`);
+    }
+
+    window.addEventListener("scroll", updateToolbarOffset, { passive: true });
+    window.addEventListener("resize", updateToolbarOffset);
 
     function setEditorAccess(enabled) {
         isAdmin = enabled;
         content.contentEditable = enabled ? "true" : "false";
         toolbar.hidden = !enabled;
+        toolbar.classList.toggle("erp-editor-toolbar-sticky", enabled);
+        if (enabled) updateToolbarOffset();
         if (!enabled) {
+            toolbar.style.removeProperty("--editor-toolbar-top");
             content.title = "Admin";
             status.textContent = "View";
         }
@@ -245,20 +206,6 @@
         }, 800);
     }
 
-    function rememberSelection() {
-        const selection = window.getSelection();
-        if (!selection || !selection.rangeCount || selection.isCollapsed) return;
-        const range = selection.getRangeAt(0);
-        if (content.contains(range.commonAncestorContainer)) savedRange = range.cloneRange();
-    }
-
-    function restoreSelection() {
-        if (!savedRange || !content.contains(savedRange.commonAncestorContainer)) return false;
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(savedRange);
-        return true;
-    }
 
     async function uploadImage(file) {
         const formData = new FormData();
@@ -270,7 +217,7 @@
     }
 
     function insertImage(source, alt) {
-        restoreSelection();
+        content.focus();
         const image = document.createElement("img");
         image.src = source;
         image.alt = alt || "Screenshot dokumentasi";
@@ -286,44 +233,33 @@
             range.collapse(true);
             selection.removeAllRanges();
             selection.addRange(range);
-            savedRange = range.cloneRange();
         }
         saveLater();
     }
 
     fontControl.querySelector("select").addEventListener("change", function (event) {
-        restoreSelection();
         content.focus();
         document.execCommand("fontName", false, event.target.value);
-        rememberSelection();
         saveLater();
     });
 
     sizeControl.querySelector("select").addEventListener("change", function (event) {
-        restoreSelection();
         content.focus();
         document.execCommand("fontSize", false, event.target.value);
-        rememberSelection();
         saveLater();
     });
 
     colorInput.addEventListener("input", function () {
-        restoreSelection();
         content.focus();
         document.execCommand("foreColor", false, colorInput.value);
-        rememberSelection();
         saveLater();
     });
 
     function applyCommand(command, value) {
-        if (!restoreSelection()) return;
-        content.focus({ preventScroll: true });
+        content.focus();
         document.execCommand("styleWithCSS", false, true);
         document.execCommand(command, false, value || null);
-        content.focus({ preventScroll: true });
-        rememberSelection();
         saveLater();
-        updateFloatingToolbar();
     }
 
     editor.querySelectorAll("[data-command]").forEach(function (button) {
@@ -333,88 +269,19 @@
     });
 
     toolbar.addEventListener("mousedown", function (event) {
-        if (event.target.closest("select, input[type='color']")) rememberSelection();
         if (event.target.closest("[data-command], [data-insert-image]")) event.preventDefault();
     });
 
-    floatingToolbar.addEventListener("mousedown", function (event) {
-        if (event.target.closest("button")) event.preventDefault();
-        if (event.target.closest("select, input[type='color']")) rememberSelection();
-    });
-
-    floatingToolbar.querySelectorAll("[data-command]").forEach(function (button) {
-        button.addEventListener("click", function () {
-            applyCommand(button.dataset.command);
-        });
-    });
-
-    floatingFont.querySelector("select").addEventListener("change", function (event) {
-        if (!restoreSelection()) return;
-        content.focus({ preventScroll: true });
-        document.execCommand("styleWithCSS", false, true);
-        document.execCommand("fontName", false, event.target.value);
-        content.focus({ preventScroll: true });
-        rememberSelection();
-        saveLater();
-        updateFloatingToolbar();
-    });
-    floatingSize.querySelector("select").addEventListener("change", function (event) {
-        if (!restoreSelection()) return;
-        content.focus({ preventScroll: true });
-        document.execCommand("styleWithCSS", false, true);
-        document.execCommand("fontSize", false, event.target.value);
-        content.focus({ preventScroll: true });
-        rememberSelection();
-        saveLater();
-        updateFloatingToolbar();
-    });
-    floatingColor.addEventListener("input", function () {
-        if (!restoreSelection()) return;
-        content.focus({ preventScroll: true });
-        document.execCommand("styleWithCSS", false, true);
-        document.execCommand("foreColor", false, floatingColor.value);
-        content.focus({ preventScroll: true });
-        rememberSelection();
-        saveLater();
-        updateFloatingToolbar();
-    });
-
-    function updateFloatingToolbar() {
+    function updateToolbarOffset() {
         if (!isAdmin) return;
-        const selection = window.getSelection();
-        if (!selection || !selection.rangeCount || selection.isCollapsed
-            || !content.contains(selection.anchorNode) || !content.contains(selection.focusNode)) {
-            if (!floatingToolbar.contains(document.activeElement)) floatingToolbar.hidden = true;
-            return;
-        }
-        if (floatingToolbar.contains(document.activeElement)) return;
-
-        savedRange = selection.getRangeAt(0).cloneRange();
-        const range = selection.getRangeAt(0);
-        const rects = Array.from(range.getClientRects()).filter(function (rect) {
-            return rect.width || rect.height;
-        });
-        const rect = rects[0] || range.getBoundingClientRect();
-        if (!rect.width && !rect.height) return;
-
-        floatingToolbar.hidden = false;
-        const toolbarRect = floatingToolbar.getBoundingClientRect();
-        const left = Math.max(12, Math.min(
-            window.scrollX + rect.left + rect.width / 2 - toolbarRect.width / 2,
-            window.scrollX + window.innerWidth - toolbarRect.width - 12
-        ));
-        const top = rect.top >= toolbarRect.height + 10
-            ? window.scrollY + rect.top - toolbarRect.height - 10
-            : window.scrollY + rect.bottom + 10;
-        floatingToolbar.style.left = `${left}px`;
-        floatingToolbar.style.top = `${top}px`;
+        const navbar = document.getElementById("navbar");
+        const navbarBottom = navbar ? navbar.getBoundingClientRect().bottom : 0;
+        toolbar.style.setProperty("--editor-toolbar-top", `${Math.max(0, navbarBottom)}px`);
     }
 
-    content.addEventListener("mouseup", updateFloatingToolbar);
-    content.addEventListener("keyup", updateFloatingToolbar);
-    document.addEventListener("selectionchange", updateFloatingToolbar);
-    window.addEventListener("scroll", updateFloatingToolbar, true);
-    window.addEventListener("resize", updateFloatingToolbar);
+    window.addEventListener("scroll", updateToolbarOffset, { passive: true });
+    window.addEventListener("resize", updateToolbarOffset);
+
 
     imageFile.addEventListener("change", function () {
         const file = imageFile.files && imageFile.files[0];
@@ -431,12 +298,6 @@
     });
 
     content.addEventListener("input", saveLater);
-    content.addEventListener("mouseup", rememberSelection);
-    content.addEventListener("keyup", rememberSelection);
-    document.addEventListener("selectionchange", function () {
-        rememberSelection();
-        updateFloatingToolbar();
-    });
     content.addEventListener("paste", function (event) {
         const image = Array.from(event.clipboardData.files || []).find(function (file) {
             return file.type.startsWith("image/");
