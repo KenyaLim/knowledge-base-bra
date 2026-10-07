@@ -1009,7 +1009,10 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 
 .erp-editor-toolbar button,
 .erp-editor-file,
-.erp-editor-toolbar input {
+.erp-editor-toolbar input,
+.erp-editor-floating-toolbar button,
+.erp-editor-floating-toolbar select,
+.erp-editor-floating-toolbar input[type="color"] {
     min-height: 36px;
     padding: 7px 10px;
     border: 1px solid #bdbdbd;
@@ -1078,6 +1081,56 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 .erp-editor-control select:focus,
 .erp-editor-control input[type="color"]:focus {
     border-color: #555555;
+}
+
+.erp-editor-floating-toolbar {
+    position: absolute;
+    z-index: 1000;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    max-width: min(680px, calc(100vw - 24px));
+    padding: 7px;
+    border: 1px solid #c7c7c7;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 5px 20px rgb(0 0 0 / 18%);
+}
+
+.erp-editor-floating-toolbar[hidden] {
+    display: none;
+}
+
+.erp-editor-floating-toolbar button {
+    display: inline-grid;
+    min-width: 34px;
+    place-items: center;
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.erp-editor-floating-toolbar button:hover {
+    background: #f0f0f0;
+}
+
+.erp-editor-floating-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.erp-editor-floating-controls .erp-editor-control {
+    min-height: 34px;
+    padding: 2px 5px;
+}
+
+.erp-editor-floating-toolbar input[type="color"] {
+    width: 34px;
+    min-height: 34px;
+    padding: 3px;
+    cursor: pointer;
 }
 
 .erp-editor-file input {

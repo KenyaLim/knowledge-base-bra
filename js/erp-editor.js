@@ -85,10 +85,10 @@
     alignmentGroup.appendChild(alignmentLabel);
 
     [
-        { command: "justifyLeft", label: "Kiri", title: "Rata kiri" },
-        { command: "justifyCenter", label: "Tengah", title: "Rata tengah" },
-        { command: "justifyRight", label: "Kanan", title: "Rata kanan" },
-        { command: "justifyFull", label: "Rata penuh", title: "Rata penuh" }
+        { command: "justifyLeft", label: "☰", title: "Rata kiri" },
+        { command: "justifyCenter", label: "☷", title: "Rata tengah" },
+        { command: "justifyRight", label: "☰", title: "Rata kanan" },
+        { command: "justifyFull", label: "≋", title: "Rata penuh" }
     ].forEach(function (item) {
         const button = document.createElement("button");
         button.type = "button";
@@ -100,18 +100,70 @@
     });
 
     [
-        { command: "outdent", label: "Kurangi indent" },
-        { command: "indent", label: "Tambah indent" }
+        { command: "outdent", label: "⇤", title: "Kurangi indent" },
+        { command: "indent", label: "⇥", title: "Tambah indent" }
     ].forEach(function (item) {
         const button = document.createElement("button");
         button.type = "button";
         button.dataset.command = item.command;
         button.textContent = item.label;
-        button.setAttribute("aria-label", item.label);
-        button.title = item.label;
+        button.setAttribute("aria-label", item.title);
+        button.title = item.title;
         alignmentGroup.appendChild(button);
     });
+    alignmentGroup.setAttribute("aria-label", "Perataan teks");
     toolbar.insertBefore(alignmentGroup, imageFile.closest(".erp-editor-file"));
+
+    const floatingToolbar = document.createElement("div");
+    floatingToolbar.className = "erp-editor-floating-toolbar";
+    floatingToolbar.setAttribute("role", "toolbar");
+    floatingToolbar.setAttribute("aria-label", "Pemformatan pilihan teks");
+    floatingToolbar.hidden = true;
+    const floatingControls = document.createElement("div");
+    floatingControls.className = "erp-editor-floating-controls";
+    const floatingFont = createSelect("Font", [
+        { value: "Arial", label: "Arial" },
+        { value: "Inter", label: "Inter" },
+        { value: "Georgia", label: "Georgia" },
+        { value: "Times New Roman", label: "Times New Roman" },
+        { value: "Courier New", label: "Courier New" }
+    ], "floating-font");
+    const floatingSize = createSelect("Ukuran", [
+        { value: "2", label: "12 px" },
+        { value: "3", label: "14 px" },
+        { value: "4", label: "16 px" },
+        { value: "5", label: "18 px" },
+        { value: "6", label: "24 px" },
+        { value: "7", label: "32 px" }
+    ], "floating-size");
+    floatingControls.append(floatingFont, floatingSize);
+    floatingToolbar.append(floatingControls);
+    [
+        { command: "bold", label: "B", title: "Tebal" },
+        { command: "italic", label: "I", title: "Miring" },
+        { command: "underline", label: "U", title: "Garis bawah" },
+        { command: "strikeThrough", label: "S̶", title: "Coret" },
+        { command: "justifyLeft", label: "☰", title: "Rata kiri" },
+        { command: "justifyCenter", label: "☷", title: "Rata tengah" },
+        { command: "justifyRight", label: "☰", title: "Rata kanan" },
+        { command: "insertUnorderedList", label: "•≡", title: "Daftar berpoin" },
+        { command: "insertOrderedList", label: "1.≡", title: "Daftar bernomor" }
+    ].forEach(function (item) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.command = item.command;
+        button.textContent = item.label;
+        button.setAttribute("aria-label", item.title);
+        button.title = item.title;
+        floatingToolbar.appendChild(button);
+    });
+    const floatingColor = document.createElement("input");
+    floatingColor.type = "color";
+    floatingColor.value = "#111111";
+    floatingColor.setAttribute("aria-label", "Warna teks");
+    floatingColor.title = "Warna teks";
+    floatingToolbar.appendChild(floatingColor);
+    editor.appendChild(floatingToolbar);
 
     function setEditorAccess(enabled) {
         isAdmin = enabled;
@@ -239,16 +291,6 @@
         saveLater();
     }
 
-    editor.querySelectorAll("[data-command]").forEach(function (button) {
-        button.addEventListener("click", function () {
-            restoreSelection();
-            content.focus();
-            document.execCommand(button.dataset.command, false, null);
-            rememberSelection();
-            saveLater();
-        });
-    });
-
     fontControl.querySelector("select").addEventListener("change", function (event) {
         restoreSelection();
         content.focus();
@@ -273,13 +315,80 @@
         saveLater();
     });
 
-    toolbar.addEventListener("mousedown", function (event) {
-        if (event.target.closest("select, input[type='color']")) rememberSelection();
+    function applyCommand(command, value) {
+        restoreSelection();
+        content.focus();
+        document.execCommand(command, false, value || null);
+        rememberSelection();
+        saveLater();
+    }
+
+    editor.querySelectorAll("[data-command]").forEach(function (button) {
+        button.addEventListener("click", function () {
+            applyCommand(button.dataset.command);
+        });
     });
 
     toolbar.addEventListener("mousedown", function (event) {
+        if (event.target.closest("select, input[type='color']")) rememberSelection();
         if (event.target.closest("[data-command], [data-insert-image]")) event.preventDefault();
     });
+
+    floatingToolbar.addEventListener("mousedown", function (event) {
+        if (event.target.closest("select, input[type='color']")) rememberSelection();
+        if (event.target.closest("[data-command]")) event.preventDefault();
+    });
+
+    floatingToolbar.querySelectorAll("[data-command]").forEach(function (button) {
+        button.addEventListener("click", function () {
+            applyCommand(button.dataset.command);
+        });
+    });
+
+    floatingFont.querySelector("select").addEventListener("change", function (event) {
+        applyCommand("fontName", event.target.value);
+    });
+    floatingSize.querySelector("select").addEventListener("change", function (event) {
+        applyCommand("fontSize", event.target.value);
+    });
+    floatingColor.addEventListener("input", function () {
+        applyCommand("foreColor", floatingColor.value);
+    });
+
+    function updateFloatingToolbar() {
+        if (!isAdmin) return;
+        const selection = window.getSelection();
+        if (!selection || !selection.rangeCount || selection.isCollapsed
+            || !content.contains(selection.anchorNode) || !content.contains(selection.focusNode)) {
+            floatingToolbar.hidden = true;
+            return;
+        }
+
+        savedRange = selection.getRangeAt(0).cloneRange();
+        const rect = selection.getRangeAt(0).getBoundingClientRect();
+        if (!rect.width && !rect.height) {
+            floatingToolbar.hidden = true;
+            return;
+        }
+
+        floatingToolbar.hidden = false;
+        const toolbarRect = floatingToolbar.getBoundingClientRect();
+        const left = Math.max(12, Math.min(
+            window.scrollX + rect.left + rect.width / 2 - toolbarRect.width / 2,
+            window.scrollX + window.innerWidth - toolbarRect.width - 12
+        ));
+        floatingToolbar.style.left = `${left}px`;
+        floatingToolbar.style.top = `${window.scrollY + rect.top - toolbarRect.height - 10}px`;
+        if (rect.top < toolbarRect.height + 10) {
+            floatingToolbar.style.top = `${window.scrollY + rect.bottom + 10}px`;
+        }
+    }
+
+    content.addEventListener("mouseup", updateFloatingToolbar);
+    content.addEventListener("keyup", updateFloatingToolbar);
+    document.addEventListener("selectionchange", updateFloatingToolbar);
+    window.addEventListener("scroll", updateFloatingToolbar, true);
+    window.addEventListener("resize", updateFloatingToolbar);
 
     imageFile.addEventListener("change", function () {
         const file = imageFile.files && imageFile.files[0];
