@@ -247,17 +247,18 @@
 
     function rememberSelection() {
         const selection = window.getSelection();
-        if (!selection || !selection.rangeCount) return;
+        if (!selection || !selection.rangeCount || selection.isCollapsed) return;
         const range = selection.getRangeAt(0);
         if (content.contains(range.commonAncestorContainer)) savedRange = range.cloneRange();
     }
 
     function restoreSelection() {
-        if (!savedRange || !content.contains(savedRange.commonAncestorContainer)) return;
-        content.focus();
+        if (!savedRange || !content.contains(savedRange.commonAncestorContainer)) return false;
         const selection = window.getSelection();
         selection.removeAllRanges();
         selection.addRange(savedRange);
+        content.focus({ preventScroll: true });
+        return true;
     }
 
     async function uploadImage(file) {
@@ -316,11 +317,11 @@
     });
 
     function applyCommand(command, value) {
-        restoreSelection();
-        content.focus();
+        if (!restoreSelection()) return;
         document.execCommand(command, false, value || null);
         rememberSelection();
         saveLater();
+        updateFloatingToolbar();
     }
 
     editor.querySelectorAll("[data-command]").forEach(function (button) {
@@ -335,8 +336,8 @@
     });
 
     floatingToolbar.addEventListener("mousedown", function (event) {
+        if (event.target.closest("button")) event.preventDefault();
         if (event.target.closest("select, input[type='color']")) rememberSelection();
-        if (event.target.closest("[data-command]")) event.preventDefault();
     });
 
     floatingToolbar.querySelectorAll("[data-command]").forEach(function (button) {
@@ -346,13 +347,25 @@
     });
 
     floatingFont.querySelector("select").addEventListener("change", function (event) {
-        applyCommand("fontName", event.target.value);
+        if (!restoreSelection()) return;
+        document.execCommand("fontName", false, event.target.value);
+        rememberSelection();
+        saveLater();
+        updateFloatingToolbar();
     });
     floatingSize.querySelector("select").addEventListener("change", function (event) {
-        applyCommand("fontSize", event.target.value);
+        if (!restoreSelection()) return;
+        document.execCommand("fontSize", false, event.target.value);
+        rememberSelection();
+        saveLater();
+        updateFloatingToolbar();
     });
     floatingColor.addEventListener("input", function () {
-        applyCommand("foreColor", floatingColor.value);
+        if (!restoreSelection()) return;
+        document.execCommand("foreColor", false, floatingColor.value);
+        rememberSelection();
+        saveLater();
+        updateFloatingToolbar();
     });
 
     function updateFloatingToolbar() {
@@ -360,16 +373,17 @@
         const selection = window.getSelection();
         if (!selection || !selection.rangeCount || selection.isCollapsed
             || !content.contains(selection.anchorNode) || !content.contains(selection.focusNode)) {
-            floatingToolbar.hidden = true;
+            if (!floatingToolbar.contains(document.activeElement)) floatingToolbar.hidden = true;
             return;
         }
 
         savedRange = selection.getRangeAt(0).cloneRange();
-        const rect = selection.getRangeAt(0).getBoundingClientRect();
-        if (!rect.width && !rect.height) {
-            floatingToolbar.hidden = true;
-            return;
-        }
+        const range = selection.getRangeAt(0);
+        const rects = Array.from(range.getClientRects()).filter(function (rect) {
+            return rect.width || rect.height;
+        });
+        const rect = rects[0] || range.getBoundingClientRect();
+        if (!rect.width && !rect.height) return;
 
         floatingToolbar.hidden = false;
         const toolbarRect = floatingToolbar.getBoundingClientRect();
@@ -377,11 +391,11 @@
             window.scrollX + rect.left + rect.width / 2 - toolbarRect.width / 2,
             window.scrollX + window.innerWidth - toolbarRect.width - 12
         ));
+        const top = rect.top >= toolbarRect.height + 10
+            ? window.scrollY + rect.top - toolbarRect.height - 10
+            : window.scrollY + rect.bottom + 10;
         floatingToolbar.style.left = `${left}px`;
-        floatingToolbar.style.top = `${window.scrollY + rect.top - toolbarRect.height - 10}px`;
-        if (rect.top < toolbarRect.height + 10) {
-            floatingToolbar.style.top = `${window.scrollY + rect.bottom + 10}px`;
-        }
+        floatingToolbar.style.top = `${top}px`;
     }
 
     content.addEventListener("mouseup", updateFloatingToolbar);
@@ -407,7 +421,10 @@
     content.addEventListener("input", saveLater);
     content.addEventListener("mouseup", rememberSelection);
     content.addEventListener("keyup", rememberSelection);
-    document.addEventListener("selectionchange", rememberSelection);
+    document.addEventListener("selectionchange", function () {
+        rememberSelection();
+        updateFloatingToolbar();
+    });
     content.addEventListener("paste", function (event) {
         const image = Array.from(event.clipboardData.files || []).find(function (file) {
             return file.type.startsWith("image/");
