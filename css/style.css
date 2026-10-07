@@ -992,7 +992,7 @@ input {
 .erp-editor-toolbar {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    /* gap: 4px; */
     margin-bottom: 16px;
     padding: 12px;
     border: 1px solid #d4d4d4;
