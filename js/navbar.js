@@ -566,6 +566,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 const pageText = Array.from(parsedPage.querySelectorAll("[contenteditable], .doc-block"))
                     .map(function (element) { return element.textContent; })
                     .join(" ");
+                const searchableContent = Array.from(parsedPage.querySelectorAll("[contenteditable], .doc-block"))
+                    .map(function (element) { return element.innerHTML; })
+                    .join("\n");
                 const storedText = material
                     ? `${material.title} ${material.summary} ${new DOMParser().parseFromString(material.content, "text/html").body.textContent}`
                     : "";
@@ -573,6 +576,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return {
                     title: [page.module, page.title, material ? material.title : pageTitle].filter(Boolean).join(" "),
                     text: material ? storedText : pageText,
+                    html: material ? material.content : searchableContent,
                     summary: material?.summary || pageText.replace(/\s+/g, " ").trim().slice(0, 240),
                     url: page.url
                 };
@@ -645,7 +649,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         function getSearchExcerpt(entry, terms) {
-            const text = entry.summary || entry.text.replace(/\s+/g, " ").trim();
+            const contentText = entry.text.replace(/\s+/g, " ").trim();
+            const contentMatch = terms
+                .map(function (term) { return contentText.toLocaleLowerCase().indexOf(term); })
+                .filter(function (index) { return index !== -1; })
+                .sort(function (left, right) { return left - right; })[0];
+            const text = contentMatch !== undefined ? contentText : (entry.summary || contentText);
             const firstMatch = terms
                 .map(function (term) { return text.toLocaleLowerCase().indexOf(term); })
                 .filter(function (index) { return index !== -1; })
@@ -668,11 +677,61 @@ document.addEventListener("DOMContentLoaded", function () {
             matches.forEach(function (entry) {
                 const result = document.createElement("a");
                 result.className = "search-result";
-                result.href = entry.url;
+                const params = new URLSearchParams();
+                params.set("search", terms.join(" "));
+                result.href = `${entry.url}${entry.url.includes("?") ? "&" : "?"}${params.toString()}#search-match`;
                 result.innerHTML = `<strong>${highlightHtml(entry.title, terms)}</strong><span>${highlightHtml(getSearchExcerpt(entry, terms), terms)}</span><i class="ph ph-arrow-up-right"></i>`;
                 searchResults.appendChild(result);
             });
             return matches.length;
+        }
+
+        function highlightLinkedSearch() {
+            const params = new URLSearchParams(window.location.search);
+            const terms = getSearchTerms(params.get("search"));
+            if (!terms.length) return;
+
+            const documentation = document.querySelector("main .doc-block [contenteditable], main .doc-block")
+                || document.querySelector("main .doc-block");
+            if (!documentation) return;
+
+            const match = terms.find(function (term) {
+                return normalizeSearchText(documentation.textContent).includes(term);
+            });
+            if (!match) return;
+
+            const matcher = new RegExp(terms.map(function (term) {
+                return term.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
+            }).join("|"), "gi");
+            const walker = document.createTreeWalker(documentation, NodeFilter.SHOW_TEXT);
+            let node;
+            while ((node = walker.nextNode())) {
+                if (node.parentElement.closest("script, style, .erp-editor-toolbar")) continue;
+                matcher.lastIndex = 0;
+                const found = matcher.exec(node.nodeValue);
+                if (!found) continue;
+
+                const mark = document.createElement("mark");
+                mark.className = "search-highlight search-target";
+                const range = document.createRange();
+                range.setStart(node, found.index);
+                range.setEnd(node, found.index + found[0].length);
+                range.surroundContents(mark);
+                mark.id = "search-match";
+                mark.scrollIntoView({ behavior: "smooth", block: "center" });
+                return;
+            }
+        }
+
+        if (new URLSearchParams(window.location.search).has("search")) {
+            let attempts = 0;
+            const highlightTimer = window.setInterval(function () {
+                attempts += 1;
+                highlightLinkedSearch();
+                if (document.getElementById("search-match") || attempts >= 40) {
+                    window.clearInterval(highlightTimer);
+                }
+            }, 250);
         }
 
         function runSearch() {
