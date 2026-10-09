@@ -3,6 +3,7 @@
     if (!editor) return;
 
     const content = editor.querySelector("[contenteditable]");
+    const documentBlock = editor.querySelector(".doc-block");
     const imageFile = editor.querySelector("[data-image-file]");
     const imageUrl = editor.querySelector("[data-image-url]");
     const status = editor.querySelector("[data-editor-status]");
@@ -20,6 +21,12 @@
     let isAdmin = false;
     let saveTimer;
     let editVersion = 0;
+
+    const outline = document.createElement("nav");
+    outline.className = "editor-outline";
+    outline.setAttribute("aria-label", "Daftar heading dokumentasi");
+    outline.innerHTML = "<strong>Daftar isi</strong><ol></ol>";
+    if (documentBlock) documentBlock.before(outline);
 
     content.contentEditable = "false";
     toolbar.hidden = true;
@@ -203,7 +210,9 @@
     function markHeadingBlocks() {
         content.querySelectorAll("p, div, h1, h2, h3, h4, h5, h6, li").forEach(function (block) {
             const text = block.textContent.replace(/\s+/g, "").trim();
-            if (!text || block.closest("li") && block !== block.closest("li")) return;
+            const parentBlock = block.parentElement?.closest("p, div, h1, h2, h3, h4, h5, h6, li");
+            if (!text || block === content || parentBlock && parentBlock !== content
+                || block.closest("li") && block !== block.closest("li")) return;
             const textNodes = [];
             const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
             let node;
@@ -215,6 +224,28 @@
             });
             block.classList.toggle("editor-heading", isBold);
         });
+    }
+
+    function renderOutline() {
+        const list = outline.querySelector("ol");
+        list.innerHTML = "";
+        content.querySelectorAll(".editor-heading").forEach(function (heading, index) {
+            const id = `editor-heading-${index + 1}`;
+            heading.id = id;
+            heading.tabIndex = -1;
+            const item = document.createElement("li");
+            const link = document.createElement("a");
+            link.href = `#${id}`;
+            link.textContent = heading.textContent.trim().replace(/\s+/g, " ");
+            link.addEventListener("click", function (event) {
+                event.preventDefault();
+                heading.scrollIntoView({ behavior: "smooth", block: "center" });
+                heading.focus({ preventScroll: true });
+            });
+            item.appendChild(link);
+            list.appendChild(item);
+        });
+        outline.hidden = list.children.length === 0;
     }
 
     function normalizeContent() {
@@ -230,6 +261,7 @@
             parent.removeChild(element);
         });
         markHeadingBlocks();
+        renderOutline();
     }
 
     content.addEventListener("input", function () {

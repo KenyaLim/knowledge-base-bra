@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 id: "stage",
                 title: "STAGE",
-                home: { title: "STAGE Home", page: "stage-home", url: "stage/home.html" },
+                home: { title: "", page: "stage-home", url: "stage/home.html" },
                 modules: [
                     {
                         id: "stage-order",
@@ -201,7 +201,7 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 id: "proman",
                 title: "PROMAN",
-                home: { title: "PROMAN Home", page: "proman-home", url: "proman/home.html" },
+                home: { title: "", page: "proman-home", url: "proman/home.html" },
                 modules: [
                     {
                         id: "proman-time-study",
