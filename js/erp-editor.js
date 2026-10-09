@@ -44,6 +44,14 @@
     underlineButton.title = "Garis bawah";
     toolbar.insertBefore(underlineButton, toolbar.querySelector("[data-insert-image]"));
 
+    const headingButton = document.createElement("button");
+    headingButton.type = "button";
+    headingButton.dataset.command = "heading";
+    headingButton.textContent = "Heading";
+    headingButton.setAttribute("aria-label", "Jadikan heading");
+    headingButton.title = "Jadikan heading untuk outline";
+    toolbar.insertBefore(headingButton, underlineButton);
+
     function setEditorAccess(enabled) {
         isAdmin = enabled;
         content.contentEditable = enabled ? "true" : "false";
@@ -168,7 +176,51 @@
         saveLater();
     }
 
+    function getSelectedBlock() {
+        const selection = window.getSelection();
+        if (!selection || !selection.rangeCount || !content.contains(selection.anchorNode)) return null;
+        let block = selection.anchorNode.nodeType === Node.ELEMENT_NODE
+            ? selection.anchorNode
+            : selection.anchorNode.parentElement;
+        return block.closest("p, div, h1, h2, h3, h4, h5, h6, li");
+    }
+
+    function toggleHeading() {
+        const block = getSelectedBlock();
+        if (!block || block === content) return;
+        const isHeading = block.classList.contains("editor-heading");
+        if (isHeading) {
+            block.querySelectorAll("strong, b").forEach(function (element) {
+                const parent = element.parentNode;
+                while (element.firstChild) parent.insertBefore(element.firstChild, element);
+                parent.removeChild(element);
+            });
+            block.classList.remove("editor-heading");
+        } else {
+            const textNodes = [];
+            const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+            let node;
+            while ((node = walker.nextNode())) {
+                if (node.nodeValue.trim() && !node.parentElement.closest("strong, b")) {
+                    textNodes.push(node);
+                }
+            }
+            textNodes.forEach(function (textNode) {
+                const strong = document.createElement("strong");
+                textNode.parentNode.insertBefore(strong, textNode);
+                strong.appendChild(textNode);
+            });
+            block.classList.add("editor-heading");
+        }
+        normalizeContent();
+        saveLater();
+    }
+
     editor.querySelectorAll("[data-command]").forEach(function (button) {
+        if (button.dataset.command === "heading") {
+            button.addEventListener("click", toggleHeading);
+            return;
+        }
         if (!["bold", "italic", "underline"].includes(button.dataset.command)) {
             button.hidden = true;
             return;

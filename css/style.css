@@ -713,6 +713,102 @@ input {
     color: #777777;
 }
 
+.glossary-intro {
+    margin: -8px 0 18px;
+    color: #666666;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.dashboard-glossary-grid,
+.glossary-list-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.dashboard-glossary-card {
+    padding: 20px;
+    border: 1px solid #d4d4d4;
+    border-top: 4px solid #8acb82;
+    background: #ffffff;
+}
+
+.dashboard-glossary-proman {
+    border-top-color: #14532d;
+}
+
+.glossary-card-label {
+    display: block;
+    margin-bottom: 14px;
+    color: #245c2a;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.dashboard-glossary-proman .glossary-card-label {
+    color: #14532d;
+}
+
+.dashboard-glossary-card dl,
+.glossary-list-grid dl {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+}
+
+.dashboard-glossary-card dl > div,
+.glossary-list-grid dl > div {
+    display: grid;
+    grid-template-columns: minmax(72px, 0.28fr) 1fr;
+    gap: 12px;
+}
+
+.dashboard-glossary-card dt,
+.glossary-list-grid dt {
+    color: #111111;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.dashboard-glossary-card dd,
+.glossary-list-grid dd {
+    margin: 0;
+    color: #666666;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.dashboard-glossary-card > a {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 18px;
+    color: #111111;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.dashboard-glossary-card > a:hover {
+    text-decoration: underline;
+}
+
+.glossary-list-grid {
+    gap: 20px;
+}
+
+.glossary-list-grid > dl {
+    padding: 20px;
+    border: 1px solid #d4d4d4;
+    border-top: 4px solid #8acb82;
+    background: #ffffff;
+}
+
+.glossary-list-proman > dl {
+    border-top-color: #14532d;
+}
+
 .search-box {
     display: flex;
     align-items: center;
@@ -1815,7 +1911,9 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
         grid-template-columns: 1fr;
     }
 
-    .module-home-grid {
+    .module-home-grid,
+    .dashboard-glossary-grid,
+    .glossary-list-grid {
         grid-template-columns: 1fr;
     }
 }
