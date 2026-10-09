@@ -1119,11 +1119,12 @@ input {
     text-transform: uppercase;
 }
 
-.editor-outline ol {
+.editor-outline ul {
     display: grid;
     gap: 5px;
     margin: 0;
-    padding-left: 20px;
+    padding: 0;
+    list-style: none;
 }
 
 .editor-outline li {

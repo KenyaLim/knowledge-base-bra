@@ -25,7 +25,7 @@
     const outline = document.createElement("nav");
     outline.className = "editor-outline";
     outline.setAttribute("aria-label", "Daftar heading dokumentasi");
-    outline.innerHTML = "<strong>Daftar isi</strong><ol></ol>";
+    outline.innerHTML = "<strong>Daftar isi</strong><ul></ul>";
     if (documentBlock) documentBlock.before(outline);
 
     content.contentEditable = "false";
@@ -279,7 +279,7 @@
     }
 
     function renderOutline() {
-        const list = outline.querySelector("ol");
+        const list = outline.querySelector("ul");
         list.innerHTML = "";
         content.querySelectorAll(".editor-heading").forEach(function (heading, index) {
             const id = `editor-heading-${index + 1}`;
