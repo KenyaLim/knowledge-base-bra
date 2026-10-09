@@ -1,6 +1,6 @@
 const COOKIE_NAME = "kb_session";
 const SESSION_MS = 1000 * 60 * 60 * 12;
-const IDLE_SESSION_MS = 1000 * 60 * 30;
+const IDLE_SESSION_MS = 1000 * 60 * 7;
 
 const PUBLIC_PATHS = ["/api/login", "/api/logout"];
 
