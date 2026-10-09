@@ -39,6 +39,13 @@ document.addEventListener("DOMContentLoaded", function () {
             return path.substring(0, markerIndex + 1);
         }
 
+        const stageMarker = "/stage/";
+        const stageIndex = path.indexOf(stageMarker);
+
+        if (stageIndex !== -1) {
+            return path.substring(0, stageIndex + 1);
+        }
+
         const promanMarker = "/proman/";
         const promanIndex = path.indexOf(promanMarker);
 
@@ -107,6 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 id: "stage",
                 title: "STAGE",
+                home: { title: "STAGE Home", page: "stage-home", url: "stage/home.html" },
                 modules: [
                     {
                         id: "stage-order",
@@ -193,6 +201,7 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 id: "proman",
                 title: "PROMAN",
+                home: { title: "PROMAN Home", page: "proman-home", url: "proman/home.html" },
                 modules: [
                     {
                         id: "proman-time-study",
@@ -334,6 +343,17 @@ document.addEventListener("DOMContentLoaded", function () {
                         return `
                             <section class="sidebar-app-group sidebar-app-group-${group.id}">
                                 <h2 class="sidebar-app-heading">${escapeHtml(group.title)}</h2>
+                                ${group.home ? `
+                                    <a
+                                        href="${ROOT}${group.home.url}"
+                                        class="sidebar-direct-link ${page === group.home.page ? "active" : ""}"
+                                    >
+                                        <span class="sidebar-main-icon">
+                                            <i class="ph ph-house-line"></i>
+                                        </span>
+                                        <span>${escapeHtml(group.home.title)}</span>
+                                    </a>
+                                ` : ""}
                                 ${group.modules.map(function (module) {
 
                         const active = moduleHasActivePage(module);

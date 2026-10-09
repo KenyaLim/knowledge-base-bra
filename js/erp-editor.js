@@ -29,89 +29,13 @@
     saveButton.textContent = "Simpan ke Supabase";
     toolbar.appendChild(saveButton);
 
-    function createSelect(labelText, options, name) {
-        const label = document.createElement("label");
-        label.className = "erp-editor-control";
-        label.textContent = labelText;
-
-        const select = document.createElement("select");
-        select.dataset.format = name;
-        options.forEach(function (option) {
-            const element = document.createElement("option");
-            element.value = option.value;
-            element.textContent = option.label;
-            select.appendChild(element);
-        });
-        label.appendChild(select);
-        return label;
-    }
-
-    const fontControl = createSelect("Font", [
-        { value: "Arial", label: "Arial" },
-        { value: "Inter", label: "Inter" },
-        { value: "Georgia", label: "Georgia" },
-        { value: "Times New Roman", label: "Times New Roman" },
-        { value: "Courier New", label: "Courier New" }
-    ], "font");
-    const sizeControl = createSelect("Ukuran", [
-        { value: "2", label: "12 px" },
-        { value: "3", label: "14 px" },
-        { value: "4", label: "16 px" },
-        { value: "5", label: "18 px" },
-        { value: "6", label: "24 px" },
-        { value: "7", label: "32 px" }
-    ], "size");
-    const colorControl = document.createElement("label");
-    colorControl.className = "erp-editor-control erp-editor-color";
-    colorControl.textContent = "Warna teks";
-    const colorInput = document.createElement("input");
-    colorInput.type = "color";
-    colorInput.value = "#111111";
-    colorInput.dataset.format = "color";
-    colorInput.setAttribute("aria-label", "Warna teks");
-    colorControl.appendChild(colorInput);
-
-    const formattingControls = document.createElement("div");
-    formattingControls.className = "erp-editor-formatting";
-    formattingControls.append(fontControl, sizeControl, colorControl);
-    toolbar.insertBefore(formattingControls, toolbar.firstChild);
-
-    const alignmentGroup = document.createElement("div");
-    alignmentGroup.className = "erp-editor-alignment";
-    const alignmentLabel = document.createElement("span");
-    alignmentLabel.className = "erp-editor-group-label";
-    alignmentLabel.textContent = "Perataan";
-    alignmentGroup.appendChild(alignmentLabel);
-
-    [
-        { command: "justifyLeft", label: "☰", title: "Rata kiri" },
-        { command: "justifyCenter", label: "☷", title: "Rata tengah" },
-        { command: "justifyRight", label: "☰", title: "Rata kanan" },
-        { command: "justifyFull", label: "≋", title: "Rata penuh" }
-    ].forEach(function (item) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.dataset.command = item.command;
-        button.textContent = item.label;
-        button.setAttribute("aria-label", item.title);
-        button.title = item.title;
-        alignmentGroup.appendChild(button);
-    });
-
-    [
-        { command: "outdent", label: "⇤", title: "Kurangi indent" },
-        { command: "indent", label: "⇥", title: "Tambah indent" }
-    ].forEach(function (item) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.dataset.command = item.command;
-        button.textContent = item.label;
-        button.setAttribute("aria-label", item.title);
-        button.title = item.title;
-        alignmentGroup.appendChild(button);
-    });
-    alignmentGroup.setAttribute("aria-label", "Perataan teks");
-    toolbar.insertBefore(alignmentGroup, imageFile.closest(".erp-editor-file"));
+    const underlineButton = document.createElement("button");
+    underlineButton.type = "button";
+    underlineButton.dataset.command = "underline";
+    underlineButton.innerHTML = "<u>U</u>";
+    underlineButton.setAttribute("aria-label", "Garis bawah");
+    underlineButton.title = "Garis bawah";
+    toolbar.insertBefore(underlineButton, toolbar.querySelector("[data-insert-image]"));
 
     function setEditorAccess(enabled) {
         isAdmin = enabled;
@@ -146,7 +70,10 @@
                 throw new Error(errorResult.error || "Gagal memuat dokumentasi");
             }
             const material = await response.json();
-            if (material && material.content) content.innerHTML = material.content;
+            if (material && material.content) {
+                content.innerHTML = material.content;
+                normalizeContent();
+            }
             status.textContent = session.isAdmin
                 ? (material ? "Tersimpan di Supabase" : "Belum tersimpan di Supabase")
                 : "Mode baca saja";
@@ -161,6 +88,7 @@
 
     async function save() {
         if (!isAdmin) return;
+        normalizeContent();
         const version = editVersion;
         status.textContent = "Menyimpan ke Supabase...";
         const response = await fetch("/api/cms/admin/content", {
@@ -225,32 +153,19 @@
         saveLater();
     }
 
-    fontControl.querySelector("select").addEventListener("change", function (event) {
-        content.focus();
-        document.execCommand("fontName", false, event.target.value);
-        saveLater();
-    });
-
-    sizeControl.querySelector("select").addEventListener("change", function (event) {
-        content.focus();
-        document.execCommand("fontSize", false, event.target.value);
-        saveLater();
-    });
-
-    colorInput.addEventListener("input", function () {
-        content.focus();
-        document.execCommand("foreColor", false, colorInput.value);
-        saveLater();
-    });
-
     function applyCommand(command, value) {
         content.focus();
         document.execCommand("styleWithCSS", false, true);
         document.execCommand(command, false, value || null);
+        normalizeContent();
         saveLater();
     }
 
     editor.querySelectorAll("[data-command]").forEach(function (button) {
+        if (!["bold", "italic", "underline"].includes(button.dataset.command)) {
+            button.hidden = true;
+            return;
+        }
         button.addEventListener("click", function () {
             applyCommand(button.dataset.command);
         });
@@ -285,13 +200,54 @@
         imageUrl.value = "";
     });
 
-    content.addEventListener("input", saveLater);
+    function markHeadingBlocks() {
+        content.querySelectorAll("p, div, h1, h2, h3, h4, h5, h6, li").forEach(function (block) {
+            const text = block.textContent.replace(/\s+/g, "").trim();
+            if (!text || block.closest("li") && block !== block.closest("li")) return;
+            const textNodes = [];
+            const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+            let node;
+            while ((node = walker.nextNode())) {
+                if (node.nodeValue.trim()) textNodes.push(node);
+            }
+            const isBold = textNodes.length > 0 && textNodes.every(function (textNode) {
+                return Boolean(textNode.parentElement.closest("strong, b"));
+            });
+            block.classList.toggle("editor-heading", isBold);
+        });
+    }
+
+    function normalizeContent() {
+        content.querySelectorAll("[style]").forEach(function (element) {
+            element.removeAttribute("style");
+        });
+        content.querySelectorAll("[class]").forEach(function (element) {
+            if (!element.classList.contains("erp-editor-image")) element.removeAttribute("class");
+        });
+        content.querySelectorAll("font, span").forEach(function (element) {
+            const parent = element.parentNode;
+            while (element.firstChild) parent.insertBefore(element.firstChild, element);
+            parent.removeChild(element);
+        });
+        markHeadingBlocks();
+    }
+
+    content.addEventListener("input", function () {
+        normalizeContent();
+        saveLater();
+    });
     content.addEventListener("paste", function (event) {
         const image = Array.from(event.clipboardData.files || []).find(function (file) {
             return file.type.startsWith("image/");
         });
-        if (!image) return;
         event.preventDefault();
+        if (!image) {
+            const text = event.clipboardData.getData("text/plain");
+            document.execCommand("insertText", false, text);
+            normalizeContent();
+            saveLater();
+            return;
+        }
         uploadImage(image).catch(function (error) { status.textContent = error.message; });
     });
 

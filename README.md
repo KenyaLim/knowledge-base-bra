@@ -38,3 +38,9 @@ Admins can select Order, MRP, Purchase, Inventory, Production, or Shipment;
 published materials are added as children in that module's sidebar. Use
 `Overview` for a module summary without an image and `Detail` for richer
 content with text, image, and/or PDF.
+
+The dashboard is organized by application: choose STAGE or PROMAN from
+`index.html`, then use the application's Home page to open its related
+modules. STAGE includes Order, Costing, MRP, Purchase, Inventory, Packing,
+Shipping, and Address; PROMAN includes Time Study, Fabric & Trims Inward,
+Fabric Issue, Cutting, Production, and Quality Control.
