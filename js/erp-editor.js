@@ -162,7 +162,7 @@
 
     function applyCommand(command, value) {
         content.focus();
-        document.execCommand("styleWithCSS", false, true);
+        document.execCommand("styleWithCSS", false, false);
         document.execCommand(command, false, value || null);
         normalizeContent();
         saveLater();
@@ -249,6 +249,23 @@
     }
 
     function normalizeContent() {
+        content.querySelectorAll("span[style]").forEach(function (element) {
+            const style = element.style;
+            const tagName = style.fontWeight === "bold" || Number(style.fontWeight) >= 600
+                ? "strong"
+                : style.fontStyle === "italic"
+                    ? "em"
+                    : style.textDecoration.includes("underline")
+                        ? "u"
+                        : null;
+            if (!tagName) {
+                element.removeAttribute("style");
+                return;
+            }
+            const replacement = document.createElement(tagName);
+            while (element.firstChild) replacement.appendChild(element.firstChild);
+            element.replaceWith(replacement);
+        });
         content.querySelectorAll("[style]").forEach(function (element) {
             element.removeAttribute("style");
         });
