@@ -265,13 +265,21 @@ async function handleCmsAdminContent(request, method) {
     }
 
     if (method === "DELETE") {
-        const id = new URL(request.url).searchParams.get("id");
-        if (!id || !/^[0-9a-f-]{36}$/i.test(id)) {
+        const params = new URL(request.url).searchParams;
+        const id = params.get("id");
+        const slug = params.get("slug");
+        if (!id && !slug) {
+            return jsonResponse({ error: "A material id or slug is required" }, 400);
+        }
+        const filter = id
+            ? `id=eq.${encodeURIComponent(id)}`
+            : `slug=eq.${encodeURIComponent(slug)}`;
+        if (id && !/^[0-9a-f-]{36}$/i.test(id)) {
             return jsonResponse({ error: "A valid material id is required" }, 400);
         }
         const result = await supabaseRequest(
             "DELETE",
-            `/rest/v1/cms_materials?id=eq.${encodeURIComponent(id)}`
+            `/rest/v1/cms_materials?${filter}`
         );
         if (!result.ok) return jsonResponse({ error: "Could not delete CMS material" }, 502);
         return jsonResponse({ deleted: true });

@@ -3,6 +3,7 @@
     if (!editor) return;
 
     const content = editor.querySelector("[contenteditable]");
+    const htmlBaseline = content.innerHTML;
     const documentBlock = editor.querySelector(".doc-block");
     const imageFile = editor.querySelector("[data-image-file]");
     const imageUrl = editor.querySelector("[data-image-url]");
@@ -356,9 +357,24 @@
         save().catch(function (error) { status.textContent = `Gagal menyimpan: ${error.message}`; });
     });
 
-    editor.querySelector("[data-reset-editor]").addEventListener("click", function () {
-        if (!isAdmin || !window.confirm("Muat ulang isi yang tersimpan di Supabase?")) return;
-        load();
+    editor.querySelector("[data-reset-editor]").addEventListener("click", async function () {
+        if (!isAdmin || !window.confirm("Reset ke isi HTML bawaan modul dan hapus versi Supabase?")) return;
+        clearTimeout(saveTimer);
+        editVersion += 1;
+        status.textContent = "Mereset ke isi HTML...";
+        try {
+            const response = await fetch(`/api/cms/admin/content?slug=${encodeURIComponent(slug)}`, {
+                method: "DELETE",
+                headers: { Accept: "application/json" }
+            });
+            const result = await response.json().catch(function () { return {}; });
+            if (!response.ok) throw new Error(result.error || "Gagal menghapus versi Supabase");
+            content.innerHTML = htmlBaseline;
+            normalizeContent();
+            status.textContent = "Kembali ke isi HTML bawaan";
+        } catch (error) {
+            status.textContent = `Reset gagal: ${error.message}`;
+        }
     });
 
     load();
