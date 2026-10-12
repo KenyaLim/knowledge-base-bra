@@ -180,13 +180,14 @@
     function getSelectedBlock() {
         const selection = window.getSelection();
         if (!selection || !selection.rangeCount || !content.contains(selection.anchorNode)) return null;
-        let block = selection.anchorNode.nodeType === Node.ELEMENT_NODE
-            ? selection.anchorNode
-            : selection.anchorNode.parentElement;
-        return block.closest("p, div, h1, h2, h3, h4, h5, h6, li");
+        const node = selection.anchorNode;
+        const element = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+        return element?.closest("p, div, h1, h2, h3, h4, h5, h6, li")
+            || (element === content ? content.querySelector("p, div, h1, h2, h3, h4, h5, h6, li") : null);
     }
 
     function toggleHeading() {
+        wrapOrphanTextNodes();
         const block = getSelectedBlock();
         if (!block || block === content) return;
         const isHeading = block.classList.contains("editor-heading");
