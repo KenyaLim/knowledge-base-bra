@@ -301,6 +301,15 @@
         outline.hidden = list.children.length === 0;
     }
 
+    function wrapOrphanTextNodes() {
+        Array.from(content.childNodes).forEach(function (node) {
+            if (node.nodeType !== Node.TEXT_NODE || !node.nodeValue.trim()) return;
+            const paragraph = document.createElement("p");
+            content.insertBefore(paragraph, node);
+            paragraph.appendChild(node);
+        });
+    }
+
     function normalizeContent() {
         content.querySelectorAll("span[style]").forEach(function (element) {
             const style = element.style;
@@ -330,6 +339,7 @@
             while (element.firstChild) parent.insertBefore(element.firstChild, element);
             parent.removeChild(element);
         });
+        wrapOrphanTextNodes();
         markHeadingBlocks();
         renderOutline();
     }

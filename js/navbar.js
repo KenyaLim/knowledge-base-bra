@@ -176,7 +176,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Packing",
                         icon: "ph-package",
                         children: [
-                            { title: "Packing Instruction", page: "shipment-packing", url: "erp/packing/packing.html" }
+                            { title: "Packing Instruction", page: "shipment-packing", url: "erp/packing/packing.html" },
+                            { title: "Carton Packing", page: "packing-carton", url: "erp/packing/cartonpack.html" },
+                            { title: "Fabric & Accessories", page: "packing-fabric-accessories", url: "erp/packing/fabricnacc.html" }
                         ]
                     },
                     {
@@ -185,7 +187,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         icon: "ph-truck",
                         children: [
                             { title: "Export", page: "shipment-export", url: "erp/shipment/export.html" },
-                            { title: "Invoice", page: "shipment-invoice", url: "erp/shipment/invoice.html" }
+                            { title: "Invoice", page: "shipment-invoice", url: "erp/shipment/invoice.html" },
+                            { title: "Export Control", page: "shipment-export-control", url: "erp/packing/exportcon.html" },
+                            { title: "Fabric Packing List", page: "shipment-list-fabric", url: "erp/packing/packinglistfabric.html" },
+                            { title: "Garment Packing List", page: "shipment-list-garment", url: "erp/packing/packinglistgarmen.html" }
                         ]
                     },
                     {
