@@ -333,7 +333,10 @@
             element.removeAttribute("style");
         });
         content.querySelectorAll("[class]").forEach(function (element) {
-            if (!element.classList.contains("erp-editor-image")) element.removeAttribute("class");
+            if (!element.classList.contains("erp-editor-image")
+                && !element.classList.contains("editor-heading")) {
+                element.removeAttribute("class");
+            }
         });
         content.querySelectorAll("font, span").forEach(function (element) {
             const parent = element.parentNode;
