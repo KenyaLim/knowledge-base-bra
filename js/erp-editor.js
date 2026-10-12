@@ -311,6 +311,16 @@
         });
     }
 
+    function wrapOrphanInlineNodes() {
+        const blockTags = new Set(["P", "DIV", "H1", "H2", "H3", "H4", "H5", "H6", "LI", "UL", "OL", "PRE", "BLOCKQUOTE"]);
+        Array.from(content.childNodes).forEach(function (node) {
+            if (node.nodeType !== Node.ELEMENT_NODE || blockTags.has(node.tagName)) return;
+            const paragraph = document.createElement("p");
+            content.insertBefore(paragraph, node);
+            paragraph.appendChild(node);
+        });
+    }
+
     function normalizeContent() {
         content.querySelectorAll("span[style]").forEach(function (element) {
             const style = element.style;
@@ -344,6 +354,7 @@
             parent.removeChild(element);
         });
         wrapOrphanTextNodes();
+        wrapOrphanInlineNodes();
         markHeadingBlocks();
         renderOutline();
     }
