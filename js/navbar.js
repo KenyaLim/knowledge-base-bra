@@ -400,9 +400,6 @@ document.addEventListener("DOMContentLoaded", function () {
                                 </button>
 
                                 <ul class="sidebar-children ${active ? "open" : ""}">
-                                    <li>
-                                        <a href="${ROOT}materials.html?module=${encodeURIComponent(module.dynamicModule || module.id)}&page=1">Semua materi (paging)</a>
-                                    </li>
                                     ${module.children.map(function (child) {
 
                                         const childActive = child.page === page;
