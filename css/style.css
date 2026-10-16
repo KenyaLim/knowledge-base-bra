@@ -2341,3 +2341,10 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
     padding: 12px 14px;
     margin: 0 0 20px 0;
 }
+.pager{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:20px 0 8px}
+.pager-button{padding:8px 14px;border:1px solid #cbd5e1;border-radius:8px;text-decoration:none;color:#0f172a;background:#fff}
+.pager-button.pager-active{background:#0f172a;color:#fff;border-color:#0f172a}
+.pager-button[aria-disabled="true"]{opacity:.45;pointer-events:none}
+.pager-dots{padding:8px 4px;color:#64748b}
+.module-filter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.module-filter a{padding:6px 12px;border:1px solid #cbd5e1;border-radius:999px;text-decoration:none;color:#0f172a;background:#f8fafc;font-size:13px}

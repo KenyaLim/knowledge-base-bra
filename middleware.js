@@ -233,18 +233,45 @@ async function handleSession(request) {
     });
 }
 
+function parsePagingParams(searchParams) {
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "9", 10) || 9));
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+    const module = String(searchParams.get("module") || searchParams.get("module_id") || "").trim().toLowerCase();
+    const usePaging = searchParams.has("page") || searchParams.has("limit") || searchParams.has("module");
+    return { page, limit, module, usePaging };
+}
+
+function moduleFilterQuery(module) {
+    if (!module) return "";
+    const m = encodeURIComponent(module);
+    return `&or=(module.ilike.*${m}*,module_id.eq.${m})`;
+}
+
 async function handleCmsContent(request) {
     const session = await readSession(request, process.env.AUTH_SECRET || "");
     if (!session) return jsonResponse({ error: "Unauthorized" }, 401);
 
-    const slug = new URL(request.url).searchParams.get("slug");
-    const query = slug
-        ? `?select=*&slug=eq.${encodeURIComponent(slug)}&published=eq.true&limit=1`
-        : "?select=*&published=eq.true&order=sort_order.asc,created_at.asc";
-    const result = await supabaseRequest("GET", "/rest/v1/cms_materials" + query);
-
+    const params = new URL(request.url).searchParams;
+    const slug = params.get("slug");
+    if (slug) {
+        const query = `?select=*&slug=eq.${encodeURIComponent(slug)}&published=eq.true&limit=1`;
+        const result = await supabaseRequest("GET", "/rest/v1/cms_materials" + query);
+        if (!result.ok) return jsonResponse({ error: "CMS database request failed" }, 502);
+        return jsonResponse(result.data[0] || null);
+    }
+    const { page, limit, module, usePaging } = parsePagingParams(params);
+    if (!usePaging) {
+        const result = await supabaseRequest("GET", "/rest/v1/cms_materials?select=*&published=eq.true&order=sort_order.asc,created_at.asc");
+        if (!result.ok) return jsonResponse({ error: "CMS database request failed" }, 502);
+        return jsonResponse(result.data);
+    }
+    const offset = (page - 1) * limit;
+    const query = `/rest/v1/cms_materials?select=*&published=eq.true${moduleFilterQuery(module)}&order=sort_order.asc,created_at.asc&limit=${limit}&offset=${offset}`;
+    const result = await supabaseRequest("GET", query, undefined, { Prefer: "count=exact" });
     if (!result.ok) return jsonResponse({ error: "CMS database request failed" }, 502);
-    return jsonResponse(slug ? (result.data[0] || null) : result.data);
+    const total = typeof result.total === "number" ? result.total : (Array.isArray(result.data) ? result.data.length : 0);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    return jsonResponse({ data: result.data || [], meta: { total, page: Math.min(page, totalPages), limit, totalPages, module: module || null } });
 }
 
 async function handleCmsAdminContent(request, method) {
@@ -252,16 +279,27 @@ async function handleCmsAdminContent(request, method) {
     if (!isCmsAdmin(session)) return jsonResponse({ error: "Forbidden" }, 403);
 
     if (method === "GET") {
-        const slug = new URL(request.url).searchParams.get("slug");
-        const query = slug
-            ? `/rest/v1/cms_materials?select=*&slug=eq.${encodeURIComponent(slug)}&limit=1`
-            : "/rest/v1/cms_materials?select=*&order=sort_order.asc,created_at.asc";
-        const result = await supabaseRequest(
-            "GET",
-            query
-        );
+        const params = new URL(request.url).searchParams;
+        const slug = params.get("slug");
+        if (slug) {
+            const query = `/rest/v1/cms_materials?select=*&slug=eq.${encodeURIComponent(slug)}&limit=1`;
+            const result = await supabaseRequest("GET", query);
+            if (!result.ok) return jsonResponse({ error: "CMS database request failed" }, 502);
+            return jsonResponse(result.data[0] || null);
+        }
+        const { page, limit, module, usePaging } = parsePagingParams(params);
+        if (!usePaging) {
+            const result = await supabaseRequest("GET", "/rest/v1/cms_materials?select=*&order=sort_order.asc,created_at.asc");
+            if (!result.ok) return jsonResponse({ error: "CMS database request failed" }, 502);
+            return jsonResponse(result.data);
+        }
+        const offset = (page - 1) * limit;
+        const query = `/rest/v1/cms_materials?select=*${moduleFilterQuery(module)}&order=sort_order.asc,created_at.asc&limit=${limit}&offset=${offset}`;
+        const result = await supabaseRequest("GET", query, undefined, { Prefer: "count=exact" });
         if (!result.ok) return jsonResponse({ error: "CMS database request failed" }, 502);
-        return jsonResponse(slug ? (result.data[0] || null) : result.data);
+        const total = typeof result.total === "number" ? result.total : (Array.isArray(result.data) ? result.data.length : 0);
+        const totalPages = Math.max(1, Math.ceil(total / limit));
+        return jsonResponse({ data: result.data || [], meta: { total, page: Math.min(page, totalPages), limit, totalPages, module: module || null } });
     }
 
     if (method === "DELETE") {
@@ -418,9 +456,19 @@ async function supabaseRequest(method, path, body, extraHeaders) {
             body: body === undefined ? undefined : JSON.stringify(body)
         });
         const data = await response.json().catch(() => null);
+        let total = null;
+        const range = response.headers.get("content-range");
+        if (range) {
+            const parts = range.split("/");
+            if (parts.length === 2 && parts[1] !== "*") {
+                const n = Number(parts[1]);
+                if (Number.isFinite(n)) total = n;
+            }
+        }
         return {
             ok: response.ok,
             data,
+            total,
             error: response.ok ? null : data?.message || data?.hint || data?.details || data?.error || `Supabase returned HTTP ${response.status}`
         };
     } catch {

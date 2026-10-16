@@ -45,18 +45,34 @@ const localMaterials = {
 async function loadMaterials() {
     const grid = document.getElementById("materialsGrid");
     const status = document.getElementById("materialsStatus");
+    const params = new URLSearchParams(window.location.search);
+    const module = (params.get("module") || "").trim().toLowerCase();
+    const page = Math.max(1, parseInt(params.get("page") || "1", 10) || 1);
+    const limit = 9;
+    const paging = params.has("page") || params.has("module");
+    const endpoint = paging
+        ? `/api/cms/content?limit=${limit}&page=${page}${module ? `&module=${encodeURIComponent(module)}` : ""}`
+        : "/api/cms/content";
     try {
-        const response = await fetch("/api/cms/content");
+        const response = await fetch(endpoint);
         if (!response.ok) throw new Error("Could not load materials");
-        const materials = (await response.json()).filter(function (material) {
+        const payload = await response.json();
+        const isPaged = payload && Array.isArray(payload.data) && payload.meta;
+        const materials = (isPaged ? payload.data : payload).filter(function (material) {
             return material.module !== "ERP"
                 && !String(material.module_id || "").startsWith("erp-")
                 && !String(material.slug || "").startsWith("erp-");
         });
         grid.replaceChildren();
+        const pager = document.getElementById("materialsPager");
+        if (pager) pager.replaceChildren();
         if (!materials.length) {
             status.textContent = "Belum ada materi yang dipublish.";
             return;
+        }
+        if (isPaged) {
+            const meta = payload.meta;
+            status.textContent = `Halaman ${meta.page} dari ${meta.totalPages} — total ${meta.total} materi${meta.module ? ` modul ${meta.module}` : ""}.`;
         }
         materials.forEach(function (material) {
             const card = document.createElement("a");
@@ -80,9 +96,47 @@ async function loadMaterials() {
             card.appendChild(link);
             grid.appendChild(card);
         });
+        if (isPaged) renderMaterialsPager(payload.meta, module, limit);
     } catch {
         status.textContent = "Materi belum dapat dimuat. Pastikan CMS sudah dikonfigurasi.";
     }
+}
+
+
+function renderMaterialsPager(meta, module, limit) {
+    const pager = document.getElementById("materialsPager");
+    if (!pager || !meta || meta.totalPages <= 1) return;
+    function pageUrl(page) {
+        const q = new URLSearchParams();
+        if (module) q.set("module", module);
+        q.set("page", String(page));
+        return `${window.location.pathname}?${q.toString()}`;
+    }
+    function addButton(label, page, disabled, active) {
+        const link = document.createElement("a");
+        link.className = "pager-button" + (active ? " pager-active" : "");
+        link.textContent = label;
+        if (disabled) {
+            link.setAttribute("aria-disabled", "true");
+        } else {
+            link.href = pageUrl(page);
+        }
+        pager.appendChild(link);
+    }
+    addButton("Prev", Math.max(1, meta.page - 1), meta.page <= 1, false);
+    for (let i = 1; i <= meta.totalPages; i += 1) {
+        if (meta.totalPages > 7 && Math.abs(i - meta.page) > 2 && i !== 1 && i !== meta.totalPages) {
+            if (!pager.lastChild || pager.lastChild.textContent !== "…") {
+                const dots = document.createElement("span");
+                dots.className = "pager-dots";
+                dots.textContent = "…";
+                pager.appendChild(dots);
+            }
+            continue;
+        }
+        addButton(String(i), i, false, i === meta.page);
+    }
+    addButton("Next", Math.min(meta.totalPages, meta.page + 1), meta.page >= meta.totalPages, false);
 }
 
 async function loadMaterial() {

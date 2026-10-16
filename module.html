@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul | Knowledge Base</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="materials">
+    <div id="navbar"></div>
+    <div class="app-layout">
+        <aside id="sidebar"></aside>
+        <main class="main-content">
+            <section class="hero"><div class="hero-content"><p class="eyebrow">KNOWLEDGE BASE PER MODUL</p><h1 id="moduleTitle">Modul</h1><p class="hero-description" id="moduleDesc">Paging server-side 9 materi per halaman dari Supabase.</p></div></section>
+            <section class="section"><div class="module-filter" aria-label="Filter modul"><a href="module.html?module=order">Order</a><a href="module.html?module=costing">Costing</a><a href="module.html?module=mrp">MRP</a><a href="module.html?module=purchase">Purchase</a><a href="module.html?module=inventory">Inventory</a><a href="module.html?module=packing">Packing</a><a href="module.html?module=shipment">Shipment</a><a href="module.html?module=production">Production</a></div><div id="materialsGrid" class="card-grid" aria-live="polite"></div><p id="materialsStatus" class="search-status"></p><nav id="materialsPager" class="pager" aria-label="Pagination"></nav></section>
+        </main>
+    </div>
+    <script src="js/navbar.js"></script>
+    <script src="js/cms.js"></script>
+    <script>
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            if (!params.has("module") && !params.has("page")) {
+                params.set("module", "order");
+                params.set("page", "1");
+                window.location.replace(`${window.location.pathname}?${params.toString()}`);
+                return;
+            }
+            const module = (params.get("module") || "order").toUpperCase();
+            document.getElementById("moduleTitle").textContent = `Modul ${module}`;
+        })();
+    </script>
+</body>
+</html>

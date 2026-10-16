@@ -1,5 +1,30 @@
 {
   "name": "knowledge-base-bra",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Knowledge Base untuk dokumentasi ERP garment **STAGE** dan **PROMAN**. Website statis (HTML + JS) + Vercel Middleware + Supabase sebagai database & storage.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KenyaLim/knowledge-base-bra.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KenyaLim/knowledge-base-bra/issues"
+  },
+  "homepage": "https://github.com/KenyaLim/knowledge-base-bra#readme",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+    "multer": "^2.4.0"
+  }
 }
