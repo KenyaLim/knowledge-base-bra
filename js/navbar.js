@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             { title: "Issue / Receipt", page: "inventory-stock", url: "erp/inventory/issuereceipt.html" },
                             { title: "Allowance", page: "inventory-allowance", url: "erp/inventory/allowance.html" },
                             { title: "ASN", page: "inventory-asn", url: "erp/inventory/asn.html" },
-                            { title: "C&F Report", page: "inventory-cfrep", url: "erp/inventory/cfrep.html" },
+                            { title: "C&F Export", page: "inventory-cfrep", url: "erp/inventory/cfrep.html" },
                             { title: "Item Master", page: "inventory-item-master", url: "erp/inventory/itemmaster.html" },
                             { title: "Material Transfer", page: "inventory-material-transfer", url: "erp/inventory/materialtransfer.html" },
                             { title: "Opening Stock", page: "inventory-opening-stock", url: "erp/inventory/opstock.html" },
@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         children: [
                             { title: "Export", page: "shipment-export", url: "erp/shipment/export.html" },
                             { title: "Invoice", page: "shipment-invoice", url: "erp/shipment/invoice.html" },
-                            { title: "Export Control", page: "shipment-export-control", url: "erp/packing/exportcon.html" },
+                            { title: "Export Contract", page: "shipment-export-control", url: "erp/packing/exportcon.html" },
                             { title: "Fabric Packing List", page: "shipment-list-fabric", url: "erp/packing/packinglistfabric.html" },
                             { title: "Garment Packing List", page: "shipment-list-garment", url: "erp/packing/packinglistgarmen.html" }
                         ]
