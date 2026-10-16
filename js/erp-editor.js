@@ -23,6 +23,12 @@
     let saveTimer;
     let editVersion = 0;
 
+    const metadataFooter = document.createElement("footer");
+    metadataFooter.className = "cms-material-footer erp-material-footer";
+    metadataFooter.hidden = true;
+    metadataFooter.innerHTML = '<i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i><span></span>';
+    editor.after(metadataFooter);
+
     const outline = document.createElement("nav");
     outline.className = "editor-outline";
     outline.setAttribute("aria-label", "Daftar heading dokumentasi");
@@ -90,6 +96,7 @@
                 content.innerHTML = material.content;
                 normalizeContent();
             }
+            updateMetadataFooter(material);
             status.textContent = session.isAdmin
                 ? (material ? "Tersimpan di Supabase" : "Belum tersimpan di Supabase")
                 : "Mode baca saja";
@@ -100,6 +107,22 @@
             document.body.classList.add("erp-editor-ready");
             loadingScreen.remove();
         }
+
+    }
+
+    function updateMetadataFooter(material) {
+        const editedAt = material?.last_edited_at || material?.updated_at;
+        const editedBy = String(material?.last_edited_by || "").trim();
+        const date = editedAt ? new Date(editedAt) : null;
+        if (!editedBy || !date || Number.isNaN(date.getTime())) {
+            metadataFooter.hidden = true;
+            return;
+        }
+        metadataFooter.querySelector("span").textContent = `Last edited by ${editedBy} - ${date.toLocaleString("id-ID", {
+            dateStyle: "long",
+            timeStyle: "short"
+        })}`;
+        metadataFooter.hidden = false;
     }
 
     async function save() {
@@ -124,6 +147,7 @@
         });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || "Gagal menyimpan dokumentasi");
+        updateMetadataFooter(result);
         status.textContent = version === editVersion
             ? "Tersimpan di Supabase"
             : "Belum tersimpan di Supabase";

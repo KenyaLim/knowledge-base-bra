@@ -1915,6 +1915,10 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
     font-size: 13px;
 }
 
+.erp-material-footer {
+    max-width: 980px;
+}
+
 .cms-material-meta {
     margin: 0;
     color: #666666;
