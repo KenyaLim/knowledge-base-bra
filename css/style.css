@@ -1893,14 +1893,30 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
     border-color: #111111;
 }
 
+.cms-material-item small {
+    display: inline-block;
+    margin-top: 6px;
+    color: #666666;
+    font-size: 12px;
+}
+
 .cms-reading-section {
     max-width: 980px;
 }
 
-.cms-material-meta {
-    margin: 28px 0 0;
-    padding-top: 16px;
+.cms-material-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 36px;
+    padding: 16px 0;
     border-top: 1px solid #d4d4d4;
+    color: #666666;
+    font-size: 13px;
+}
+
+.cms-material-meta {
+    margin: 0;
     color: #666666;
     font-size: 13px;
 }

@@ -98,9 +98,10 @@ async function loadMaterial() {
         document.getElementById("materialTitle").textContent = material.title;
         document.getElementById("materialSummary").textContent = material.summary;
         renderContent(document.getElementById("materialContent"), material.content);
+        const footer = document.getElementById("materialFooter");
         const metadata = document.getElementById("materialMeta");
         metadata.textContent = formatEditedMetadata(material);
-        metadata.hidden = !metadata.textContent;
+        footer.hidden = !metadata.textContent;
         if (material.image_url && material.kind !== "overview") {
             const imageUrl = safeUrl(material.image_url);
             if (imageUrl) {

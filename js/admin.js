@@ -61,7 +61,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 const button = document.createElement("button");
                 button.type = "button";
                 button.className = "cms-material-item";
-                button.textContent = `${material.title} ${material.published ? "(published)" : "(draft)"}`;
+                const title = document.createElement("strong");
+                title.textContent = `${material.title} ${material.published ? "(published)" : "(draft)"}`;
+                const metadata = document.createElement("small");
+                metadata.textContent = formatEditedMetadata(material);
+                button.append(title);
+                if (metadata.textContent) button.append(document.createElement("br"), metadata);
                 button.addEventListener("click", function () { fillForm(material); });
                 list.appendChild(button);
             });
@@ -84,6 +89,9 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("sortOrder").value = material.sort_order || 0;
         document.getElementById("published").checked = Boolean(material.published);
         document.getElementById("deleteMaterial").hidden = !material.id;
+        const metadata = formatEditedMetadata(material);
+        document.getElementById("materialMeta").textContent = metadata;
+        document.getElementById("materialFooter").hidden = !metadata;
         syncKindFields();
     }
 
@@ -95,7 +103,21 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         status.textContent = "Materi baru belum tersimpan di Supabase";
         document.getElementById("deleteMaterial").hidden = true;
+        document.getElementById("materialMeta").textContent = "";
+        document.getElementById("materialFooter").hidden = true;
         syncKindFields();
+    }
+
+    function formatEditedMetadata(material) {
+        const editedAt = material.last_edited_at || material.updated_at;
+        const editedBy = String(material.last_edited_by || "").trim();
+        if (!editedAt || !editedBy) return "";
+        const date = new Date(editedAt);
+        if (Number.isNaN(date.getTime())) return "";
+        return `Last edited by ${editedBy} - ${date.toLocaleString("id-ID", {
+            dateStyle: "long",
+            timeStyle: "short"
+        })}`;
     }
 
     async function deleteMaterial() {
