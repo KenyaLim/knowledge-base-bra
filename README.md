@@ -39,10 +39,9 @@ Yang sudah dihapus karena dobel/mati (Supabase tidak tersentuh):
 - Login/logout/session: cookie `kb_session` HttpOnly, HMAC-SHA256, 12 jam, idle 7 menit. Belum login -> `302 /login.html?next=...`. Bukan admin -> tidak bisa buka `/admin.html`.
 - Login ganda: `MANUAL_USERS` (JSON) dulu, fallback Supabase Auth (`SUPABASE_URL` + `SUPABASE_ANON_KEY`).
 - CMS penuh: admin buat/edit/delete/publish materi + upload PDF/gambar max 15 MB ke Supabase Storage (nama file `uuid.ext`, tidak overwrite).
-- **Paging server-side per modul (limit 9):**
+- **Paging server-side per modul (limit 9, API tetap jalan, link eksplisit disembunyikan):**
   - `materials.html?module=order&page=1` -> 9 kartu per halaman + tombol Prev / 1-2-3 / Next
   - Filter modul di `materials.html`: Semua, Order, Costing, MRP, Purchase, Inventory, Packing, Shipment
-  - Sidebar tiap modul ada link `Semua materi (paging)` -> `materials.html?module=X&page=1`
   - Tanpa `?page=`/`?module=` tetap return array lama agar frontend lama tidak rusak
 - Search box di dashboard + highlight hasil (`js/navbar.js`).
 - 38 halaman ERP tetap jadi View per modul, isinya diambil dari Supabase via `erp-editor.js` (`GET /api/cms/content?slug=`), admin bisa edit inline.

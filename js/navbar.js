@@ -118,7 +118,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 modules: [
                     {
                         id: "stage-order",
-                        dynamicModule: "order",
                         title: "Order",
                         icon: "ph-shopping-cart",
                         children: [
@@ -127,7 +126,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                     {
                         id: "stage-costing",
-                        dynamicModule: "costing",
                         title: "Costing",
                         icon: "ph-money",
                         children: [
@@ -136,7 +134,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                     {
                         id: "stage-mrp",
-                        dynamicModule: "mrp",
                         title: "MRP",
                         icon: "ph-chart-bar",
                         children: [
@@ -149,7 +146,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                     {
                         id: "stage-purchase",
-                        dynamicModule: "purchase",
                         title: "Purchase",
                         icon: "ph-receipt",
                         children: [
@@ -159,7 +155,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                     {
                         id: "stage-inventory",
-                        dynamicModule: "inventory",
                         title: "Inventory",
                         icon: "ph-box-arrow-down",
                         children: [
@@ -178,7 +173,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                     {
                         id: "stage-packing",
-                        dynamicModule: "packing",
                         title: "Packing",
                         icon: "ph-package",
                         children: [
@@ -189,7 +183,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                     {
                         id: "stage-shipping",
-                        dynamicModule: "shipment",
                         title: "Shipping",
                         icon: "ph-truck",
                         children: [
@@ -202,7 +195,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                     {
                         id: "stage-address",
-                        dynamicModule: "stage",
                         title: "Address",
                         icon: "ph-address-book",
                         children: [
@@ -218,7 +210,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 modules: [
                     {
                         id: "proman-time-study",
-                        dynamicModule: "production",
                         title: "Time Study",
                         icon: "ph-timer",
                         children: [
@@ -227,7 +218,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                     {
                         id: "proman-fabric-trims-inward",
-                        dynamicModule: "production",
                         title: "Fabric & Trims Inward",
                         icon: "ph-package",
                         children: [
@@ -236,7 +226,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                     {
                         id: "proman-fabric-issue",
-                        dynamicModule: "production",
                         title: "Fabric Issue",
                         icon: "ph-arrow-square-up",
                         children: [
@@ -245,7 +234,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                     {
                         id: "proman-cutting",
-                        dynamicModule: "production",
                         title: "Cutting",
                         icon: "ph-scissors",
                         children: [
@@ -254,7 +242,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                     {
                         id: "proman-production",
-                        dynamicModule: "production",
                         title: "Production",
                         icon: "ph-factory",
                         children: [
@@ -263,7 +250,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                     {
                         id: "proman-quality-control",
-                        dynamicModule: "production",
                         title: "Quality Control",
                         icon: "ph-check-circle",
                         children: [
@@ -400,9 +386,6 @@ document.addEventListener("DOMContentLoaded", function () {
                                 </button>
 
                                 <ul class="sidebar-children ${active ? "open" : ""}">
-                                    <li>
-                                        <a href="${ROOT}materials.html?module=${encodeURIComponent(module.dynamicModule || module.id)}&page=1">Semua materi (paging)</a>
-                                    </li>
                                     ${module.children.map(function (child) {
 
                                         const childActive = child.page === page;
