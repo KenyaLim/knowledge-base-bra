@@ -42,8 +42,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 body: JSON.stringify(payload)
             });
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error || "Save failed");
-            status.textContent = "Tersimpan di Supabase";
+            if (!response.ok) throw new Error(result.details ? `${result.error}: ${result.details}` : result.error || "Save failed");
+            status.textContent = result.metadata_warning || "Tersimpan di Supabase";
             await loadAdminMaterials();
             fillForm(result);
         } catch (error) {

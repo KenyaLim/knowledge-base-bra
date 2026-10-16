@@ -319,7 +319,27 @@ async function handleCmsAdminContent(request, method) {
         { Prefer: "resolution=merge-duplicates,return=representation" }
     );
 
-    if (!result.ok) return jsonResponse({ error: "Could not save CMS material" }, 502);
+    if (!result.ok) {
+        const legacyPayload = { ...payload };
+        delete legacyPayload.last_edited_at;
+        delete legacyPayload.last_edited_by;
+        const legacyResult = await supabaseRequest(
+            "POST",
+            "/rest/v1/cms_materials?on_conflict=slug",
+            legacyPayload,
+            { Prefer: "resolution=merge-duplicates,return=representation" }
+        );
+        if (legacyResult.ok) {
+            return jsonResponse({
+                ...(legacyResult.data[0] || legacyPayload),
+                metadata_warning: "Jalankan migration sql/cms.sql di Supabase agar tanggal dan user editor tersimpan."
+            }, 200);
+        }
+        return jsonResponse({
+            error: "Could not save CMS material",
+            details: legacyResult.error || result.error || "Supabase request failed"
+        }, 502);
+    }
     return jsonResponse(result.data[0] || payload, 200);
 }
 
@@ -382,7 +402,9 @@ function isCmsAdmin(session) {
 async function supabaseRequest(method, path, body, extraHeaders) {
     const baseUrl = (process.env.SUPABASE_URL || "").replace(/\/$/, "");
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-    if (!baseUrl || !serviceKey) return { ok: false, data: null };
+    if (!baseUrl || !serviceKey) {
+        return { ok: false, data: null, error: "Supabase is not configured" };
+    }
 
     try {
         const response = await fetch(baseUrl + path, {
@@ -396,9 +418,13 @@ async function supabaseRequest(method, path, body, extraHeaders) {
             body: body === undefined ? undefined : JSON.stringify(body)
         });
         const data = await response.json().catch(() => null);
-        return { ok: response.ok, data };
+        return {
+            ok: response.ok,
+            data,
+            error: response.ok ? null : data?.message || data?.hint || data?.details || data?.error || `Supabase returned HTTP ${response.status}`
+        };
     } catch {
-        return { ok: false, data: null };
+        return { ok: false, data: null, error: "Could not reach Supabase" };
     }
 }
 
