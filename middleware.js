@@ -308,7 +308,9 @@ async function handleCmsAdminContent(request, method) {
         pdf_url: String(material.pdf_url || "").trim(),
         image_url: material.kind === "overview" ? "" : String(material.image_url || "").trim(),
         published: Boolean(material.published),
-        sort_order: Number.isFinite(Number(material.sort_order)) ? Number(material.sort_order) : 0
+        sort_order: Number.isFinite(Number(material.sort_order)) ? Number(material.sort_order) : 0,
+        last_edited_at: new Date().toISOString(),
+        last_edited_by: String(session.n || session.e || session.u || "").trim()
     };
     const result = await supabaseRequest(
         "POST",

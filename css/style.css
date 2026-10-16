@@ -995,6 +995,13 @@ input {
     line-height: 1.6;
 }
 
+.card .cms-material-meta {
+    margin-top: 10px;
+    padding-top: 0;
+    border-top: 0;
+    font-size: 12px;
+}
+
 .card-link {
     display: flex;
     align-items: center;
@@ -1888,6 +1895,14 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 
 .cms-reading-section {
     max-width: 980px;
+}
+
+.cms-material-meta {
+    margin: 28px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid #d4d4d4;
+    color: #666666;
+    font-size: 13px;
 }
 
 .cms-pdf-panel {

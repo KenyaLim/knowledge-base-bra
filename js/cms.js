@@ -69,10 +69,15 @@ async function loadMaterials() {
             title.textContent = material.title;
             const summary = document.createElement("p");
             summary.textContent = material.summary;
+            const metadata = document.createElement("p");
+            metadata.className = "cms-material-meta";
+            metadata.textContent = formatEditedMetadata(material);
             const link = document.createElement("span");
             link.className = "card-link";
             link.textContent = material.pdf_url ? "Read PDF" : "Read material";
-            card.append(number, title, summary, link);
+            card.append(number, title, summary);
+            if (metadata.textContent) card.appendChild(metadata);
+            card.appendChild(link);
             grid.appendChild(card);
         });
     } catch {
@@ -93,6 +98,9 @@ async function loadMaterial() {
         document.getElementById("materialTitle").textContent = material.title;
         document.getElementById("materialSummary").textContent = material.summary;
         renderContent(document.getElementById("materialContent"), material.content);
+        const metadata = document.getElementById("materialMeta");
+        metadata.textContent = formatEditedMetadata(material);
+        metadata.hidden = !metadata.textContent;
         if (material.image_url && material.kind !== "overview") {
             const imageUrl = safeUrl(material.image_url);
             if (imageUrl) {
@@ -123,6 +131,19 @@ async function loadMaterial() {
         if (fallback) showMaterial(fallback);
         else status.textContent = "Materi tidak ditemukan atau belum dipublish.";
     }
+}
+
+function formatEditedMetadata(material) {
+    const editedAt = material.last_edited_at || material.updated_at;
+    const editedBy = String(material.last_edited_by || "").trim();
+    if (!editedAt || !editedBy) return "";
+
+    const date = new Date(editedAt);
+    if (Number.isNaN(date.getTime())) return "";
+    return `Terakhir diedit ${date.toLocaleString("id-ID", {
+        dateStyle: "long",
+        timeStyle: "short"
+    })} oleh ${editedBy}`;
 }
 
 function renderPlainText(container, value) {
