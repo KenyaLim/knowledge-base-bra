@@ -1,55 +1,83 @@
 # knowledge-base-bra
 
-Knowledge Base untuk dokumentasi ERP garment **STAGE** dan **PROMAN**. Website statis (HTML + JS) + Vercel Middleware + Supabase sebagai database & storage.
+Knowledge Base dokumentasi ERP garment **STAGE** dan **PROMAN**. Sudah dinamis: backend **Express + MVC**, paging server-side per modul, database **PostgreSQL via Supabase**.
 
-## 1. Tech stack — apa saja yang dipakai?
+## 1. Tech stack — apa yang dipakai sekarang?
 
-- **Frontend:** HTML statis di `index.html`, `login.html`, `admin.html`, `materials.html`, `material.html`, folder `erp/`, `proman/`, `stage/`, `getting-started/`
-- **CSS:** `css/style.css` + Tailwind CDN + Phosphor Icons
-- **JS vanilla (tanpa framework):**
-  - `js/navbar.js` — navbar + sidebar + cek session login
-  - `js/cms.js` — load daftar/materi dari `/api/cms/content`
-  - `js/admin.js` — form CRUD materi di `admin.html`
-  - `js/erp-editor.js` — editor inline di tiap halaman ERP (`contenteditable`, autosave ke Supabase)
-  - `js/documentation.js` — konten statis fallback bilingual + glosarium (SPI, BOM, MRP, GRN, PO, dll)
-- **Backend:** `middleware.js` (Vercel Edge Middleware). Satu file ini jadi API:
-  - `POST /api/login`, `POST /api/logout`, `GET /api/session`
-  - `GET /api/cms/content` — baca materi published (user login)
-  - `GET/POST/DELETE /api/cms/admin/content` — CRUD materi (admin saja)
-  - `POST /api/cms/admin/upload` — upload PDF/gambar ke Supabase Storage
-  - Proteksi halaman: belum login → redirect ke `/login.html`, bukan admin → tidak bisa buka `/admin.html`
-  - Session: cookie `kb_session` HMAC-SHA256, umur 12 jam, idle timeout 7 menit
-- **Hosting:** Vercel (`vercel.json` hanya set security headers)
-- **Database + Auth + Storage:** Supabase
-- **Isi `package.json` sengaja kosong** (`{"type":"module"}`) — tidak pakai npm dependency, tidak ada build step.
+- **Framework backend: Express 5.3.0** (`server.js`, `api/index.js`, `src/*`). Bukan vanilla kosong lagi.
+  - Deps: `express`, `dotenv`, `cookie-parser`, `multer`
+  - `package.json`: `main: server.js`, scripts `start` / `dev` = `node server.js`
+- **Struktur MVC:**
+```
+server.js                  -> entry Express, serve static + guard halaman
+api/index.js               -> export app untuk Vercel serverless
+src/routes/auth.js         -> POST /login, POST /logout, GET /session
+src/routes/cms.js          -> GET /content, GET/POST/DELETE /admin/content, POST /admin/upload
+src/controllers/authController.js -> login manual + Supabase, session
+src/controllers/cmsController.js  -> paging, CRUD, upload
+src/models/cmsModel.js     -> query Supabase (range, count, upsert, delete)
+src/middlewares/auth.js    -> wajib login (401)
+src/middlewares/admin.js   -> wajib admin (403)
+src/config/supabase.js     -> SUPABASE_URL + SERVICE_ROLE_KEY + bucket
+src/utils/session.js       -> cookie kb_session, HMAC-SHA256, safeNext, parsePaging
+middleware.js (216 baris)  -> thin Vercel Middleware, HANYA guard halaman.
+                             Semua /api/* diteruskan ke Express, tidak ada logika API dobel.
+```
+- **Frontend:** `index.html`, `login.html`, `admin.html`, `materials.html`, `material.html`, 38 HTML di `erp/`, `proman/`, `stage/`, `getting-started/`
+- **JS:** `js/navbar.js` (navbar + sidebar + link dinamis per modul), `js/cms.js` (list + paging + baca `?slug=`), `js/admin.js` (CRUD admin), `js/erp-editor.js` (editor inline per halaman ERP via `?slug=`)
+- **CSS:** `css/style.css` + Tailwind CDN + Phosphor Icons, sudah ada style `.pager` + `.module-filter`
+- **Hosting:** Vercel. `vercel.json` = security headers + `rewrites /api/* -> /api/index.js`
+- **Database + Auth + Storage:** Supabase (PostgreSQL + REST + Auth + Storage bucket `cms-materials`)
 
-## 2. Fungsi tiap bagian kode
+Yang sudah dihapus karena dobel/mati (Supabase tidak tersentuh):
+- `erp/shipment/exportcon.html`, `packinglistfabric.html`, `packinglistgarmen.html` (0-byte, aslinya ada di `erp/packing/`)
+- `js/documentation.js` (tidak ada HTML yang load, tidak ada `id="documentation-content"`)
+- `module.html` (dobel `materials.html`, diganti `materials.html?module=X&page=1`)
 
-- `index.html` — dashboard: pilih aplikasi STAGE atau PROMAN, ada search box.
-- `stage/home.html` — home STAGE: Order, Costing, MRP, Purchase, Inventory, Packing, Shipping, Address.
-- `proman/home.html` — home PROMAN: Time Study, Fabric & Trims Inward, Fabric Issue, Cutting, Production, QC.
-- `erp/0-order/order.html`, `erp/1-mrp/*.html`, `erp/2-purchase/*.html`, `erp/inventory/*.html`, `erp/packing/*.html`, `erp/shipment/*.html`, `erp/costing/*.html`, `erp/address/*.html` — halaman dokumentasi tiap modul STAGE.
-- `proman/timestudy/timestud.html`, `proman/fabricissue/fab.html`, `proman/cutting/cut.html`, `proman/production/prod.html`, `proman/qc/qc.html`, dll — halaman dokumentasi tiap modul PROMAN.
-- `materials.html` + `material.html` — list semua materi dan halaman baca satu materi (pakai `?slug=`).
-- `admin.html` — hanya admin: buat/edit/delete/publish materi, upload PDF & gambar.
-- `login.html` — form login (username/email + password).
-- `0datarangkum/*.md` — rangkuman sumber awal (costing, inventory, packing, proman, purchase, stage).
-- `sql/cms.sql` — migrasi database, wajib dijalankan sekali di Supabase.
-- `middleware.js` — otak backend + auth (lihat daftar API di atas).
+## 2. Fitur sekarang
 
-Alur data: `admin.html` → `POST /api/cms/admin/content` → `middleware.js` → Supabase REST `cms_materials` → user baca via `GET /api/cms/content` → render di `material.html` / halaman ERP.
+- Login/logout/session: cookie `kb_session` HttpOnly, HMAC-SHA256, 12 jam, idle 7 menit. Belum login -> `302 /login.html?next=...`. Bukan admin -> tidak bisa buka `/admin.html`.
+- Login ganda: `MANUAL_USERS` (JSON) dulu, fallback Supabase Auth (`SUPABASE_URL` + `SUPABASE_ANON_KEY`).
+- CMS penuh: admin buat/edit/delete/publish materi + upload PDF/gambar max 15 MB ke Supabase Storage (nama file `uuid.ext`, tidak overwrite).
+- **Paging server-side per modul (limit 9):**
+  - `materials.html?module=order&page=1` -> 9 kartu per halaman + tombol Prev / 1-2-3 / Next
+  - Filter modul di `materials.html`: Semua, Order, Costing, MRP, Purchase, Inventory, Packing, Shipment
+  - Sidebar tiap modul ada link `Semua materi (paging)` -> `materials.html?module=X&page=1`
+  - Tanpa `?page=`/`?module=` tetap return array lama agar frontend lama tidak rusak
+- Search box di dashboard + highlight hasil (`js/navbar.js`).
+- 38 halaman ERP tetap jadi View per modul, isinya diambil dari Supabase via `erp-editor.js` (`GET /api/cms/content?slug=`), admin bisa edit inline.
 
-## 3. Apakah project ini pakai PostgreSQL?
+Contoh API paging:
+```
+GET /api/cms/content?module=order&page=1&limit=9
+-> { data: [...9 item], meta: { total, page: 1, limit: 9, totalPages, module: "order" } }
 
-**Ya, tapi tidak install manual. PostgreSQL-nya lewat Supabase.**
+GET /api/cms/admin/content?module=mrp&page=2&limit=9  (admin, tanpa filter published)
+GET /api/cms/content?slug=stage-address               (objek tunggal / null)
+```
 
-- PostgreSQL = database relasional (data disimpan di tabel baris-kolom, mirip Excel tapi jauh lebih kuat).
-- Supabase = layanan yang sudah menyediakan PostgreSQL + REST API + Auth + Storage. Kamu cukup isi env var, tidak perlu install Postgres di laptop/Vercel.
-- Bukti pemakaian: `sql/cms.sql` membuat tabel `public.cms_materials`, dan `middleware.js` memanggil `SUPABASE_URL/rest/v1/cms_materials` + `SUPABASE_URL/storage/v1/object/...`.
-- Analogi simpel: Supabase = tukang parkir + gudang, PostgreSQL = gudangnya, tabel `cms_materials` = raknya, tiap materi = satu kotak di rak (kolom: `slug`, `title`, `module`, `content`, `pdf_url`, `image_url`, `published`, `sort_order`, `last_edited_by`, dll).
-- Bucket `cms-materials` = lemari khusus file PDF/gambar agar bisa diakses publik via URL.
+Kontrak yang dijaga: `?slug=` tetap objek/null (bukan array), error tetap `{error[,details]}`, upload tetap `{url}`, cookie tetap `kb_session`.
 
-Skema inti (`sql/cms.sql`):
+## 3. Fungsi tiap bagian
+
+- `index.html` — dashboard pilih STAGE / PROMAN + search.
+- `stage/home.html` — Order, Costing, MRP, Purchase, Inventory, Packing, Shipping, Address.
+- `proman/home.html` — Time Study, Fabric & Trims Inward, Fabric Issue, Cutting, Production, QC.
+- `erp/*`, `proman/*/*` — View dokumentasi per modul (edit inline admin, baca untuk user).
+- `materials.html` — list + filter modul + pager (template dinamis utama).
+- `material.html?slug=` — baca satu materi + PDF + footer last-edited.
+- `admin.html` — CRUD + publish + upload (admin saja).
+- `login.html` — form `POST /api/login` (identity + password + next).
+- `sql/cms.sql` — migrasi sekali di Supabase (tabel + bucket).
+- `0datarangkum/*.md` — sumber awal.
+
+Alur: `admin.html` -> `POST /api/cms/admin/content` -> Express controller -> model -> Supabase `cms_materials` -> user baca `GET /api/cms/content?module=X&page=N` -> render kartu + pager.
+
+## 4. Apakah pakai PostgreSQL?
+
+**Ya, via Supabase (tidak install manual).**
+
+PostgreSQL = database relasional tabel baris-kolom. Supabase menyediakan PostgreSQL + REST + Auth + Storage. Bukti: `sql/cms.sql` buat tabel `public.cms_materials`, kode memanggil `SUPABASE_URL/rest/v1/cms_materials` + `/storage/v1/object/...`.
 
 ```sql
 cms_materials(id uuid, slug text unique, title text, module text, module_id text,
@@ -58,26 +86,31 @@ published bool, sort_order int, created_at timestamptz, updated_at timestamptz,
 last_edited_at timestamptz, last_edited_by text)
 ```
 
-## CMS setup
+Bucket `cms-materials` = file PDF/gambar publik via URL. Free tier ~1GB storage + 500MB DB, limit kode 15 MB/file.
 
-FEATURES NOW
-- EDITABLE IN HTML ADMIN
-- STORAGE SUPABASE
-- SEARCH BAR
+## 5. Jalankan lokal
 
-Run `sql/cms.sql` in Supabase SQL Editor. The migration creates the CMS fields and
-the public `cms-materials` Storage bucket used for PDF and image uploads.
+```bash
+npm install
+# isi .env: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY,
+# AUTH_SECRET, CMS_ADMIN_EMAILS, MANUAL_USERS, CMS_STORAGE_BUCKET=cms-materials
+npm run dev
+# buka http://localhost:3000/login.html lalu materials.html?module=order&page=1
+```
 
-Set these Vercel environment variables:
+Test cepat: `GET /healthz -> 200`, `GET /api/cms/content?module=order&page=1` tanpa cookie -> `401`, buka `materials.html` tanpa login -> `302 /login.html`.
+
+## CMS setup (Vercel)
+
+Run `sql/cms.sql` di Supabase SQL Editor sekali. Set env di Vercel:
 
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `AUTH_SECRET`
-- `CMS_ADMIN_EMAILS` (comma-separated admin email addresses)
-- `MANUAL_USERS` (optional JSON for local accounts, without Supabase)
-
-Example `MANUAL_USERS` value:
+- `CMS_ADMIN_EMAILS` (comma-separated)
+- `MANUAL_USERS` (opsional JSON)
+- `CMS_STORAGE_BUCKET` (opsional, default `cms-materials`)
 
 ```json
 [
@@ -86,19 +119,4 @@ Example `MANUAL_USERS` value:
 ]
 ```
 
-Manual accounts use `user` (view-only) by default. Only an account with
-`"role":"admin"` can open the CMS admin page or create, edit, delete, and
-upload materials. Store this JSON in Vercel Environment Variables and replace
-the example passwords before deployment. Supabase login remains available when
-`SUPABASE_URL` and `SUPABASE_ANON_KEY` are configured.
-
-Admins can select Order, MRP, Purchase, Inventory, Production, or Shipment;
-published materials are added as children in that module's sidebar. Use
-`Overview` for a module summary without an image and `Detail` for richer
-content with text, image, and/or PDF.
-
-The dashboard is organized by application: choose STAGE or PROMAN from
-`index.html`, then use the application's Home page to open its related
-modules. STAGE includes Order, Costing, MRP, Purchase, Inventory, Packing,
-Shipping, and Address; PROMAN includes Time Study, Fabric & Trims Inward,
-Fabric Issue, Cutting, Production, and Quality Control.
+Hanya `role: admin` atau email di `CMS_ADMIN_EMAILS` yang bisa buka `admin.html`, CRUD, dan upload. `Overview` = ringkasan tanpa gambar, `Detail` = teks + gambar/PDF.
