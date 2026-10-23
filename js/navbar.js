@@ -496,46 +496,64 @@ document.addEventListener("DOMContentLoaded", function () {
             const items = Array.isArray(payload.items) ? payload.items : [];
             if (!items.length) return;
 
-            const roots = items.filter(function (item) { return !item.parent_id; });
+            const sortedItems = items.slice().sort(function (left, right) {
+                return Number(left.sort_order || 0) - Number(right.sort_order || 0)
+                    || String(left.title || "").localeCompare(String(right.title || ""));
+            });
+            const roots = sortedItems.filter(function (item) {
+                return !item.parent_id && ["stage", "proman"].includes(String(item.scope || "").toLowerCase());
+            });
+            const scopes = ["stage", "proman"];
+            const hasValidGroups = scopes.every(function (scope) {
+                return roots.some(function (root) {
+                    return String(root.scope || "").toLowerCase() === scope;
+                });
+            });
+            if (!hasValidGroups) return;
+
+            function childrenOf(parentId) {
+                return sortedItems.filter(function (item) {
+                    return item.parent_id === parentId;
+                });
+            }
+
             sidebarContainer.querySelector(".sidebar-scroll").innerHTML = `
                 <a href="${ROOT}index.html" class="sidebar-dashboard ${page === "dashboard" ? "active" : ""}">
                     <span class="sidebar-main-icon"><i class="ph ph-squares-four"></i></span>
                     <span>Dashboard</span>
                 </a>
-                <section class="sidebar-app-group sidebar-app-group-cms">
-                    <h2 class="sidebar-app-heading">Navigation</h2>
-                    ${roots.map(function (root) {
-                        const modules = items.filter(function (item) { return item.parent_id === root.id; });
-                        const directLinks = modules.filter(function (module) { return module.page && module.url; });
-                        const active = items.some(function (item) { return item.page === page && (item.parent_id === root.id || modules.some(function (module) { return module.id === item.parent_id; })); });
-                        return `
-                            <section class="sidebar-app-group sidebar-app-group-${escapeHtml(root.title.toLowerCase())}">
-                                <h2 class="sidebar-app-heading">${escapeHtml(root.title)}</h2>
-                                ${directLinks.map(function (link) {
-                                    return `<a href="${ROOT}${String(link.url).replace(/^\/+/, "")}" class="sidebar-direct-link ${link.page === page ? "active" : ""}">${escapeHtml(link.title)}</a>`;
-                                }).join("")}
-                                ${modules.filter(function (module) { return !module.page || !module.url; }).map(function (module) {
-                                    const children = items.filter(function (item) { return item.parent_id === module.id; });
-                                    const moduleActive = children.some(function (child) { return child.page === page; });
-                                    return `<div class="sidebar-module ${moduleActive ? "module-active" : ""}">
-                                        <button type="button" class="sidebar-module-button" aria-expanded="${moduleActive}">
-                                            <span class="sidebar-module-left">
-                                                <span class="sidebar-main-icon"><i class="ph ${escapeHtml(module.icon || "ph-link")}"></i></span>
-                                                <span>${escapeHtml(module.title)}</span>
-                                            </span>
-                                            <i class="ph ph-caret-down sidebar-caret ${moduleActive ? "rotate" : ""}"></i>
-                                        </button>
-                                        <ul class="sidebar-children ${moduleActive ? "open" : ""}">
-                                            ${children.map(function (child) {
-                                                return `<li><a href="${ROOT}${String(child.url || "").replace(/^\/+/, "")}" class="${child.page === page ? "active" : ""}">${escapeHtml(child.title)}</a></li>`;
-                                            }).join("")}
-                                        </ul>
-                                    </div>`;
-                                }).join("")}
-                            </section>
-                        `;
-                    }).join("")}
-                </section>
+                ${scopes.map(function (scope) {
+                    const root = roots.find(function (item) {
+                        return String(item.scope || "").toLowerCase() === scope;
+                    });
+                    const modules = childrenOf(root.id);
+                    return `
+                        <section class="sidebar-app-group sidebar-app-group-${scope}">
+                            <h2 class="sidebar-app-heading">${escapeHtml(root.title || scope.toUpperCase())}</h2>
+                            ${modules.map(function (module) {
+                                const children = childrenOf(module.id);
+                                if (module.page && module.url) {
+                                    return `<a href="${ROOT}${String(module.url).replace(/^\/+/, "")}" class="sidebar-direct-link ${module.page === page ? "active" : ""}">${escapeHtml(module.title)}</a>`;
+                                }
+                                const moduleActive = children.some(function (child) { return child.page === page; });
+                                return `<div class="sidebar-module ${moduleActive ? "module-active" : ""}">
+                                    <button type="button" class="sidebar-module-button" aria-expanded="${moduleActive}">
+                                        <span class="sidebar-module-left">
+                                            <span class="sidebar-main-icon"><i class="ph ${escapeHtml(module.icon || "ph-link")}"></i></span>
+                                            <span>${escapeHtml(module.title)}</span>
+                                        </span>
+                                        <i class="ph ph-caret-down sidebar-caret ${moduleActive ? "rotate" : ""}"></i>
+                                    </button>
+                                    <ul class="sidebar-children ${moduleActive ? "open" : ""}">
+                                        ${children.filter(function (child) { return child.page && child.url; }).map(function (child) {
+                                            return `<li><a href="${ROOT}${String(child.url).replace(/^\/+/, "")}" class="${child.page === page ? "active" : ""}">${escapeHtml(child.title)}</a></li>`;
+                                        }).join("")}
+                                    </ul>
+                                </div>`;
+                            }).join("")}
+                        </section>
+                    `;
+                }).join("")}
             `;
             bindSidebarAccordions();
         } catch (error) {

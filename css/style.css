@@ -1922,6 +1922,7 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 }
 
 .navigation-admin-child {
+    display: block;
     border-bottom: 1px solid #eeeeee;
     padding: 0 12px 0 28px;
 }
@@ -1959,6 +1960,51 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 
 .navigation-admin-depth-3 {
     padding-left: 24px;
+}
+
+.admin-page .main-content {
+    min-width: 0;
+}
+
+.admin-page .hero {
+    margin-bottom: 0;
+}
+
+.admin-page .cms-admin-layout {
+    align-items: start;
+    grid-template-columns: minmax(0, 1.4fr) minmax(320px, .8fr);
+}
+
+.admin-page .navigation-list-panel,
+.admin-page .navigation-form-panel {
+    min-width: 0;
+}
+
+.admin-page .navigation-form-panel {
+    position: sticky;
+    top: 84px;
+}
+
+.admin-page .navigation-form-panel .section-heading {
+    margin-bottom: 18px;
+}
+
+.admin-page .navigation-form-panel .cms-form-actions {
+    flex-wrap: wrap;
+}
+
+.admin-page .navigation-form-panel .cms-form-actions button {
+    flex: 1 1 auto;
+}
+
+.admin-page .navigation-admin-scope > h3 {
+    padding: 8px 12px;
+    background: #111;
+    color: #fff;
+}
+
+.admin-page .navigation-admin-group {
+    overflow: hidden;
 }
 
 .cms-material-item {
@@ -2030,6 +2076,10 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 @media (max-width: 760px) {
     .cms-admin-layout {
         grid-template-columns: 1fr;
+    }
+
+    .admin-page .navigation-form-panel {
+        position: static;
     }
 }
 

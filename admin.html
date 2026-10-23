@@ -7,7 +7,7 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body data-page="admin">
+<body data-page="admin" class="admin-page">
     <div id="navbar"></div>
     <div class="app-layout">
         <aside id="sidebar"></aside>
@@ -19,11 +19,14 @@
                     <p class="hero-description">Kelola parent dan child navbar tanpa mengubah file HTML.</p>
                 </div>
             </section>
-            <section class="section cms-panel">
-                <div class="section-heading"><i class="ph ph-list"></i><h2>Navigation</h2></div>
-                <p class="hero-description">Parent adalah kategori. Child adalah tautan ke halaman HTML.</p>
-                <div id="navigationList" class="cms-material-list" aria-live="polite"></div>
-                <form id="navigationForm" class="cms-form">
+            <section class="section cms-admin-layout">
+                <div class="cms-panel navigation-list-panel">
+                    <div class="section-heading"><i class="ph ph-list"></i><h2>Navigation structure</h2></div>
+                    <p class="hero-description">Parent adalah kategori. Child adalah tautan ke halaman HTML.</p>
+                    <div id="navigationList" class="cms-material-list" aria-live="polite"></div>
+                </div>
+                <form id="navigationForm" class="cms-panel cms-form navigation-form-panel">
+                    <div class="section-heading"><i class="ph ph-pencil-simple"></i><h2>Add / edit item</h2></div>
                     <input type="hidden" id="navigationId">
                     <label>Judul<input id="navigationTitle" required></label>
                     <fieldset class="navigation-scope">
