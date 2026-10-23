@@ -22,6 +22,7 @@ alter table public.cms_materials enable row level security;
 create table if not exists public.cms_navigation (
     id uuid primary key default gen_random_uuid(),
     parent_id uuid references public.cms_navigation(id) on delete cascade,
+    scope text not null default 'stage',
     title text not null,
     icon text not null default 'ph-link',
     page text,
@@ -35,6 +36,7 @@ create table if not exists public.cms_navigation (
 alter table public.cms_navigation enable row level security;
 alter table public.cms_navigation alter column page drop not null;
 alter table public.cms_navigation alter column url drop not null;
+alter table public.cms_navigation add column if not exists scope text not null default 'stage';
 
 alter table public.cms_materials add column if not exists module_id text not null default '';
 alter table public.cms_materials add column if not exists kind text not null default 'detail';

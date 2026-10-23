@@ -273,10 +273,13 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         ];
 
-    window.KB_DEFAULT_NAVIGATION = appGroups.flatMap(function (group) {
+    window.KB_DEFAULT_NAVIGATION = appGroups.filter(function (group) {
+        return group.id === "stage" || group.id === "proman";
+    }).flatMap(function (group) {
         const groupKey = "group-" + group.id;
         const groupItems = [{
             key: groupKey,
+            scope: group.id === "proman" ? "proman" : "stage",
             title: group.title || group.id.toUpperCase(),
             icon: "",
             sort_order: 0
@@ -285,6 +288,7 @@ document.addEventListener("DOMContentLoaded", function () {
             groupItems.push({
                 key: group.id + "-home",
                 parent_key: groupKey,
+                scope: group.id === "proman" ? "proman" : "stage",
                 title: group.home.title || "Home",
                 icon: "",
                 page: group.home.page,
@@ -297,6 +301,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return [{
                 key: parentKey,
                 parent_key: groupKey,
+                scope: group.id === "proman" ? "proman" : "stage",
                 title: module.title,
                 icon: "",
                 sort_order: (moduleIndex + 1) * 100
@@ -304,6 +309,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return {
                     key: parentKey + "-" + child.page,
                     parent_key: parentKey,
+                    scope: group.id === "proman" ? "proman" : "stage",
                     title: child.title,
                     page: child.page,
                     url: child.url,
@@ -481,7 +487,10 @@ document.addEventListener("DOMContentLoaded", function () {
     async function loadCmsNavigation() {
         if (!sidebarContainer) return;
         try {
-            const response = await fetch("/api/cms/navigation", { headers: { Accept: "application/json" } });
+            const response = await fetch("/api/cms/navigation", {
+                headers: { Accept: "application/json" },
+                signal: AbortSignal.timeout(8000)
+            });
             if (!response.ok) return;
             const payload = await response.json();
             const items = Array.isArray(payload.items) ? payload.items : [];

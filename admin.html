@@ -26,6 +26,11 @@
                 <form id="navigationForm" class="cms-form">
                     <input type="hidden" id="navigationId">
                     <label>Judul<input id="navigationTitle" required></label>
+                    <fieldset class="navigation-scope">
+                        <legend>Area navbar</legend>
+                        <label><input type="radio" name="navigationScope" value="stage" checked> STAGE</label>
+                        <label><input type="radio" name="navigationScope" value="proman"> PROMAN</label>
+                    </fieldset>
                     <label>Tipe<select id="navigationType"><option value="category">Kategori</option><option value="page">Laman HTML</option></select></label>
                     <label>Parent<select id="navigationParentId"><option value="">Tidak ada (root)</option></select></label>
                     <label>Icon Phosphor (opsional)<input id="navigationIcon" value=""></label>

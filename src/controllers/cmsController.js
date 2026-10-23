@@ -26,13 +26,18 @@ export async function getAdminNavigation(req, res) {
 
 export async function saveAdminNavigation(req, res) {
   const item = req.body || {};
+  const scope = String(item.scope || "").toLowerCase();
   const parentId = item.parent_id || null;
-  if (!item.title || (!!item.page !== !!item.url)) {
+  if (!["stage", "proman"].includes(scope)) {
+    return res.status(400).json({ error: "Choose STAGE or PROMAN" });
+  }
+  if (!item.title || (!!item.page !== !!item.url) || (item.page && !parentId)) {
     return res.status(400).json({ error: "Title is required; page and URL must be provided together" });
   }
   const payload = {
     id: item.id || newId(),
     parent_id: parentId,
+    scope,
     title: String(item.title).trim(),
     icon: item.icon === undefined ? "ph-link" : String(item.icon).trim(),
     page: item.page ? String(item.page).trim() : null,
@@ -55,6 +60,7 @@ export async function importAdminNavigation(req, res) {
     return {
       id,
       parent_id: item.parent_key ? keyToId.get(item.parent_key) || null : null,
+      scope: item.scope === "proman" ? "proman" : "stage",
       title: String(item.title || "").trim(),
       icon: String(item.icon || "ph-link").trim(),
       page: item.page ? String(item.page).trim() : null,
