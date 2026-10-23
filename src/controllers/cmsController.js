@@ -1,7 +1,57 @@
-import { deleteMaterial, listMaterials, normalizePayload, upsertMaterial } from "../models/cmsModel.js";
+import {
+  deleteMaterial,
+  deleteNavigation,
+  listMaterials,
+  listNavigation,
+  normalizePayload,
+  upsertMaterial,
+  upsertNavigation,
+} from "../models/cmsModel.js";
 import { parsePaging } from "../utils/session.js";
 import { storageBucket, supabaseBaseUrl } from "../config/supabase.js";
 import { newId } from "../utils/session.js";
+
+export async function getNavigation(req, res) {
+  const result = await listNavigation({ publishedOnly: true });
+  if (!result.ok) return res.status(502).json({ error: "Could not load navigation" });
+  return res.json({ items: result.data });
+}
+
+export async function getAdminNavigation(req, res) {
+  const result = await listNavigation({ publishedOnly: false });
+  if (!result.ok) return res.status(502).json({ error: "Could not load navigation" });
+  return res.json({ items: result.data });
+}
+
+export async function saveAdminNavigation(req, res) {
+  const item = req.body || {};
+  if (!item.title || !item.url || !item.page) {
+    return res.status(400).json({ error: "Title, page, and URL are required" });
+  }
+  const payload = {
+    id: item.id || newId(),
+    parent_id: item.parent_id || null,
+    title: String(item.title).trim(),
+    icon: String(item.icon || "ph-link").trim(),
+    page: String(item.page).trim(),
+    url: String(item.url).trim(),
+    sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : 0,
+    published: Boolean(item.published),
+  };
+  const result = await upsertNavigation(payload);
+  if (!result.ok) return res.status(502).json({ error: "Could not save navigation", details: result.error });
+  return res.json({ item: Array.isArray(result.data) ? result.data[0] : result.data });
+}
+
+export async function removeAdminNavigation(req, res) {
+  const id = String(req.query.id || "");
+  if (!/^[0-9a-f-]{36}$/i.test(id)) {
+    return res.status(400).json({ error: "A valid navigation id is required" });
+  }
+  const result = await deleteNavigation(id);
+  if (!result.ok) return res.status(502).json({ error: "Could not delete navigation" });
+  return res.json({ deleted: true });
+}
 
 export async function getContent(req, res) {
   const { page, limit, module, slug, usePaging } = parsePaging(req.query);

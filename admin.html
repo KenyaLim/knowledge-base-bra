@@ -70,9 +70,31 @@
                     <p id="formStatus" class="search-status" aria-live="polite"></p>
                 </form>
             </section>
+            <section class="section cms-panel">
+                <div class="section-heading"><i class="ph ph-list"></i><h2>Navigation</h2></div>
+                <p class="hero-description">Kelola item sidebar tanpa mengubah file HTML.</p>
+                <div id="navigationList" class="cms-material-list" aria-live="polite"></div>
+                <form id="navigationForm" class="cms-form">
+                    <input type="hidden" id="navigationId">
+                    <label>Judul<input id="navigationTitle" required></label>
+                    <label>Parent ID (opsional)<input id="navigationParentId" placeholder="UUID item induk"></label>
+                    <label>Icon Phosphor<input id="navigationIcon" value="ph-link" required></label>
+                    <label>Page key<input id="navigationPage" required placeholder="inventory-stock"></label>
+                    <label>URL<input id="navigationUrl" required placeholder="erp/inventory/issuereceipt.html"></label>
+                    <label>Urutan<input id="navigationSortOrder" type="number" value="0"></label>
+                    <label class="cms-checkbox"><input id="navigationPublished" type="checkbox"> Published</label>
+                    <div class="cms-form-actions">
+                        <button type="button" id="newNavigation" class="cms-secondary-button">New</button>
+                        <button type="button" id="deleteNavigation" class="cms-secondary-button" hidden>Delete</button>
+                        <button type="submit" class="navbar-signin">Save navigation</button>
+                    </div>
+                    <p id="navigationStatus" class="search-status" aria-live="polite"></p>
+                </form>
+            </section>
         </main>
     </div>
     <script src="js/navbar.js"></script>
     <script src="js/admin.js"></script>
+    <script src="js/navigation-admin.js"></script>
 </body>
 </html>

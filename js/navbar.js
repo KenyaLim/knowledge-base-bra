@@ -425,6 +425,69 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
+    function bindSidebarAccordions() {
+        document.querySelectorAll(".sidebar-module-button").forEach(function (button) {
+            button.addEventListener("click", function () {
+                const module = button.closest(".sidebar-module");
+                const children = module.querySelector(".sidebar-children");
+                const caret = button.querySelector(".sidebar-caret");
+                const isOpen = children.classList.contains("open");
+                children.classList.toggle("open", !isOpen);
+                caret.classList.toggle("rotate", !isOpen);
+                button.setAttribute("aria-expanded", String(!isOpen));
+            });
+        });
+    }
+
+    async function loadCmsNavigation() {
+        if (!sidebarContainer) return;
+        try {
+            const response = await fetch("/api/cms/navigation", { headers: { Accept: "application/json" } });
+            if (!response.ok) return;
+            const payload = await response.json();
+            const items = Array.isArray(payload.items) ? payload.items : [];
+            if (!items.length) return;
+
+            const roots = items.filter(function (item) { return !item.parent_id; });
+            sidebarContainer.querySelector(".sidebar-scroll").innerHTML = `
+                <a href="${ROOT}index.html" class="sidebar-dashboard ${page === "dashboard" ? "active" : ""}">
+                    <span class="sidebar-main-icon"><i class="ph ph-squares-four"></i></span>
+                    <span>Dashboard</span>
+                </a>
+                <section class="sidebar-app-group sidebar-app-group-cms">
+                    <h2 class="sidebar-app-heading">Navigation</h2>
+                    ${roots.map(function (root) {
+                        const children = items.filter(function (item) { return item.parent_id === root.id; });
+                        const active = children.some(function (child) { return child.page === page; });
+                        const rootUrl = `${ROOT}${String(root.url || "").replace(/^\/+/, "")}`;
+                        return `
+                            <div class="sidebar-module ${active ? "module-active" : ""}">
+                                <button type="button" class="sidebar-module-button" aria-expanded="${active}">
+                                    <span class="sidebar-module-left">
+                                        <span class="sidebar-main-icon"><i class="ph ${escapeHtml(root.icon || "ph-link")}"></i></span>
+                                        <span>${escapeHtml(root.title)}</span>
+                                    </span>
+                                    <i class="ph ph-caret-down sidebar-caret ${active ? "rotate" : ""}"></i>
+                                </button>
+                                <ul class="sidebar-children ${active ? "open" : ""}">
+                                    ${children.length ? children.map(function (child) {
+                                        return `<li><a href="${ROOT}${String(child.url || "").replace(/^\/+/, "")}" class="${child.page === page ? "active" : ""}">${escapeHtml(child.title)}</a></li>`;
+                                    }).join("") : `<li><a href="${rootUrl}" class="${root.page === page ? "active" : ""}">${escapeHtml(root.title)}</a></li>`}
+                                </ul>
+                            </div>
+                        `;
+                    }).join("")}
+                </section>
+            `;
+            bindSidebarAccordions();
+        } catch (error) {
+            console.warn("CMS navigation is unavailable; using the built-in navigation.", error);
+        }
+    }
+
+    bindSidebarAccordions();
+    loadCmsNavigation();
+
     document.addEventListener("click", function (event) {
         const image = event.target.closest(".documentation img, .cms-image-preview");
         if (!image || image.hidden || !image.currentSrc) return;
@@ -453,23 +516,6 @@ document.addEventListener("DOMContentLoaded", function () {
         ACCORDION
         =========================
     */
-
-    document.querySelectorAll(".sidebar-module-button").forEach(function (button) {
-
-        button.addEventListener("click", function () {
-
-            const module = button.closest(".sidebar-module");
-            const children = module.querySelector(".sidebar-children");
-            const caret = button.querySelector(".sidebar-caret");
-
-            const isOpen = children.classList.contains("open");
-
-            children.classList.toggle("open", !isOpen);
-            caret.classList.toggle("rotate", !isOpen);
-
-            button.setAttribute("aria-expanded", String(!isOpen));
-        });
-    });
 
     /*
         =========================

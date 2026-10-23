@@ -1,6 +1,24 @@
 import { supabaseRequest } from "../config/supabase.js";
 
 const ORDER = "order=sort_order.asc,created_at.asc";
+const NAVIGATION_ORDER = "order=sort_order.asc,title.asc";
+
+export async function listNavigation({ publishedOnly = true } = {}) {
+  const published = publishedOnly ? "&published=eq.true" : "";
+  const result = await supabaseRequest("GET", `/rest/v1/cms_navigation?select=*&${NAVIGATION_ORDER}${published}`);
+  if (!result.ok) return result;
+  return { ...result, data: Array.isArray(result.data) ? result.data : [] };
+}
+
+export async function upsertNavigation(payload) {
+  return supabaseRequest("POST", "/rest/v1/cms_navigation?on_conflict=id", payload, {
+    Prefer: "resolution=merge-duplicates,return=representation",
+  });
+}
+
+export async function deleteNavigation(id) {
+  return supabaseRequest("DELETE", `/rest/v1/cms_navigation?id=eq.${encodeURIComponent(id)}`);
+}
 
 function moduleFilter(module) {
   if (!module) return "";
