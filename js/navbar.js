@@ -92,7 +92,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
 
                 <div class="navbar-right">
-                    <a href="${ROOT}materials.html" class="navbar-link">Materials</a>
                     <a href="${ROOT}admin.html" class="navbar-link" id="navbar-admin-link" hidden>Admin</a>
                     <div class="navbar-user" aria-live="polite">
                         <i class="ph ph-user-circle"></i>
