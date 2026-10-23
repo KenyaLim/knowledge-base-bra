@@ -274,12 +274,19 @@ document.addEventListener("DOMContentLoaded", function () {
         ];
 
     window.KB_DEFAULT_NAVIGATION = appGroups.flatMap(function (group) {
-        const groupItems = [];
+        const groupKey = "group-" + group.id;
+        const groupItems = [{
+            key: groupKey,
+            title: group.title || group.id.toUpperCase(),
+            icon: "",
+            sort_order: 0
+        }];
         if (group.home) {
             groupItems.push({
                 key: group.id + "-home",
-                title: group.title || "Home",
-                icon: "ph-house",
+                parent_key: groupKey,
+                title: group.home.title || "Home",
+                icon: "",
                 page: group.home.page,
                 url: group.home.url,
                 sort_order: 0
@@ -289,9 +296,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const parentKey = group.id + "-" + module.id;
             return [{
                 key: parentKey,
+                parent_key: groupKey,
                 title: module.title,
-                icon: module.icon,
-                sort_order: moduleIndex * 100
+                icon: "",
+                sort_order: (moduleIndex + 1) * 100
             }].concat((module.children || []).map(function (child, childIndex) {
                 return {
                     key: parentKey + "-" + child.page,
@@ -488,24 +496,34 @@ document.addEventListener("DOMContentLoaded", function () {
                 <section class="sidebar-app-group sidebar-app-group-cms">
                     <h2 class="sidebar-app-heading">Navigation</h2>
                     ${roots.map(function (root) {
-                        const children = items.filter(function (item) { return item.parent_id === root.id; });
-                        const active = children.some(function (child) { return child.page === page; });
-                        const rootUrl = `${ROOT}${String(root.url || "").replace(/^\/+/, "")}`;
+                        const modules = items.filter(function (item) { return item.parent_id === root.id; });
+                        const directLinks = modules.filter(function (module) { return module.page && module.url; });
+                        const active = items.some(function (item) { return item.page === page && (item.parent_id === root.id || modules.some(function (module) { return module.id === item.parent_id; })); });
                         return `
-                            <div class="sidebar-module ${active ? "module-active" : ""}">
-                                <button type="button" class="sidebar-module-button" aria-expanded="${active}">
-                                    <span class="sidebar-module-left">
-                                        <span class="sidebar-main-icon"><i class="ph ${escapeHtml(root.icon || "ph-link")}"></i></span>
-                                        <span>${escapeHtml(root.title)}</span>
-                                    </span>
-                                    <i class="ph ph-caret-down sidebar-caret ${active ? "rotate" : ""}"></i>
-                                </button>
-                                <ul class="sidebar-children ${active ? "open" : ""}">
-                                    ${children.length ? children.map(function (child) {
-                                        return `<li><a href="${ROOT}${String(child.url || "").replace(/^\/+/, "")}" class="${child.page === page ? "active" : ""}">${escapeHtml(child.title)}</a></li>`;
-                                    }).join("") : `<li><a href="${rootUrl}" class="${root.page === page ? "active" : ""}">${escapeHtml(root.title)}</a></li>`}
-                                </ul>
-                            </div>
+                            <section class="sidebar-app-group sidebar-app-group-${escapeHtml(root.title.toLowerCase())}">
+                                <h2 class="sidebar-app-heading">${escapeHtml(root.title)}</h2>
+                                ${directLinks.map(function (link) {
+                                    return `<a href="${ROOT}${String(link.url).replace(/^\/+/, "")}" class="sidebar-direct-link ${link.page === page ? "active" : ""}">${escapeHtml(link.title)}</a>`;
+                                }).join("")}
+                                ${modules.filter(function (module) { return !module.page || !module.url; }).map(function (module) {
+                                    const children = items.filter(function (item) { return item.parent_id === module.id; });
+                                    const moduleActive = children.some(function (child) { return child.page === page; });
+                                    return `<div class="sidebar-module ${moduleActive ? "module-active" : ""}">
+                                        <button type="button" class="sidebar-module-button" aria-expanded="${moduleActive}">
+                                            <span class="sidebar-module-left">
+                                                <span class="sidebar-main-icon"><i class="ph ${escapeHtml(module.icon || "ph-link")}"></i></span>
+                                                <span>${escapeHtml(module.title)}</span>
+                                            </span>
+                                            <i class="ph ph-caret-down sidebar-caret ${moduleActive ? "rotate" : ""}"></i>
+                                        </button>
+                                        <ul class="sidebar-children ${moduleActive ? "open" : ""}">
+                                            ${children.map(function (child) {
+                                                return `<li><a href="${ROOT}${String(child.url || "").replace(/^\/+/, "")}" class="${child.page === page ? "active" : ""}">${escapeHtml(child.title)}</a></li>`;
+                                            }).join("")}
+                                        </ul>
+                                    </div>`;
+                                }).join("")}
+                            </section>
                         `;
                     }).join("")}
                 </section>

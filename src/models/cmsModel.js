@@ -20,6 +20,10 @@ export async function deleteNavigation(id) {
   return supabaseRequest("DELETE", `/rest/v1/cms_navigation?id=eq.${encodeURIComponent(id)}`);
 }
 
+export async function deleteAllNavigation() {
+  return supabaseRequest("DELETE", "/rest/v1/cms_navigation?id=not.is.null");
+}
+
 function moduleFilter(module) {
   if (!module) return "";
   const m = encodeURIComponent(module);

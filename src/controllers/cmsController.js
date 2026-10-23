@@ -1,5 +1,6 @@
 import {
   deleteMaterial,
+  deleteAllNavigation,
   deleteNavigation,
   listMaterials,
   listNavigation,
@@ -26,14 +27,14 @@ export async function getAdminNavigation(req, res) {
 export async function saveAdminNavigation(req, res) {
   const item = req.body || {};
   const parentId = item.parent_id || null;
-  if (!item.title || (parentId && (!item.url || !item.page))) {
-    return res.status(400).json({ error: parentId ? "Child title, page, and URL are required" : "Parent title is required" });
+  if (!item.title || (!!item.page !== !!item.url)) {
+    return res.status(400).json({ error: "Title is required; page and URL must be provided together" });
   }
   const payload = {
     id: item.id || newId(),
     parent_id: parentId,
     title: String(item.title).trim(),
-    icon: String(item.icon || "ph-link").trim(),
+    icon: item.icon === undefined ? "ph-link" : String(item.icon).trim(),
     page: item.page ? String(item.page).trim() : null,
     url: item.url ? String(item.url).trim() : null,
     sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : 0,
@@ -62,9 +63,11 @@ export async function importAdminNavigation(req, res) {
       published: true,
     };
   });
-  if (payload.some((item) => !item.title || (item.parent_id && (!item.page || !item.url)))) {
+  if (payload.some((item) => !item.title || (!!item.page !== !!item.url))) {
     return res.status(400).json({ error: "Imported navigation contains invalid parent or child data" });
   }
+  const cleared = await deleteAllNavigation();
+  if (!cleared.ok) return res.status(502).json({ error: "Could not replace existing navigation", details: cleared.error });
   const result = await upsertNavigation(payload);
   if (!result.ok) return res.status(502).json({ error: "Could not import navigation", details: result.error });
   return res.json({ items: result.data || payload });

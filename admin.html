@@ -26,16 +26,16 @@
                 <form id="navigationForm" class="cms-form">
                     <input type="hidden" id="navigationId">
                     <label>Judul<input id="navigationTitle" required></label>
-                    <label>Tipe<select id="navigationType"><option value="parent">Parent</option><option value="child">Child</option></select></label>
-                    <label>Parent<select id="navigationParentId" disabled><option value="">Pilih parent</option></select></label>
-                    <label>Icon Phosphor<input id="navigationIcon" value="ph-link" required></label>
+                    <label>Tipe<select id="navigationType"><option value="category">Kategori</option><option value="page">Laman HTML</option></select></label>
+                    <label>Parent<select id="navigationParentId"><option value="">Tidak ada (root)</option></select></label>
+                    <label>Icon Phosphor (opsional)<input id="navigationIcon" value=""></label>
                     <label>Page key<input id="navigationPage" placeholder="inventory-stock"></label>
                     <label>URL<input id="navigationUrl" placeholder="erp/inventory/issuereceipt.html"></label>
                     <label>Urutan<input id="navigationSortOrder" type="number" value="0"></label>
                     <label class="cms-checkbox"><input id="navigationPublished" type="checkbox" checked> Published</label>
                     <div class="cms-form-actions">
-                        <button type="button" id="importNavigation" class="cms-secondary-button">Import existing navbar</button>
-                        <button type="button" id="newNavigation" class="cms-secondary-button">New</button>
+                        <button type="button" id="importNavigation" class="cms-secondary-button">Sync existing navbar</button>
+                        <button type="button" id="newNavigation" class="navbar-signin">Add</button>
                         <button type="button" id="deleteNavigation" class="cms-secondary-button" hidden>Delete</button>
                         <button type="submit" class="navbar-signin">Save navigation</button>
                     </div>

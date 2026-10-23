@@ -1880,6 +1880,44 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
     gap: 8px;
 }
 
+.navigation-admin-group {
+    border: 1px solid #d4d4d4;
+    margin-bottom: 12px;
+    background: #fff;
+}
+
+.navigation-admin-heading,
+.navigation-admin-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+}
+
+.navigation-admin-heading {
+    background: #f2f2f2;
+    border-bottom: 1px solid #d4d4d4;
+}
+
+.navigation-admin-child {
+    border-bottom: 1px solid #eeeeee;
+    padding-left: 28px;
+}
+
+.navigation-admin-child:last-child {
+    border-bottom: 0;
+}
+
+.navigation-admin-child span:first-child {
+    display: grid;
+    gap: 3px;
+}
+
+.navigation-admin-child small {
+    color: #666;
+}
+
 .cms-material-item {
     width: 100%;
     border: 1px solid #e1e1e1;
