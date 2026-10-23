@@ -24,8 +24,8 @@ create table if not exists public.cms_navigation (
     parent_id uuid references public.cms_navigation(id) on delete cascade,
     title text not null,
     icon text not null default 'ph-link',
-    page text not null,
-    url text not null,
+    page text,
+    url text,
     published boolean not null default false,
     sort_order integer not null default 0,
     created_at timestamptz not null default now(),
@@ -33,6 +33,8 @@ create table if not exists public.cms_navigation (
 );
 
 alter table public.cms_navigation enable row level security;
+alter table public.cms_navigation alter column page drop not null;
+alter table public.cms_navigation alter column url drop not null;
 
 alter table public.cms_materials add column if not exists module_id text not null default '';
 alter table public.cms_materials add column if not exists kind text not null default 'detail';

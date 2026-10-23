@@ -273,6 +273,38 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         ];
 
+    window.KB_DEFAULT_NAVIGATION = appGroups.flatMap(function (group) {
+        const groupItems = [];
+        if (group.home) {
+            groupItems.push({
+                key: group.id + "-home",
+                title: group.title || "Home",
+                icon: "ph-house",
+                page: group.home.page,
+                url: group.home.url,
+                sort_order: 0
+            });
+        }
+        return groupItems.concat((group.modules || []).flatMap(function (module, moduleIndex) {
+            const parentKey = group.id + "-" + module.id;
+            return [{
+                key: parentKey,
+                title: module.title,
+                icon: module.icon,
+                sort_order: moduleIndex * 100
+            }].concat((module.children || []).map(function (child, childIndex) {
+                return {
+                    key: parentKey + "-" + child.page,
+                    parent_key: parentKey,
+                    title: child.title,
+                    page: child.page,
+                    url: child.url,
+                    sort_order: childIndex
+                };
+            }));
+        }));
+    });
+
     if (navbarContainer) {
         fetch("/api/session", { headers: { Accept: "application/json" } })
             .then(function (response) {

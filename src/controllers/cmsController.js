@@ -25,22 +25,49 @@ export async function getAdminNavigation(req, res) {
 
 export async function saveAdminNavigation(req, res) {
   const item = req.body || {};
-  if (!item.title || !item.url || !item.page) {
-    return res.status(400).json({ error: "Title, page, and URL are required" });
+  const parentId = item.parent_id || null;
+  if (!item.title || (parentId && (!item.url || !item.page))) {
+    return res.status(400).json({ error: parentId ? "Child title, page, and URL are required" : "Parent title is required" });
   }
   const payload = {
     id: item.id || newId(),
-    parent_id: item.parent_id || null,
+    parent_id: parentId,
     title: String(item.title).trim(),
     icon: String(item.icon || "ph-link").trim(),
-    page: String(item.page).trim(),
-    url: String(item.url).trim(),
+    page: item.page ? String(item.page).trim() : null,
+    url: item.url ? String(item.url).trim() : null,
     sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : 0,
     published: Boolean(item.published),
   };
   const result = await upsertNavigation(payload);
   if (!result.ok) return res.status(502).json({ error: "Could not save navigation", details: result.error });
   return res.json({ item: Array.isArray(result.data) ? result.data[0] : result.data });
+}
+
+export async function importAdminNavigation(req, res) {
+  const items = Array.isArray(req.body?.items) ? req.body.items : [];
+  if (!items.length) return res.status(400).json({ error: "Navigation items are required" });
+  const keyToId = new Map();
+  const payload = items.map(function (item) {
+    const id = newId();
+    keyToId.set(item.key, id);
+    return {
+      id,
+      parent_id: item.parent_key ? keyToId.get(item.parent_key) || null : null,
+      title: String(item.title || "").trim(),
+      icon: String(item.icon || "ph-link").trim(),
+      page: item.page ? String(item.page).trim() : null,
+      url: item.url ? String(item.url).trim() : null,
+      sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : 0,
+      published: true,
+    };
+  });
+  if (payload.some((item) => !item.title || (item.parent_id && (!item.page || !item.url)))) {
+    return res.status(400).json({ error: "Imported navigation contains invalid parent or child data" });
+  }
+  const result = await upsertNavigation(payload);
+  if (!result.ok) return res.status(502).json({ error: "Could not import navigation", details: result.error });
+  return res.json({ items: result.data || payload });
 }
 
 export async function removeAdminNavigation(req, res) {

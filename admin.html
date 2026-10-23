@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMS Admin | Knowledge Base</title>
+    <title>Navigation Admin | Knowledge Base</title>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -14,76 +14,27 @@
         <main class="main-content">
             <section class="hero">
                 <div class="hero-content">
-                    <p class="eyebrow">CONTENT MANAGEMENT</p>
-                    <h1>Materials</h1>
-                    <p class="hero-description">Create, edit, publish, and attach PDF materials without changing the HTML pages.</p>
+                    <p class="eyebrow">NAVIGATION MANAGEMENT</p>
+                    <h1>Navigation</h1>
+                    <p class="hero-description">Kelola parent dan child navbar tanpa mengubah file HTML.</p>
                 </div>
-            </section>
-            <section class="section cms-admin-layout">
-                <div class="cms-panel">
-                    <div class="section-heading"><i class="ph ph-files"></i><h2>Saved materials</h2></div>
-                    <div id="materialList" class="cms-material-list" aria-live="polite"></div>
-                </div>
-                <form id="materialForm" class="cms-panel cms-form">
-                    <div class="section-heading"><i class="ph ph-pencil-simple"></i><h2>Edit material</h2></div>
-                    <input type="hidden" id="materialId">
-                    <label>Slug<input id="slug" required placeholder="mrp-material"></label>
-                    <label>Title<input id="title" required placeholder="Material Requirement"></label>
-                    <label>Module<select id="module" required>
-                        <option value="stage">Stage</option>
-                        <option value="proman">Proman</option>
-                        <option value="mrp">MRP</option>
-                        <option value="purchase">Purchase</option>
-                        <option value="inventory">Inventory</option>
-                        <option value="production">Production</option>
-                        <option value="shipment">Shipment</option>
-                    </select></label>
-                    <label>Jenis materi<select id="kind">
-                        <option value="detail">Detail</option>
-                        <option value="overview">Overview (tanpa gambar)</option>
-                    </select></label>
-                    <label>Summary<textarea id="summary" rows="2"></textarea></label>
-                    <label>Content
-                        <div class="cms-form-actions">
-                            <button type="button" class="cms-secondary-button" data-editor-command="strong">Bold</button>
-                            <button type="button" class="cms-secondary-button" data-editor-command="em">Italic</button>
-                            <button type="button" class="cms-secondary-button" data-editor-command="u">Underline</button>
-                            <button type="button" class="cms-secondary-button" data-editor-command="h2">Heading</button>
-                            <button type="button" class="cms-secondary-button" data-editor-command="ul">List</button>
-                            <button type="button" class="cms-secondary-button" data-editor-command="link">Link</button>
-                            <button type="button" class="cms-secondary-button" data-editor-command="image">Image</button>
-                            <button type="button" class="cms-secondary-button" data-editor-command="pdf">PDF</button>
-                        </div>
-                        <textarea id="content" rows="12" placeholder="Tulis materi di sini. Satu paragraf per baris."></textarea>
-                    </label>
-                    <label>PDF URL<input id="pdfUrl" type="url" placeholder="https://.../materi.pdf"></label>
-                    <label>Gambar URL<input id="imageUrl" type="url" placeholder="https://.../materi.jpg"><img id="imagePreview" class="cms-image-preview" alt="Preview gambar" hidden></label>
-                    <label>Upload PDF/gambar<input id="fileUpload" type="file" accept="application/pdf,image/png,image/jpeg,image/webp,image/gif"></label>
-                    <label>Urutan<input id="sortOrder" type="number" value="0"></label>
-                    <label class="cms-checkbox"><input id="published" type="checkbox"> Published</label>
-                    <div class="cms-form-actions">
-                        <button type="button" id="newMaterial" class="cms-secondary-button">New</button>
-                        <button type="button" id="deleteMaterial" class="cms-secondary-button" hidden>Delete</button>
-                        <button type="submit" class="navbar-signin">Save material</button>
-                    </div>
-                    <footer id="materialFooter" class="cms-material-footer" hidden><i class="ph ph-clock-counter-clockwise"></i><span id="materialMeta"></span></footer>
-                    <p id="formStatus" class="search-status" aria-live="polite"></p>
-                </form>
             </section>
             <section class="section cms-panel">
                 <div class="section-heading"><i class="ph ph-list"></i><h2>Navigation</h2></div>
-                <p class="hero-description">Kelola item sidebar tanpa mengubah file HTML.</p>
+                <p class="hero-description">Parent adalah kategori. Child adalah tautan ke halaman HTML.</p>
                 <div id="navigationList" class="cms-material-list" aria-live="polite"></div>
                 <form id="navigationForm" class="cms-form">
                     <input type="hidden" id="navigationId">
                     <label>Judul<input id="navigationTitle" required></label>
-                    <label>Parent ID (opsional)<input id="navigationParentId" placeholder="UUID item induk"></label>
+                    <label>Tipe<select id="navigationType"><option value="parent">Parent</option><option value="child">Child</option></select></label>
+                    <label>Parent<select id="navigationParentId" disabled><option value="">Pilih parent</option></select></label>
                     <label>Icon Phosphor<input id="navigationIcon" value="ph-link" required></label>
-                    <label>Page key<input id="navigationPage" required placeholder="inventory-stock"></label>
-                    <label>URL<input id="navigationUrl" required placeholder="erp/inventory/issuereceipt.html"></label>
+                    <label>Page key<input id="navigationPage" placeholder="inventory-stock"></label>
+                    <label>URL<input id="navigationUrl" placeholder="erp/inventory/issuereceipt.html"></label>
                     <label>Urutan<input id="navigationSortOrder" type="number" value="0"></label>
-                    <label class="cms-checkbox"><input id="navigationPublished" type="checkbox"> Published</label>
+                    <label class="cms-checkbox"><input id="navigationPublished" type="checkbox" checked> Published</label>
                     <div class="cms-form-actions">
+                        <button type="button" id="importNavigation" class="cms-secondary-button">Import existing navbar</button>
                         <button type="button" id="newNavigation" class="cms-secondary-button">New</button>
                         <button type="button" id="deleteNavigation" class="cms-secondary-button" hidden>Delete</button>
                         <button type="submit" class="navbar-signin">Save navigation</button>
@@ -94,7 +45,6 @@
         </main>
     </div>
     <script src="js/navbar.js"></script>
-    <script src="js/admin.js"></script>
     <script src="js/navigation-admin.js"></script>
 </body>
 </html>

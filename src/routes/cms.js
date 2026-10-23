@@ -7,6 +7,7 @@ import {
   getAdminNavigation,
   getContent,
   getNavigation,
+  importAdminNavigation,
   removeAdminContent,
   removeAdminNavigation,
   saveAdminContent,
@@ -24,6 +25,7 @@ router.get("/admin/navigation", requireSession, requireAdmin, getAdminNavigation
 router.post("/admin/content", requireSession, requireAdmin, saveAdminContent);
 router.delete("/admin/content", requireSession, requireAdmin, removeAdminContent);
 router.post("/admin/navigation", requireSession, requireAdmin, saveAdminNavigation);
+router.post("/admin/navigation/import", requireSession, requireAdmin, importAdminNavigation);
 router.delete("/admin/navigation", requireSession, requireAdmin, removeAdminNavigation);
 router.post("/admin/upload", requireSession, requireAdmin, upload.single("file"), uploadAdminFile);
 
