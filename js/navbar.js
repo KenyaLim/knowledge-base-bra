@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const ROOT = getRootPath();
     function navigationUrl(url) {
         const value = String(url || "");
-        return value.startsWith("/") || value.startsWith("http") ? value : `${ROOT}${value.replace(/^\\/+/, "")}`;
+        return value.startsWith("/") || value.startsWith("http") ? value : `${ROOT}${value.replace(/^\/+/, "")}`;
     }
 
     if (navbarContainer) {
