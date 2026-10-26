@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const iconPreview = document.getElementById("navigationIconPreview");
     const iconPicker = document.getElementById("navigationIconPicker");
     let items = [];
-    const phosphorIcons = ["ph-squares-four", "ph-folder", "ph-file-text", "ph-shopping-cart", "ph-money", "ph-chart-bar", "ph-receipt", "ph-box-arrow-down", "ph-package", "ph-truck", "ph-address-book", "ph-timer", "ph-arrow-square-up", "ph-scissors", "ph-factory", "ph-check-circle", "ph-users", "ph-gear", "ph-question", "ph-list", "ph-house-line"];
+    const phosphorIcons = ["ph-squares-four", "ph-folder", "ph-file-text", "ph-shopping-cart", "ph-money", "ph-chart-bar", "ph-receipt", "ph-box-arrow-down", "ph-package", "ph-truck", "ph-address-book", "ph-timer", "ph-arrow-square-up", "ph-scissors", "ph-factory", "ph-check-circle", "ph-users", "ph-gear", "ph-question", "ph-list", "ph-house-line", "ph-calendar", "ph-calendar-check", "ph-caret-right", "ph-chart-line-up", "ph-clipboard-text", "ph-cube", "ph-database", "ph-download-simple", "ph-envelope", "ph-eye", "ph-globe", "ph-grid-four", "ph-hard-hat", "ph-identification-card", "ph-kanban", "ph-map-pin", "ph-note-pencil", "ph-plus-circle", "ph-printer", "ph-seal-check", "ph-shield-check", "ph-stack", "ph-tag", "ph-upload-simple", "ph-user-circle", "ph-wrench"];
 
     function syncParentOptions() {
         const parentSelect = document.getElementById("navigationParentId");
