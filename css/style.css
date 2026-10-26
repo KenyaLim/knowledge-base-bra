@@ -3,6 +3,7 @@
 }
 
 .navigation-guide { margin-bottom: 1rem; }
+.form-help { color: #68738a; font-size: .85rem; line-height: 1.4; margin: -.35rem 0 .75rem; }
 .navigation-guide ol { margin: 0; padding-left: 1.4rem; color: #566176; }
 .navigation-guide li { margin: .45rem 0; line-height: 1.5; }
 .navigation-guide strong { color: #26324a; }

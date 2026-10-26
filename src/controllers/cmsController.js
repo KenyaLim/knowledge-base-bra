@@ -4,6 +4,7 @@ import {
   deleteNavigation,
   listMaterials,
   listNavigation,
+  getNavigationPage,
   normalizePayload,
   upsertMaterial,
   upsertNavigation,
@@ -11,6 +12,20 @@ import {
 import { parsePaging } from "../utils/session.js";
 import { storageBucket, supabaseBaseUrl } from "../config/supabase.js";
 import { newId } from "../utils/session.js";
+import { renderDocumentationPage } from "../templates/documentationPage.js";
+
+export async function getDynamicPage(req, res) {
+  const result = await getNavigationPage(req.params.page, { publishedOnly: true });
+  if (!result.ok) return res.status(502).json({ error: "Could not load page" });
+  const page = Array.isArray(result.data) ? result.data[0] : null;
+  if (!page) return res.status(404).send("Page not found");
+  const materialResults = await Promise.all([
+    listMaterials({ slug: page.page, publishedOnly: true }),
+    listMaterials({ slug: `erp-${page.page}`, publishedOnly: true }),
+  ]);
+  const material = materialResults.map((result) => result.ok ? result.data : null).find(Boolean);
+  return res.send(renderDocumentationPage({ page, material }));
+}
 
 export async function getNavigation(req, res) {
   const result = await listNavigation({ publishedOnly: true });
@@ -31,8 +46,8 @@ export async function saveAdminNavigation(req, res) {
   if (!["stage", "proman"].includes(scope)) {
     return res.status(400).json({ error: "Choose STAGE or PROMAN" });
   }
-  if (!item.title || (!!item.page !== !!item.url) || (item.page && !parentId)) {
-    return res.status(400).json({ error: "Title is required; page and URL must be provided together" });
+  if (!item.title || (item.page && !parentId)) {
+    return res.status(400).json({ error: "Title is required and a page must have a parent" });
   }
   const payload = {
     id: item.id || newId(),
@@ -41,7 +56,10 @@ export async function saveAdminNavigation(req, res) {
     title: String(item.title).trim(),
     icon: item.icon === undefined ? "ph-link" : String(item.icon).trim(),
     page: item.page ? String(item.page).trim() : null,
-    url: item.url ? String(item.url).trim() : null,
+    url: item.page ? (String(item.url || `/api/cms/page/${String(item.page).trim()}`).trim()) : null,
+    h1: String(item.h1 || item.title || "").trim(),
+    summary: String(item.summary || "").trim(),
+    content: String(item.content || ""),
     sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : 0,
     published: Boolean(item.published),
   };

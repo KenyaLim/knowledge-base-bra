@@ -37,6 +37,9 @@ alter table public.cms_navigation enable row level security;
 alter table public.cms_navigation alter column page drop not null;
 alter table public.cms_navigation alter column url drop not null;
 alter table public.cms_navigation add column if not exists scope text not null default 'stage';
+alter table public.cms_navigation add column if not exists h1 text not null default '';
+alter table public.cms_navigation add column if not exists summary text not null default '';
+alter table public.cms_navigation add column if not exists content text not null default '';
 
 alter table public.cms_materials add column if not exists module_id text not null default '';
 alter table public.cms_materials add column if not exists kind text not null default 'detail';

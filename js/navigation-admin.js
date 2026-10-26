@@ -28,6 +28,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const page = document.getElementById("navigationType").value === "page";
         document.getElementById("navigationPage").required = page;
         document.getElementById("navigationUrl").required = page;
+        document.getElementById("navigationPageTemplate").hidden = !page;
+        if (page && !document.getElementById("navigationH1").value) document.getElementById("navigationH1").value = document.getElementById("navigationTitle").value;
     }
 
     function setIcon(icon) {
@@ -114,7 +116,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("navigationParentId").value = item.parent_id || "";
                 setIcon(item.icon || "ph-folder");
                 document.getElementById("navigationPage").value = item.page;
-                document.getElementById("navigationUrl").value = item.url;
+                document.getElementById("navigationUrl").value = item.url || "";
+                document.getElementById("navigationH1").value = item.h1 || item.title || "";
+                document.getElementById("navigationSummary").value = item.summary || "";
+                document.getElementById("navigationContent").value = item.content || "<h2>Overview</h2><p>Tulis penjelasan modul di sini.</p>";
                 document.getElementById("navigationSortOrder").value = item.sort_order;
                 document.getElementById("navigationPublished").checked = item.published;
                 document.getElementById("deleteNavigation").hidden = false;
@@ -194,7 +199,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 title: document.getElementById("navigationTitle").value,
                 icon: document.getElementById("navigationIcon").value,
                 page: document.getElementById("navigationPage").value,
-                url: document.getElementById("navigationUrl").value,
+                url: isPage ? document.getElementById("navigationUrl").value : null,
+                h1: document.getElementById("navigationH1").value,
+                summary: document.getElementById("navigationSummary").value,
+                content: document.getElementById("navigationContent").value,
                 sort_order: document.getElementById("navigationSortOrder").value,
                 published: document.getElementById("navigationPublished").checked
             })

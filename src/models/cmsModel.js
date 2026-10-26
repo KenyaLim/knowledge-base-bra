@@ -3,6 +3,11 @@ import { supabaseRequest } from "../config/supabase.js";
 const ORDER = "order=sort_order.asc,created_at.asc";
 const NAVIGATION_ORDER = "order=sort_order.asc,title.asc";
 
+export async function getNavigationPage(page, { publishedOnly = true } = {}) {
+  const published = publishedOnly ? "&published=eq.true" : "";
+  return supabaseRequest("GET", `/rest/v1/cms_navigation?select=*&page=eq.${encodeURIComponent(page)}${published}&limit=1`);
+}
+
 export async function listNavigation({ publishedOnly = true } = {}) {
   const published = publishedOnly ? "&published=eq.true" : "";
   const result = await supabaseRequest("GET", `/rest/v1/cms_navigation?select=*&${NAVIGATION_ORDER}${published}`);

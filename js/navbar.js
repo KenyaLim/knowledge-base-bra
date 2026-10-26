@@ -64,6 +64,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const ROOT = getRootPath();
+    function navigationUrl(url) {
+        const value = String(url || "");
+        return value.startsWith("/") || value.startsWith("http") ? value : `${ROOT}${value.replace(/^\/+/, "")}`;
+    }
 
     if (navbarContainer) {
         navbarContainer.innerHTML = `
@@ -534,7 +538,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             ${modules.map(function (module) {
                                 const children = childrenOf(module.id);
                                 if (module.page && module.url) {
-                                    return `<a href="${ROOT}${String(module.url).replace(/^\/+/, "")}" class="sidebar-direct-link ${module.page === page ? "active" : ""}">${escapeHtml(module.title)}</a>`;
+                                    return `<a href="${navigationUrl(module.url)}" class="sidebar-direct-link ${module.page === page ? "active" : ""}">${escapeHtml(module.title)}</a>`;
                                 }
                                 const moduleActive = children.some(function (child) { return child.page === page; });
                                 return `<div class="sidebar-module ${moduleActive ? "module-active" : ""}">
