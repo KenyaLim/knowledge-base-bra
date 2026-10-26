@@ -15,48 +15,43 @@
             <section class="hero">
                 <div class="hero-content">
                     <p class="eyebrow">NAVIGATION MANAGEMENT</p>
-                    <h1>Navigation</h1>
-                    <p class="hero-description">Kelola parent dan child navbar tanpa mengubah file HTML.</p>
-                </div>
-            </section>
-            <section class="section">
-                <div class="cms-panel navigation-guide">
-                    <div class="section-heading"><i class="ph ph-info"></i><h2>Guide pengelolaan navbar</h2></div>
-                    <ol>
-                        <li><strong>Sync existing navbar:</strong> gunakan terlebih dahulu untuk mengambil struktur STAGE, PROMAN, module, child, dan icon dari navbar saat ini.</li>
-                        <li><strong>Add:</strong> kosongkan editor untuk membuat item baru. Pilih area STAGE/PROMAN, tipe kategori atau laman, lalu pilih parent.</li>
-                        <li><strong>Kategori:</strong> digunakan sebagai root atau module. Kategori tidak memiliki Page key dan URL.</li>
-                        <li><strong>Laman HTML:</strong> wajib memiliki parent module, Page key, dan URL. Laman menjadi child yang tampil sebagai link di navbar.</li>
-                        <li><strong>Pilih icon:</strong> klik salah satu icon Phosphor. Icon terpilih akan tampil di preview dan tersimpan saat menekan Save navigation.</li>
-                        <li><strong>Edit:</strong> klik tombol Edit pada item di daftar, ubah data, lalu tekan Save navigation.</li>
-                        <li><strong>Urutan:</strong> tarik item dengan drag-and-drop ke posisi item lain dalam parent yang sama. Urutan tersimpan otomatis.</li>
-                        <li><strong>Delete:</strong> klik Delete pada item yang dipilih. Menghapus kategori juga menghapus child di bawahnya.</li>
-                        <li><strong>Published:</strong> item hanya tampil di navbar user jika status Published aktif.</li>
-                    </ol>
+                    <h1>Navbar CRUD</h1>
+                    <p class="hero-description">Add, edit, delete, and publish modules and pages from one simple editor.</p>
                 </div>
             </section>
             <section class="section navigation-management-section">
-                <section class="cms-panel navigation-list-panel" aria-labelledby="navigationStructureHeading">
-                    <div class="section-heading"><i class="ph ph-list"></i><h2 id="navigationStructureHeading">Struktur navigasi</h2></div>
-                    <p class="hero-description">Pilih parent untuk menambah laman. Gunakan Edit, Hapus, atau tarik item untuk mengubah urutan.</p>
+                <div class="cms-panel navigation-list-panel" aria-labelledby="navigationStructureHeading">
+                    <div class="navigation-toolbar">
+                        <div class="section-heading"><i class="ph ph-list"></i><h2 id="navigationStructureHeading">Navbar structure</h2></div>
+                        <div class="navigation-toolbar-actions">
+                            <button type="button" id="importNavigation" class="cms-secondary-button">Sync existing</button>
+                            <button type="button" id="addParentNavigation" class="navbar-signin">Add module</button>
+                            <button type="button" id="addPageNavigation" class="navbar-signin">Add page</button>
+                        </div>
+                    </div>
+                    <p class="form-help">Select an item to edit it. Drag items to reorder siblings.</p>
                     <div id="navigationList" class="cms-material-list" aria-live="polite"></div>
-                </section>
-                <div class="navigation-actions-grid">
-                    <form id="navigationForm" class="cms-panel cms-form navigation-form-panel">
-                        <div class="section-heading"><i class="ph ph-folder-plus"></i><h2 id="navigationFormHeading">Tambah / Edit Modul</h2></div>
-                        <p id="navigationSelection" class="form-help">Tambah modul sebagai parent di bawah STAGE atau PROMAN.</p>
-                        <p class="form-help">Parent adalah module di bawah STAGE atau PROMAN.</p>
-                        <input type="hidden" id="navigationId"><input type="hidden" id="navigationSortOrder" value="0">
-                        <input type="hidden" id="navigationType" value="category"><input type="hidden" id="navigationParentId"><input type="hidden" id="navigationPage"><input type="hidden" id="navigationUrl">
-                        <label>Nama parent/module<input id="navigationTitle" required></label>
-                        <fieldset class="navigation-scope"><legend>Area</legend><label><input type="radio" name="navigationScope" value="stage" checked> STAGE</label><label><input type="radio" name="navigationScope" value="proman"> PROMAN</label></fieldset>
-                        <label>Icon parent<input id="navigationIcon" value="ph-folder" readonly><span id="navigationIconPreview" class="navigation-icon-preview"><i class="ph ph-folder"></i> ph-folder</span></label>
-                        <div id="navigationIconPicker" class="navigation-icon-picker" aria-label="Pilih icon"></div>
-                        <label class="cms-checkbox"><input id="navigationPublished" type="checkbox" checked> Published</label>
-                        <div class="cms-form-actions"><button type="button" id="importNavigation" class="cms-secondary-button">Sync Navbar</button><button type="button" id="addParentNavigation" class="navbar-signin">Tambah Modul</button><button type="button" id="newNavigation" class="cms-secondary-button">Batal</button><button type="button" id="deleteNavigation" class="cms-secondary-button" hidden>Hapus</button><button type="submit" class="navbar-signin">Simpan Parent</button></div>
-                        <p id="navigationStatus" class="search-status" aria-live="polite"></p>
-                    </form>
                 </div>
+                <form id="navigationForm" class="cms-panel cms-form navigation-form-panel">
+                    <div class="section-heading"><i class="ph ph-pencil-simple"></i><h2 id="navigationFormHeading">Add module</h2></div>
+                    <p id="navigationSelection" class="form-help">Create a module under STAGE or PROMAN.</p>
+                    <input type="hidden" id="navigationId">
+                    <input type="hidden" id="navigationSortOrder" value="0">
+                    <input type="hidden" id="navigationType" value="category">
+                    <label>Type<select id="navigationTypeSelect"><option value="category">Module</option><option value="page">Page</option></select></label>
+                    <label>Title<input id="navigationTitle" required autocomplete="off"></label>
+                    <fieldset class="navigation-scope"><legend>Area</legend><label><input type="radio" name="navigationScope" value="stage" checked> STAGE</label><label><input type="radio" name="navigationScope" value="proman"> PROMAN</label></fieldset>
+                    <label id="navigationParentField">Parent module<select id="navigationParentId"><option value="">No parent</option></select></label>
+                    <div id="navigationPageFields">
+                        <label>Page key<input id="navigationPage" autocomplete="off"></label>
+                        <label>URL<input id="navigationUrl" placeholder="/api/cms/page/example"></label>
+                    </div>
+                    <label>Icon<input id="navigationIcon" value="ph-folder" readonly><span id="navigationIconPreview" class="navigation-icon-preview"><i class="ph ph-folder"></i> ph-folder</span></label>
+                    <div id="navigationIconPicker" class="navigation-icon-picker" aria-label="Choose icon"></div>
+                    <label class="cms-checkbox"><input id="navigationPublished" type="checkbox" checked> Published</label>
+                    <div class="cms-form-actions"><button type="button" id="newNavigation" class="cms-secondary-button">Cancel</button><button type="button" id="deleteNavigation" class="cms-danger-button" hidden>Delete</button><button type="submit" id="saveNavigation" class="navbar-signin">Save</button></div>
+                    <p id="navigationStatus" class="search-status" aria-live="polite"></p>
+                </form>
             </section>
         </main>
     </div>
