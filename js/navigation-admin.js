@@ -156,7 +156,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 title: document.getElementById("navigationTitle").value,
                 icon: document.getElementById("navigationIcon").value,
                 page: document.getElementById("navigationPage").value,
-                url: document.getElementById("navigationUrl").value || `/api/cms/page/${document.getElementById("navigationPage").value}`,
+                url: document.getElementById("navigationType").value === "page"
+                    ? (document.getElementById("navigationUrl").value || `/api/cms/page/${document.getElementById("navigationPage").value}`)
+                    : null,
                 h1: document.getElementById("navigationH1").value,
                 summary: document.getElementById("navigationSummary").value,
                 content: document.getElementById("navigationContent").value,
@@ -174,7 +176,22 @@ document.addEventListener("DOMContentLoaded", function () {
         status.textContent = "Saved.";
     });
 
+    function prepareCreate(type) {
+        clearForm();
+        document.getElementById("navigationType").value = type;
+        if (type === "page") {
+            const title = document.getElementById("navigationTitle");
+            title.focus();
+            document.getElementById("navigationContent").value = "<h2>Overview</h2>\\n<p>Tulis isi dokumentasi di sini.</p>\\n<h2>Langkah penggunaan</h2>\\n<ol>\\n  <li>Tambahkan langkah pertama.</li>\\n  <li>Tambahkan langkah berikutnya.</li>\\n</ol>";
+        }
+        syncParentOptions();
+        syncFieldRequirements();
+    }
+
     document.getElementById("newNavigation").addEventListener("click", clearForm);
+    document.getElementById("createRootNavigation").addEventListener("click", function () { prepareCreate("category"); });
+    document.getElementById("createModuleNavigation").addEventListener("click", function () { prepareCreate("category"); });
+    document.getElementById("createPageNavigation").addEventListener("click", function () { prepareCreate("page"); });
     document.getElementById("navigationType").addEventListener("change", syncParentOptions);
     document.getElementById("navigationType").addEventListener("change", syncFieldRequirements);
     document.querySelectorAll('input[name="navigationScope"]').forEach(function (radio) {

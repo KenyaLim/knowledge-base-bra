@@ -38,8 +38,17 @@ export async function getDynamicPage(req, res) {
   const page = Array.isArray(result.data) ? result.data[0] : null;
   if (!result.ok) return res.status(502).json({ error: "Could not load page" });
   if (!page) return res.status(404).send("Page not found");
+  const materialResults = await Promise.all([
+    listMaterials({ slug: page.page, publishedOnly: true }),
+    listMaterials({ slug: `erp-${page.page}`, publishedOnly: true }),
+  ]);
+  const material = materialResults.map((result) => result.ok ? result.data : null).find(Boolean);
+  const title = material?.title || page.title;
+  const h1 = material?.title || page.h1 || page.title;
+  const summary = material?.summary || page.summary || "";
+  const content = material?.content || page.content || "<p>Belum ada konten.</p>";
   const escape = (value) => String(value || "").replace(/[&<>\"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '\"': "&quot;" }[character]));
-  return res.send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(page.title)}</title><link rel="stylesheet" href="/css/style.css"></head><body data-page="${escape(page.page)}"><div id="navbar"></div><div class="app-layout"><aside id="sidebar"></aside><main class="main-content"><section class="hero"><div class="hero-content"><p class="eyebrow">${escape(page.scope)}</p><h1>${escape(page.h1 || page.title)}</h1><p class="hero-description">${escape(page.summary)}</p></div></section><section class="section"><article class="doc-block">${page.content || "<p>Belum ada konten.</p>"}</article></section></main></div><script src="/js/navbar.js"></script></body></html>`);
+  return res.send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)}</title><link rel="stylesheet" href="/css/style.css"><script src="https://unpkg.com/@phosphor-icons/web"></script></head><body data-page="${escape(page.page)}" data-cms-slug="${escape(page.page)}"><div id="navbar"></div><div class="app-layout"><aside id="sidebar"></aside><main class="main-content"><section class="hero"><div class="hero-content"><p class="eyebrow">${escape(page.scope)}</p><h1>${escape(h1)}</h1><p class="hero-description">${escape(summary)}</p></div></section><section class="section"><article class="doc-block">${content}</article></section></main></div><script src="/js/navbar.js"></script></body></html>`);
 }
 
 export async function saveAdminNavigation(req, res) {
@@ -64,7 +73,7 @@ export async function saveAdminNavigation(req, res) {
     parent_id: parentId,
     scope,
     title: String(item.title).trim(),
-    icon: item.icon === undefined ? "ph-link" : String(item.icon).trim(),
+    icon: String(item.icon || "ph-link").trim(),
     page: item.page ? String(item.page).trim() : null,
     url: item.url ? String(item.url).trim() : null,
     h1: String(item.h1 || item.title || "").trim(),
@@ -99,8 +108,8 @@ export async function importAdminNavigation(req, res) {
   const payload = items.map(function (item) {
     const parentId = item.parent_key ? keyToId.get(item.parent_key) : null;
     const page = item.page ? String(item.page).trim() : null;
-    const url = page ? `/api/cms/page/${page}` : null;
     const old = existingByKey.get(defaultNavKey(item));
+    const url = old?.url || (page ? `/api/cms/page/${page}` : null);
     return {
       id: keyToId.get(item.key),
       parent_id: parentId || null,
@@ -111,7 +120,7 @@ export async function importAdminNavigation(req, res) {
       source_path: item.url || null,
       scope: item.scope === "proman" ? "proman" : "stage",
       title: String(item.title || "").trim(),
-      icon: String(item.icon || "ph-link").trim(),
+      icon: old?.icon || String(item.icon || "ph-link").trim(),
       page,
       url,
       h1: old?.h1 || String(item.title || "").trim(),
