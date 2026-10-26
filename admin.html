@@ -38,7 +38,12 @@
                     <label>Parent<select id="navigationParentId"><option value="">Tidak ada (root)</option></select></label>
                     <label>Icon Phosphor (opsional)<input id="navigationIcon" value=""></label>
                     <label>Page key<input id="navigationPage" placeholder="inventory-stock"></label>
-                    <label>URL<input id="navigationUrl" placeholder="erp/inventory/issuereceipt.html"></label>
+                    <label>URL<input id="navigationUrl" placeholder="/api/cms/page/inventory-stock"></label>
+                    <div id="navigationPageFields">
+                        <label>Judul H1<input id="navigationH1" placeholder="Judul utama laman"></label>
+                        <label>Ringkasan<textarea id="navigationSummary" rows="3"></textarea></label>
+                        <label>Konten HTML<textarea id="navigationContent" rows="10" placeholder="Isi laman HTML"></textarea></label>
+                    </div>
                     <label>Urutan<input id="navigationSortOrder" type="number" value="0"></label>
                     <label class="cms-checkbox"><input id="navigationPublished" type="checkbox" checked> Published</label>
                     <div class="cms-form-actions">

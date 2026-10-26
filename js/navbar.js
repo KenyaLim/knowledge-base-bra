@@ -64,6 +64,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const ROOT = getRootPath();
+    function navigationUrl(url) {
+        const value = String(url || "");
+        return value.startsWith("/") || value.startsWith("http") ? value : `${ROOT}${value.replace(/^\\/+/, "")}`;
+    }
 
     if (navbarContainer) {
         navbarContainer.innerHTML = `
@@ -533,7 +537,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             ${modules.map(function (module) {
                                 const children = childrenOf(module.id);
                                 if (module.page && module.url) {
-                                    return `<a href="${ROOT}${String(module.url).replace(/^\/+/, "")}" class="sidebar-direct-link ${module.page === page ? "active" : ""}">${escapeHtml(module.title)}</a>`;
+                                    return `<a href="${navigationUrl(module.url)}" class="sidebar-direct-link ${module.page === page ? "active" : ""}">${escapeHtml(module.title)}</a>`;
                                 }
                                 const moduleActive = children.some(function (child) { return child.page === page; });
                                 return `<div class="sidebar-module ${moduleActive ? "module-active" : ""}">
@@ -546,7 +550,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     </button>
                                     <ul class="sidebar-children ${moduleActive ? "open" : ""}">
                                         ${children.filter(function (child) { return child.page && child.url; }).map(function (child) {
-                                            return `<li><a href="${ROOT}${String(child.url).replace(/^\/+/, "")}" class="${child.page === page ? "active" : ""}">${escapeHtml(child.title)}</a></li>`;
+                                            return `<li><a href="${navigationUrl(child.url)}" class="${child.page === page ? "active" : ""}">${escapeHtml(child.title)}</a></li>`;
                                         }).join("")}
                                     </ul>
                                 </div>`;

@@ -95,9 +95,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 syncParentOptions();
                 document.getElementById("navigationParentId").value = item.parent_id || "";
                 document.getElementById("navigationIcon").value = item.icon || "";
-                document.getElementById("navigationPage").value = item.page;
-                document.getElementById("navigationUrl").value = item.url;
-                document.getElementById("navigationSortOrder").value = item.sort_order;
+        document.getElementById("navigationPage").value = item.page || "";
+        document.getElementById("navigationUrl").value = item.url || (item.page ? `/api/cms/page/${item.page}` : "");
+        document.getElementById("navigationH1").value = item.h1 || item.title || "";
+        document.getElementById("navigationSummary").value = item.summary || "";
+        document.getElementById("navigationContent").value = item.content || "";
+        document.getElementById("navigationSortOrder").value = item.sort_order;
                 document.getElementById("navigationPublished").checked = item.published;
                 document.getElementById("deleteNavigation").hidden = false;
             });
@@ -150,7 +153,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 title: document.getElementById("navigationTitle").value,
                 icon: document.getElementById("navigationIcon").value,
                 page: document.getElementById("navigationPage").value,
-                url: document.getElementById("navigationUrl").value,
+                url: document.getElementById("navigationUrl").value || `/api/cms/page/${document.getElementById("navigationPage").value}`,
+                h1: document.getElementById("navigationH1").value,
+                summary: document.getElementById("navigationSummary").value,
+                content: document.getElementById("navigationContent").value,
                 sort_order: document.getElementById("navigationSortOrder").value,
                 published: document.getElementById("navigationPublished").checked
             })

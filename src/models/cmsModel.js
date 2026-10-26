@@ -16,6 +16,11 @@ export async function upsertNavigation(payload) {
   });
 }
 
+export async function getNavigationPage(page, { publishedOnly = true } = {}) {
+  const published = publishedOnly ? "&published=eq.true" : "";
+  return supabaseRequest("GET", `/rest/v1/cms_navigation?select=*&page=eq.${encodeURIComponent(page)}${published}&limit=1`);
+}
+
 export async function deleteNavigation(id) {
   return supabaseRequest("DELETE", `/rest/v1/cms_navigation?id=eq.${encodeURIComponent(id)}`);
 }

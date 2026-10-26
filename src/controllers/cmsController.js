@@ -4,6 +4,7 @@ import {
   deleteNavigation,
   listMaterials,
   listNavigation,
+  getNavigationPage,
   normalizePayload,
   upsertMaterial,
   upsertNavigation,
@@ -24,6 +25,15 @@ export async function getAdminNavigation(req, res) {
   return res.json({ items: result.data });
 }
 
+export async function getDynamicPage(req, res) {
+  const result = await getNavigationPage(req.params.page, { publishedOnly: true });
+  const page = Array.isArray(result.data) ? result.data[0] : null;
+  if (!result.ok) return res.status(502).json({ error: "Could not load page" });
+  if (!page) return res.status(404).send("Page not found");
+  const escape = (value) => String(value || "").replace(/[&<>\"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '\"': "&quot;" }[character]));
+  return res.send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(page.title)}</title><link rel="stylesheet" href="/css/style.css"></head><body data-page="${escape(page.page)}"><div id="navbar"></div><div class="app-layout"><aside id="sidebar"></aside><main class="main-content"><section class="hero"><div class="hero-content"><p class="eyebrow">${escape(page.scope)}</p><h1>${escape(page.h1 || page.title)}</h1><p class="hero-description">${escape(page.summary)}</p></div></section><section class="section"><article class="doc-block">${page.content || "<p>Belum ada konten.</p>"}</article></section></main></div><script src="/js/navbar.js"></script></body></html>`);
+}
+
 export async function saveAdminNavigation(req, res) {
   const item = req.body || {};
   const scope = String(item.scope || "").toLowerCase();
@@ -34,6 +44,13 @@ export async function saveAdminNavigation(req, res) {
   if (!item.title || (!!item.page !== !!item.url) || (item.page && !parentId)) {
     return res.status(400).json({ error: "Title is required; page and URL must be provided together" });
   }
+  const existing = await listNavigation({ publishedOnly: false });
+  if (!existing.ok) return res.status(502).json({ error: "Could not validate navigation hierarchy" });
+  const parent = parentId ? existing.data.find((entry) => entry.id === parentId) : null;
+  if (parentId && !parent) return res.status(400).json({ error: "Parent navigation was not found" });
+  if (parent && (parent.scope !== scope || parent.page || parent.url)) {
+    return res.status(400).json({ error: "Parent must be a category in the same area" });
+  }
   const payload = {
     id: item.id || newId(),
     parent_id: parentId,
@@ -42,6 +59,9 @@ export async function saveAdminNavigation(req, res) {
     icon: item.icon === undefined ? "ph-link" : String(item.icon).trim(),
     page: item.page ? String(item.page).trim() : null,
     url: item.url ? String(item.url).trim() : null,
+    h1: String(item.h1 || item.title || "").trim(),
+    summary: String(item.summary || "").trim(),
+    content: String(item.content || ""),
     sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : 0,
     published: Boolean(item.published),
   };
@@ -54,23 +74,38 @@ export async function importAdminNavigation(req, res) {
   const items = Array.isArray(req.body?.items) ? req.body.items : [];
   if (!items.length) return res.status(400).json({ error: "Navigation items are required" });
   const keyToId = new Map();
+  const keys = new Set();
+  for (const item of items) {
+    if (!item.key || keys.has(item.key)) {
+      return res.status(400).json({ error: "Imported navigation contains duplicate or missing keys" });
+    }
+    keys.add(item.key);
+    keyToId.set(item.key, newId());
+  }
   const payload = items.map(function (item) {
-    const id = newId();
-    keyToId.set(item.key, id);
+    const parentId = item.parent_key ? keyToId.get(item.parent_key) : null;
+    const page = item.page ? String(item.page).trim() : null;
+    const url = item.url ? String(item.url).trim() : null;
     return {
-      id,
-      parent_id: item.parent_key ? keyToId.get(item.parent_key) || null : null,
+      id: keyToId.get(item.key),
+      parent_id: parentId || null,
       scope: item.scope === "proman" ? "proman" : "stage",
       title: String(item.title || "").trim(),
       icon: String(item.icon || "ph-link").trim(),
-      page: item.page ? String(item.page).trim() : null,
-      url: item.url ? String(item.url).trim() : null,
+      page,
+      url,
+      h1: String(item.h1 || item.title || "").trim(),
+      summary: String(item.summary || "").trim(),
+      content: String(item.content || ""),
       sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : 0,
       published: true,
     };
   });
   if (payload.some((item) => !item.title || (!!item.page !== !!item.url))) {
     return res.status(400).json({ error: "Imported navigation contains invalid parent or child data" });
+  }
+  if (items.some((item) => item.parent_key && !keys.has(item.parent_key))) {
+    return res.status(400).json({ error: "Imported navigation contains a missing parent" });
   }
   const cleared = await deleteAllNavigation();
   if (!cleared.ok) return res.status(502).json({ error: "Could not replace existing navigation", details: cleared.error });
