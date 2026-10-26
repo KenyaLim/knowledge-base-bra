@@ -62,7 +62,7 @@ export async function importAdminNavigation(req, res) {
       parent_id: item.parent_key ? keyToId.get(item.parent_key) || null : null,
       scope: item.scope === "proman" ? "proman" : "stage",
       title: String(item.title || "").trim(),
-      icon: String(item.icon || "ph-link").trim(),
+      icon: String(item.icon || (item.page ? "ph-file-text" : "ph-folder")).trim(),
       page: item.page ? String(item.page).trim() : null,
       url: item.url ? String(item.url).trim() : null,
       sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : 0,

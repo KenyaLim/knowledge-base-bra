@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const children = items.filter(function (entry) { return entry.parent_id === item.id; });
             return `<div class="navigation-admin-child navigation-admin-depth-${Math.min(depth, 3)}" draggable="true" data-drag-id="${item.id}">
                 <div class="navigation-admin-item">
-                    <span><strong>${escapeHtml(item.title)}</strong><small>${item.page ? escapeHtml(item.page) : "Kategori"}</small></span>
+                    <span><i class="ph ${escapeHtml(item.icon || "ph-link")}" aria-hidden="true"></i> <strong>${escapeHtml(item.title)}</strong><small>${item.page ? escapeHtml(item.page) : "Kategori"}</small></span>
                     <span class="navigation-admin-actions">
                         <button type="button" class="cms-secondary-button" data-action="edit" data-navigation-id="${item.id}">Edit</button>
                         <button type="button" class="cms-secondary-button" data-action="delete" data-navigation-id="${item.id}">Delete</button>

@@ -290,7 +290,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 parent_key: groupKey,
                 scope: group.id === "proman" ? "proman" : "stage",
                 title: group.home.title || "Home",
-                icon: "",
+                icon: "ph-house-line",
                 page: group.home.page,
                 url: group.home.url,
                 sort_order: 0
@@ -518,18 +518,19 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             sidebarContainer.querySelector(".sidebar-scroll").innerHTML = `
-                <a href="${ROOT}index.html" class="sidebar-dashboard ${page === "dashboard" ? "active" : ""}">
-                    <span class="sidebar-main-icon"><i class="ph ph-squares-four"></i></span>
-                    <span>Dashboard</span>
-                </a>
                 ${scopes.map(function (scope) {
                     const root = roots.find(function (item) {
                         return String(item.scope || "").toLowerCase() === scope;
                     });
-                    const modules = childrenOf(root.id);
+                    const children = childrenOf(root.id);
+                    const directPages = children.filter(function (item) { return item.page && item.url; });
+                    const modules = children.filter(function (item) { return !item.page; });
                     return `
                         <section class="sidebar-app-group sidebar-app-group-${scope}">
                             <h2 class="sidebar-app-heading">${escapeHtml(root.title || scope.toUpperCase())}</h2>
+                            ${directPages.map(function (item) {
+                                return `<a href="${navigationUrl(item.url)}" class="sidebar-direct-link ${item.page === page ? "active" : ""}"><span class="sidebar-main-icon"><i class="ph ${escapeHtml(item.icon || "ph-house-line")}"></i></span><span>${escapeHtml(item.title)}</span></a>`;
+                            }).join("")}
                             ${modules.map(function (module) {
                                 const children = childrenOf(module.id);
                                 if (module.page && module.url) {
