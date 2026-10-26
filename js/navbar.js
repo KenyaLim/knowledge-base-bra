@@ -304,10 +304,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const parentKey = group.id + "-" + module.id;
             return [{
                 key: parentKey,
-                    parent_key: groupKey,
-                    scope: group.id === "proman" ? "proman" : "stage",
-                    title: module.title,
-                    icon: module.icon || "ph-folder",
+                parent_key: groupKey,
+                scope: group.id === "proman" ? "proman" : "stage",
+                title: module.title,
+                icon: "",
                 sort_order: (moduleIndex + 1) * 100
             }].concat((module.children || []).map(function (child, childIndex) {
                 return {
