@@ -49,17 +49,34 @@ export async function saveAdminNavigation(req, res) {
   if (!item.title || (item.page && !parentId)) {
     return res.status(400).json({ error: "Title is required and a page must have a parent" });
   }
+  const existingResult = await listNavigation({ publishedOnly: false });
+  if (!existingResult.ok) return res.status(502).json({ error: "Could not validate navigation hierarchy" });
+  const existingItems = existingResult.data || [];
+  const existingItem = item.id ? existingItems.find((entry) => entry.id === item.id) : null;
+  const parent = parentId ? existingItems.find((entry) => entry.id === parentId) : null;
+  if (parentId && !parent) return res.status(400).json({ error: "Parent navigation was not found" });
+  if (parent && (parent.scope !== scope || parent.page || parent.url)) {
+    return res.status(400).json({ error: "Parent must be a category in the same area" });
+  }
+  if (existingItem && existingItem.id === parentId) {
+    return res.status(400).json({ error: "An item cannot be its own parent" });
+  }
+  let ancestor = parent;
+  while (ancestor) {
+    if (ancestor.id === existingItem?.id) return res.status(400).json({ error: "Navigation hierarchy cannot contain a cycle" });
+    ancestor = existingItems.find((entry) => entry.id === ancestor.parent_id);
+  }
   const payload = {
     id: item.id || newId(),
     parent_id: parentId,
     scope,
     title: String(item.title).trim(),
-    icon: item.icon === undefined ? "ph-link" : String(item.icon).trim(),
+    icon: item.icon === undefined ? (existingItem?.icon || "ph-link") : String(item.icon).trim(),
     page: item.page ? String(item.page).trim() : null,
-    url: item.page ? (String(item.url || `/api/cms/page/${String(item.page).trim()}`).trim()) : null,
-    h1: String(item.h1 || item.title || "").trim(),
-    summary: String(item.summary || "").trim(),
-    content: String(item.content || ""),
+    url: item.page ? (String(item.url || existingItem?.url || `/api/cms/page/${String(item.page).trim()}`).trim()) : null,
+    h1: item.h1 === undefined ? (existingItem?.h1 || String(item.title).trim()) : String(item.h1).trim(),
+    summary: item.summary === undefined ? (existingItem?.summary || "") : String(item.summary).trim(),
+    content: item.content === undefined ? (existingItem?.content || "") : String(item.content),
     sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : 0,
     published: Boolean(item.published),
   };

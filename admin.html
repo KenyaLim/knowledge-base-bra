@@ -35,14 +35,10 @@
                     </ol>
                 </div>
             </section>
-            <section class="section cms-admin-layout">
-                <div class="cms-panel navigation-list-panel">
-                    <div class="section-heading"><i class="ph ph-list"></i><h2>Navigation structure</h2></div>
-                    <p class="hero-description">Parent adalah kategori. Child adalah tautan ke halaman HTML.</p>
-                    <div id="navigationList" class="cms-material-list" aria-live="polite"></div>
-                </div>
+            <section class="section navigation-management-section">
                 <form id="navigationForm" class="cms-panel cms-form navigation-form-panel">
-                    <div class="section-heading"><i class="ph ph-pencil-simple"></i><h2>Add / edit item</h2></div>
+                    <div class="section-heading"><i class="ph ph-pencil-simple"></i><h2 id="navigationFormHeading">Kelola navbar</h2></div>
+                    <p id="navigationSelection" class="form-help">Mulai dari Sync Navbar, atau pilih Tambah Parent untuk membuat module baru.</p>
                     <input type="hidden" id="navigationId">
                     <input type="hidden" id="navigationSortOrder" value="0">
                     <label>Judul<input id="navigationTitle" required></label>
@@ -51,30 +47,36 @@
                         <label><input type="radio" name="navigationScope" value="stage" checked> STAGE</label>
                         <label><input type="radio" name="navigationScope" value="proman"> PROMAN</label>
                     </fieldset>
-                    <label>Yang ingin dibuat<select id="navigationType"><option value="category">Module / Parent</option><option value="page">Laman HTML Child</option></select></label>
-                    <label>Parent / Module<select id="navigationParentId"><option value="">Tidak ada (STAGE/PROMAN root)</option></select></label>
-                    <p class="form-help">Pilih Module / Parent untuk membuat kategori di bawah STAGE atau PROMAN. Pilih Laman HTML Child untuk membuat halaman di dalam module.</p>
+                    <input type="hidden" id="navigationType" value="category">
+                    <input type="hidden" id="navigationParentId">
+                    <input type="hidden" id="navigationPage">
+                    <input type="hidden" id="navigationUrl">
                     <label>Icon Phosphor
                         <input id="navigationIcon" value="ph-folder" readonly>
                         <span id="navigationIconPreview" class="navigation-icon-preview"><i class="ph ph-folder"></i> ph-folder</span>
                     </label>
                     <div id="navigationIconPicker" class="navigation-icon-picker" aria-label="Pilih icon"></div>
-                    <label>Page key<input id="navigationPage" placeholder="inventory-stock"></label>
-                    <label>URL<input id="navigationUrl" placeholder="erp/inventory/issuereceipt.html"></label>
-                    <div id="navigationPageTemplate">
+                    <div id="navigationPageTemplate" hidden>
                         <label>Judul H1<input id="navigationH1" placeholder="Judul halaman"></label>
                         <label>Ringkasan<textarea id="navigationSummary" rows="3"></textarea></label>
-                        <label>Isi template HTML<textarea id="navigationContent" rows="8"><h2>Overview</h2><p>Tulis penjelasan modul di sini.</p><h2>Langkah penggunaan</h2><ol><li>Tambahkan langkah pertama.</li><li>Tambahkan langkah berikutnya.</li></ol></textarea></label>
+                        <label>Isi laman dari template<textarea id="navigationContent" rows="10"><section class="documentation-content"><h2>Overview</h2><p>Tambahkan penjelasan modul di sini.</p><h2>Fungsi Utama</h2><ul><li>Tambahkan fungsi utama.</li><li>Tambahkan informasi penting.</li></ul><h2>Langkah Penggunaan</h2><ol><li>Tambahkan langkah pertama.</li><li>Tambahkan langkah berikutnya.</li></ol><h2>Catatan</h2><p>Tambahkan catatan tambahan.</p></section></textarea></label>
                     </div>
                     <label class="cms-checkbox"><input id="navigationPublished" type="checkbox" checked> Published</label>
                     <div class="cms-form-actions">
-                        <button type="button" id="importNavigation" class="cms-secondary-button">Sync existing navbar</button>
-                        <button type="button" id="newNavigation" class="navbar-signin">Add</button>
-                        <button type="button" id="deleteNavigation" class="cms-secondary-button" hidden>Delete</button>
-                        <button type="submit" class="navbar-signin">Save navigation</button>
+                        <button type="button" id="importNavigation" class="cms-secondary-button">Sync Navbar</button>
+                        <button type="button" id="addParentNavigation" class="navbar-signin">Tambah Parent</button>
+                        <button type="button" id="addPageNavigation" class="navbar-signin">Tambah Laman</button>
+                        <button type="button" id="newNavigation" class="cms-secondary-button">Batal</button>
+                        <button type="button" id="deleteNavigation" class="cms-secondary-button" hidden>Hapus</button>
+                        <button type="submit" class="navbar-signin">Simpan</button>
                     </div>
                     <p id="navigationStatus" class="search-status" aria-live="polite"></p>
                 </form>
+                <section class="cms-panel navigation-list-panel" aria-labelledby="navigationStructureHeading">
+                    <div class="section-heading"><i class="ph ph-list"></i><h2 id="navigationStructureHeading">Struktur navigasi</h2></div>
+                    <p class="hero-description">Pilih item untuk Edit atau Tambah Laman. Tarik item untuk mengubah urutan dalam parent yang sama.</p>
+                    <div id="navigationList" class="cms-material-list" aria-live="polite"></div>
+                </section>
             </section>
         </main>
     </div>
