@@ -11,7 +11,7 @@ export async function listNavigation({ publishedOnly = true } = {}) {
 }
 
 export async function upsertNavigation(payload) {
-  return supabaseRequest("POST", "/rest/v1/cms_navigation?on_conflict=nav_key", payload, {
+  return supabaseRequest("POST", "/rest/v1/cms_navigation?on_conflict=id", payload, {
     Prefer: "resolution=merge-duplicates,return=representation",
   });
 }
