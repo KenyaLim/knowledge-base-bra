@@ -19,6 +19,22 @@
                     <p class="hero-description">Kelola parent dan child navbar tanpa mengubah file HTML.</p>
                 </div>
             </section>
+            <section class="section">
+                <div class="cms-panel navigation-guide">
+                    <div class="section-heading"><i class="ph ph-info"></i><h2>Guide pengelolaan navbar</h2></div>
+                    <ol>
+                        <li><strong>Sync existing navbar:</strong> gunakan terlebih dahulu untuk mengambil struktur STAGE, PROMAN, module, child, dan icon dari navbar saat ini.</li>
+                        <li><strong>Add:</strong> kosongkan editor untuk membuat item baru. Pilih area STAGE/PROMAN, tipe kategori atau laman, lalu pilih parent.</li>
+                        <li><strong>Kategori:</strong> digunakan sebagai root atau module. Kategori tidak memiliki Page key dan URL.</li>
+                        <li><strong>Laman HTML:</strong> wajib memiliki parent module, Page key, dan URL. Laman menjadi child yang tampil sebagai link di navbar.</li>
+                        <li><strong>Pilih icon:</strong> klik salah satu icon Phosphor. Icon terpilih akan tampil di preview dan tersimpan saat menekan Save navigation.</li>
+                        <li><strong>Edit:</strong> klik tombol Edit pada item di daftar, ubah data, lalu tekan Save navigation.</li>
+                        <li><strong>Urutan:</strong> tarik item dengan drag-and-drop ke posisi item lain dalam parent yang sama. Urutan tersimpan otomatis.</li>
+                        <li><strong>Delete:</strong> klik Delete pada item yang dipilih. Menghapus kategori juga menghapus child di bawahnya.</li>
+                        <li><strong>Published:</strong> item hanya tampil di navbar user jika status Published aktif.</li>
+                    </ol>
+                </div>
+            </section>
             <section class="section cms-admin-layout">
                 <div class="cms-panel navigation-list-panel">
                     <div class="section-heading"><i class="ph ph-list"></i><h2>Navigation structure</h2></div>
@@ -36,10 +52,13 @@
                     </fieldset>
                     <label>Tipe<select id="navigationType"><option value="category">Kategori</option><option value="page">Laman HTML</option></select></label>
                     <label>Parent<select id="navigationParentId"><option value="">Tidak ada (root)</option></select></label>
-                    <label>Icon Phosphor (opsional)<input id="navigationIcon" value=""></label>
+                    <label>Icon Phosphor
+                        <input id="navigationIcon" value="ph-folder" readonly>
+                        <span id="navigationIconPreview" class="navigation-icon-preview"><i class="ph ph-folder"></i> ph-folder</span>
+                    </label>
+                    <div id="navigationIconPicker" class="navigation-icon-picker" aria-label="Pilih icon"></div>
                     <label>Page key<input id="navigationPage" placeholder="inventory-stock"></label>
                     <label>URL<input id="navigationUrl" placeholder="erp/inventory/issuereceipt.html"></label>
-                    <label>Urutan<input id="navigationSortOrder" type="number" value="0"></label>
                     <label class="cms-checkbox"><input id="navigationPublished" type="checkbox" checked> Published</label>
                     <div class="cms-form-actions">
                         <button type="button" id="importNavigation" class="cms-secondary-button">Sync existing navbar</button>

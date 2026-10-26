@@ -302,8 +302,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 key: parentKey,
                 parent_key: groupKey,
                 scope: group.id === "proman" ? "proman" : "stage",
-                title: module.title,
-                icon: "",
+                    title: module.title,
+                    icon: module.icon || "ph-folder",
                 sort_order: (moduleIndex + 1) * 100
             }].concat((module.children || []).map(function (child, childIndex) {
                 return {

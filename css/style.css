@@ -2,6 +2,18 @@
     box-sizing: border-box;
 }
 
+.navigation-guide { margin-bottom: 1rem; }
+.navigation-guide ol { margin: 0; padding-left: 1.4rem; color: #566176; }
+.navigation-guide li { margin: .45rem 0; line-height: 1.5; }
+.navigation-guide strong { color: #26324a; }
+.navigation-icon-picker { display: flex; flex-wrap: wrap; gap: .35rem; margin: .35rem 0 1rem; }
+.navigation-icon-button { width: 2.25rem; height: 2.25rem; border: 1px solid #d9dee8; border-radius: .4rem; background: #fff; cursor: pointer; font-size: 1.15rem; }
+.navigation-icon-button:hover { background: #eef3ff; border-color: #5b76c7; }
+.navigation-icon-preview { display: inline-flex; align-items: center; gap: .4rem; margin-top: .35rem; color: #566176; font-size: .85rem; }
+.navigation-admin-child[draggable="true"] { cursor: grab; }
+.navigation-admin-child.is-dragging { opacity: .45; }
+.navigation-admin-child.drag-over { outline: 2px dashed #5b76c7; outline-offset: 3px; }
+
 html,
 body {
     margin: 0;

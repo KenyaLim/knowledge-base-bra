@@ -3,7 +3,11 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!form) return;
     const list = document.getElementById("navigationList");
     const status = document.getElementById("navigationStatus");
+    const iconInput = document.getElementById("navigationIcon");
+    const iconPreview = document.getElementById("navigationIconPreview");
+    const iconPicker = document.getElementById("navigationIconPicker");
     let items = [];
+    const phosphorIcons = ["ph-squares-four", "ph-folder", "ph-file-text", "ph-shopping-cart", "ph-money", "ph-chart-bar", "ph-receipt", "ph-box-arrow-down", "ph-package", "ph-truck", "ph-address-book", "ph-timer", "ph-arrow-square-up", "ph-scissors", "ph-factory", "ph-check-circle", "ph-users", "ph-gear", "ph-question", "ph-list", "ph-house-line"];
 
     function syncParentOptions() {
         const parentSelect = document.getElementById("navigationParentId");
@@ -26,6 +30,20 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("navigationUrl").required = page;
     }
 
+    function setIcon(icon) {
+        const value = icon || "ph-folder";
+        iconInput.value = value;
+        iconPreview.innerHTML = `<i class="ph ${escapeHtml(value)}"></i> ${escapeHtml(value)}`;
+    }
+
+    iconPicker.innerHTML = phosphorIcons.map(function (icon) {
+        return `<button type="button" class="navigation-icon-button" data-icon="${icon}" title="${icon}"><i class="ph ${icon}"></i></button>`;
+    }).join("");
+    iconPicker.addEventListener("click", function (event) {
+        const button = event.target.closest("[data-icon]");
+        if (button) setIcon(button.dataset.icon);
+    });
+
     function escapeHtml(value) {
         return String(value || "").replace(/[&<>"']/g, function (character) {
             return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"}[character];
@@ -36,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
         form.reset();
         document.getElementById("navigationId").value = "";
         document.getElementById("navigationType").value = "category";
-        document.getElementById("navigationIcon").value = "";
+        setIcon("ph-folder");
         document.querySelector('input[name="navigationScope"][value="stage"]').checked = true;
         document.getElementById("navigationSortOrder").value = "0";
         document.getElementById("deleteNavigation").hidden = true;
@@ -48,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const scopes = ["stage", "proman"];
         function renderNode(item, depth) {
             const children = items.filter(function (entry) { return entry.parent_id === item.id; });
-            return `<div class="navigation-admin-child navigation-admin-depth-${Math.min(depth, 3)}">
+            return `<div class="navigation-admin-child navigation-admin-depth-${Math.min(depth, 3)}" draggable="true" data-drag-id="${item.id}">
                 <div class="navigation-admin-item">
                     <span><strong>${escapeHtml(item.title)}</strong><small>${item.page ? escapeHtml(item.page) : "Kategori"}</small></span>
                     <span class="navigation-admin-actions">
@@ -94,12 +112,38 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("navigationType").value = item.page ? "page" : "category";
                 syncParentOptions();
                 document.getElementById("navigationParentId").value = item.parent_id || "";
-                document.getElementById("navigationIcon").value = item.icon || "";
+                setIcon(item.icon || "ph-folder");
                 document.getElementById("navigationPage").value = item.page;
                 document.getElementById("navigationUrl").value = item.url;
                 document.getElementById("navigationSortOrder").value = item.sort_order;
                 document.getElementById("navigationPublished").checked = item.published;
                 document.getElementById("deleteNavigation").hidden = false;
+            });
+        });
+        list.querySelectorAll("[data-drag-id]").forEach(function (node) {
+            node.addEventListener("dragstart", function (event) { event.dataTransfer.setData("text/plain", node.dataset.dragId); node.classList.add("is-dragging"); });
+            node.addEventListener("dragend", function () { node.classList.remove("is-dragging"); });
+            node.addEventListener("dragover", function (event) { event.preventDefault(); node.classList.add("drag-over"); });
+            node.addEventListener("dragleave", function () { node.classList.remove("drag-over"); });
+            node.addEventListener("drop", async function (event) {
+                event.preventDefault();
+                node.classList.remove("drag-over");
+                const dragged = items.find(function (entry) { return entry.id === event.dataTransfer.getData("text/plain"); });
+                const target = items.find(function (entry) { return entry.id === node.dataset.dragId; });
+                if (!dragged || !target || dragged.id === target.id || dragged.parent_id !== target.parent_id) return;
+                const siblings = items.filter(function (entry) { return (entry.parent_id || null) === (target.parent_id || null); });
+                const from = siblings.indexOf(dragged);
+                const to = siblings.indexOf(target);
+                siblings.splice(from, 1);
+                siblings.splice(to, 0, dragged);
+                status.textContent = "Menyimpan urutan...";
+                try {
+                    for (let index = 0; index < siblings.length; index += 1) {
+                        await fetch("/api/cms/admin/navigation", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...siblings[index], sort_order: index * 100 }) });
+                    }
+                    await loadNavigation();
+                    status.textContent = "Urutan disimpan.";
+                } catch (error) { status.textContent = `Gagal menyimpan urutan: ${error.message}`; }
             });
         });
     }
