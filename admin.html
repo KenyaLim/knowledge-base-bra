@@ -36,42 +36,33 @@
                 </div>
             </section>
             <section class="section navigation-management-section">
-                <form id="navigationForm" class="cms-panel cms-form navigation-form-panel">
-                    <div class="section-heading"><i class="ph ph-pencil-simple"></i><h2 id="navigationFormHeading">Kelola navbar</h2></div>
-                    <p id="navigationSelection" class="form-help">Mulai dari Sync Navbar, atau pilih Tambah Parent untuk membuat module baru.</p>
-                    <input type="hidden" id="navigationId">
-                    <input type="hidden" id="navigationSortOrder" value="0">
-                    <label>Judul<input id="navigationTitle" required></label>
-                    <fieldset class="navigation-scope">
-                        <legend>Area navbar</legend>
-                        <label><input type="radio" name="navigationScope" value="stage" checked> STAGE</label>
-                        <label><input type="radio" name="navigationScope" value="proman"> PROMAN</label>
-                    </fieldset>
-                    <input type="hidden" id="navigationType" value="category">
-                    <input type="hidden" id="navigationParentId">
-                    <input type="hidden" id="navigationPage">
-                    <input type="hidden" id="navigationUrl">
-                    <label>Icon Phosphor
-                        <input id="navigationIcon" value="ph-folder" readonly>
-                        <span id="navigationIconPreview" class="navigation-icon-preview"><i class="ph ph-folder"></i> ph-folder</span>
-                    </label>
-                    <div id="navigationIconPicker" class="navigation-icon-picker" aria-label="Pilih icon"></div>
-                    <div id="navigationPageTemplate" hidden>
-                        <label>Judul H1<input id="navigationH1" placeholder="Judul halaman"></label>
-                        <label>Ringkasan<textarea id="navigationSummary" rows="3"></textarea></label>
-                        <label>Isi laman dari template<textarea id="navigationContent" rows="10"><section class="documentation-content"><h2>Overview</h2><p>Tambahkan penjelasan modul di sini.</p><h2>Fungsi Utama</h2><ul><li>Tambahkan fungsi utama.</li><li>Tambahkan informasi penting.</li></ul><h2>Langkah Penggunaan</h2><ol><li>Tambahkan langkah pertama.</li><li>Tambahkan langkah berikutnya.</li></ol><h2>Catatan</h2><p>Tambahkan catatan tambahan.</p></section></textarea></label>
-                    </div>
-                    <label class="cms-checkbox"><input id="navigationPublished" type="checkbox" checked> Published</label>
-                    <div class="cms-form-actions">
-                        <button type="button" id="importNavigation" class="cms-secondary-button">Sync Navbar</button>
-                        <button type="button" id="addParentNavigation" class="navbar-signin">Tambah Parent</button>
-                        <button type="button" id="addPageNavigation" class="navbar-signin">Tambah Laman</button>
-                        <button type="button" id="newNavigation" class="cms-secondary-button">Batal</button>
-                        <button type="button" id="deleteNavigation" class="cms-secondary-button" hidden>Hapus</button>
-                        <button type="submit" class="navbar-signin">Simpan</button>
-                    </div>
-                    <p id="navigationStatus" class="search-status" aria-live="polite"></p>
-                </form>
+                <div class="navigation-actions-grid">
+                    <form id="navigationForm" class="cms-panel cms-form navigation-form-panel">
+                        <div class="section-heading"><i class="ph ph-folder-plus"></i><h2>Tambah / Edit Parent</h2></div>
+                        <p class="form-help">Parent adalah module di bawah STAGE atau PROMAN.</p>
+                        <input type="hidden" id="navigationId"><input type="hidden" id="navigationSortOrder" value="0">
+                        <input type="hidden" id="navigationType" value="category"><input type="hidden" id="navigationParentId"><input type="hidden" id="navigationPage"><input type="hidden" id="navigationUrl">
+                        <label>Nama parent/module<input id="navigationTitle" required></label>
+                        <fieldset class="navigation-scope"><legend>Area</legend><label><input type="radio" name="navigationScope" value="stage" checked> STAGE</label><label><input type="radio" name="navigationScope" value="proman"> PROMAN</label></fieldset>
+                        <label>Icon parent<input id="navigationIcon" value="ph-folder" readonly><span id="navigationIconPreview" class="navigation-icon-preview"><i class="ph ph-folder"></i> ph-folder</span></label>
+                        <div id="navigationIconPicker" class="navigation-icon-picker" aria-label="Pilih icon"></div>
+                        <label class="cms-checkbox"><input id="navigationPublished" type="checkbox" checked> Published</label>
+                        <div class="cms-form-actions"><button type="button" id="importNavigation" class="cms-secondary-button">Sync Navbar</button><button type="button" id="addParentNavigation" class="navbar-signin">Tambah Parent</button><button type="button" id="newNavigation" class="cms-secondary-button">Batal</button><button type="button" id="deleteNavigation" class="cms-secondary-button" hidden>Hapus</button><button type="submit" class="navbar-signin">Simpan Parent</button></div>
+                        <p id="navigationStatus" class="search-status" aria-live="polite"></p>
+                    </form>
+                    <form id="pageNavigationForm" class="cms-panel cms-form navigation-form-panel">
+                        <div class="section-heading"><i class="ph ph-file-plus"></i><h2>Tambah / Edit Laman</h2></div>
+                        <p id="pageNavigationSelection" class="form-help">Pilih parent/module di Struktur Navigasi, lalu klik Tambah Laman.</p>
+                        <input type="hidden" id="pageNavigationId"><input type="hidden" id="pageNavigationParentId"><input type="hidden" id="pageNavigationPage"><input type="hidden" id="pageNavigationUrl">
+                        <label>Judul laman<input id="pageNavigationTitle" required></label>
+                        <label>Parent/module terpilih<input id="pageNavigationParentTitle" readonly placeholder="Belum dipilih"></label>
+                        <label>Judul H1<input id="pageNavigationH1"></label>
+                        <label>Ringkasan<textarea id="pageNavigationSummary" rows="3"></textarea></label>
+                        <label>Isi template HTML<textarea id="pageNavigationContent" rows="10"><section class="documentation-content"><h2>Overview</h2><p>Tambahkan penjelasan modul di sini.</p><h2>Fungsi Utama</h2><ul><li>Tambahkan fungsi utama.</li></ul><h2>Langkah Penggunaan</h2><ol><li>Tambahkan langkah pertama.</li></ol><h2>Catatan</h2><p>Tambahkan catatan tambahan.</p></section></textarea></label>
+                        <label class="cms-checkbox"><input id="pageNavigationPublished" type="checkbox" checked> Published</label>
+                        <div class="cms-form-actions"><button type="button" id="cancelPageNavigation" class="cms-secondary-button">Batal</button><button type="submit" class="navbar-signin">Simpan Laman</button></div>
+                    </form>
+                </div>
                 <section class="cms-panel navigation-list-panel" aria-labelledby="navigationStructureHeading">
                     <div class="section-heading"><i class="ph ph-list"></i><h2 id="navigationStructureHeading">Struktur navigasi</h2></div>
                     <p class="hero-description">Pilih item untuk Edit atau Tambah Laman. Tarik item untuk mengubah urutan dalam parent yang sama.</p>

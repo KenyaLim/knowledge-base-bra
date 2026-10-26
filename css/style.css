@@ -3,12 +3,13 @@
 }
 
 .navigation-guide { margin-bottom: 1rem; }
-.navigation-management-section { display: flex; flex-direction: column; gap: 1rem; }
-.navigation-form-panel { width: 100%; position: sticky; top: 1rem; z-index: 2; max-height: 78vh; overflow: auto; }
+.navigation-management-section { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.navigation-list-panel { grid-row: 1; width: 100%; min-height: 28rem; max-height: 68vh; overflow: auto; }
+.navigation-list-panel .section-heading { position: sticky; top: -1px; z-index: 1; background: #fff; padding: .25rem 0 .75rem; }
+.navigation-actions-grid { grid-row: 2; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: start; }
+.navigation-form-panel { width: 100%; position: static; max-height: 70vh; overflow: auto; }
 .navigation-form-panel .cms-form-actions { display: flex; flex-wrap: wrap; gap: .6rem; }
-.navigation-list-panel { width: 100%; min-height: 22rem; max-height: 62vh; overflow: auto; }
-.navigation-list-panel .section-heading { position: sticky; top: 0; z-index: 1; background: inherit; padding-bottom: .75rem; }
-@media (max-width: 900px) { .navigation-form-panel { position: static; max-height: none; } .navigation-list-panel { max-height: 55vh; } }
+@media (max-width: 900px) { .navigation-actions-grid { grid-template-columns: 1fr; } .navigation-list-panel { min-height: 20rem; max-height: 58vh; } .navigation-form-panel { max-height: none; } }
 .form-help { color: #68738a; font-size: .85rem; line-height: 1.4; margin: -.35rem 0 .75rem; }
 .navigation-guide ol { margin: 0; padding-left: 1.4rem; color: #566176; }
 .navigation-guide li { margin: .45rem 0; line-height: 1.5; }
@@ -2000,8 +2001,26 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 }
 
 .admin-page .navigation-form-panel {
-    position: sticky;
-    top: 84px;
+    position: static;
+    top: auto;
+    max-height: 70vh;
+    overflow: auto;
+}
+
+.admin-page .navigation-management-section {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.admin-page .navigation-list-panel {
+    grid-row: 1;
+}
+
+.admin-page .navigation-actions-grid {
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
 }
 
 .admin-page .navigation-form-panel .section-heading {
@@ -2099,6 +2118,15 @@ body:not(.erp-editor-ready) .erp-editor-toolbar {
 
     .admin-page .navigation-form-panel {
         position: static;
+        max-height: none;
+    }
+
+    .admin-page .navigation-actions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-page .navigation-list-panel {
+        max-height: 58vh;
     }
 }
 

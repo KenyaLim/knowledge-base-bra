@@ -395,19 +395,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     ${appGroups.map(function (group) {
                         return `
-                            <section class="sidebar-app-group sidebar-app-group-${group.id}">
-                                <h2 class="sidebar-app-heading">${escapeHtml(group.title)}</h2>
-                                ${group.home ? `
-                                    <a
-                                        href="${ROOT}${group.home.url}"
-                                        class="sidebar-direct-link ${page === group.home.page ? "active" : ""}"
-                                    >
-                                        <span class="sidebar-main-icon">
-                                            <i class="ph ph-house-line"></i>
-                                        </span>
-                                        <span>${escapeHtml(group.home.title)}</span>
-                                    </a>
-                                ` : ""}
+                                <section class="sidebar-app-group sidebar-app-group-${group.id}">
+                                    <h2 class="sidebar-app-heading">${escapeHtml(group.title)}</h2>
+                                    ${group.home ? `
+                                        <a href="${ROOT}${group.home.url}" class="sidebar-direct-link ${page === group.home.page ? "active" : ""}" aria-label="${escapeHtml(group.title)} Home">
+                                            <span class="sidebar-main-icon"><i class="ph ph-house-line"></i></span>
+                                        </a>
+                                    ` : ""}
+
                                 ${group.modules.map(function (module) {
 
                         const active = moduleHasActivePage(module);
@@ -533,7 +528,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <section class="sidebar-app-group sidebar-app-group-${scope}">
                             <h2 class="sidebar-app-heading">${escapeHtml(root.title || scope.toUpperCase())}</h2>
                             ${directPages.map(function (item) {
-                                return `<a href="${navigationUrl(item.url)}" class="sidebar-direct-link ${item.page === page ? "active" : ""}"><span class="sidebar-main-icon"><i class="ph ${escapeHtml(item.icon || "ph-house-line")}"></i></span><span>${escapeHtml(item.title)}</span></a>`;
+                                return `<a href="${navigationUrl(item.url)}" class="sidebar-direct-link ${item.page === page ? "active" : ""}" aria-label="${escapeHtml(item.title)}"><span class="sidebar-main-icon"><i class="ph ${escapeHtml(item.icon || "ph-house-line")}"></i></span>${item.title.toLowerCase() === "home" ? "" : `<span>${escapeHtml(item.title)}</span>`}</a>`;
                             }).join("")}
                             ${modules.map(function (module) {
                                 const children = childrenOf(module.id);
