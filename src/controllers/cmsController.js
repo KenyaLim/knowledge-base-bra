@@ -13,6 +13,14 @@ import { parsePaging } from "../utils/session.js";
 import { storageBucket, supabaseBaseUrl } from "../config/supabase.js";
 import { newId } from "../utils/session.js";
 
+function slugify(value) {
+  return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "item";
+}
+
+function defaultNavKey(item) {
+  return String(item.nav_key || (item.page ? `${item.scope}:${item.page}` : `${item.scope}:category:${slugify(item.title)}`)).toLowerCase();
+}
+
 export async function getNavigation(req, res) {
   const result = await listNavigation({ publishedOnly: true });
   if (!result.ok) return res.status(502).json({ error: "Could not load navigation" });
@@ -62,6 +70,11 @@ export async function saveAdminNavigation(req, res) {
     h1: String(item.h1 || item.title || "").trim(),
     summary: String(item.summary || "").trim(),
     content: String(item.content || ""),
+    nav_key: defaultNavKey({ ...item, scope, title: String(item.title).trim() }),
+    node_type: item.page ? "page" : "category",
+    route_type: item.route_type || (item.page && String(item.url || "").startsWith("/api/cms/page/") ? "dynamic" : "static"),
+    template_key: String(item.template_key || "documentation"),
+    source_path: item.source_path ? String(item.source_path).trim() : null,
     sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : 0,
     published: Boolean(item.published),
   };
@@ -75,30 +88,37 @@ export async function importAdminNavigation(req, res) {
   if (!items.length) return res.status(400).json({ error: "Navigation items are required" });
   const keyToId = new Map();
   const keys = new Set();
+  const existing = await listNavigation({ publishedOnly: false });
+  if (!existing.ok) return res.status(502).json({ error: "Could not load existing navigation" });
+  const existingByKey = new Map(existing.data.map((item) => [item.nav_key, item]));
   for (const item of items) {
-    if (!item.key || keys.has(item.key)) {
-      return res.status(400).json({ error: "Imported navigation contains duplicate or missing keys" });
-    }
+    if (!item.key || keys.has(item.key)) return res.status(400).json({ error: "Imported navigation contains duplicate or missing keys" });
     keys.add(item.key);
-    keyToId.set(item.key, newId());
+    keyToId.set(item.key, existingByKey.get(defaultNavKey(item))?.id || newId());
   }
   const payload = items.map(function (item) {
     const parentId = item.parent_key ? keyToId.get(item.parent_key) : null;
     const page = item.page ? String(item.page).trim() : null;
-    const url = item.url ? String(item.url).trim() : null;
+    const url = page ? `/api/cms/page/${page}` : null;
+    const old = existingByKey.get(defaultNavKey(item));
     return {
       id: keyToId.get(item.key),
       parent_id: parentId || null,
+      nav_key: defaultNavKey({ ...item, scope: item.scope === "proman" ? "proman" : "stage" }),
+      node_type: page ? "page" : "category",
+      route_type: page ? "dynamic" : "static",
+      template_key: "documentation",
+      source_path: item.url || null,
       scope: item.scope === "proman" ? "proman" : "stage",
       title: String(item.title || "").trim(),
       icon: String(item.icon || "ph-link").trim(),
       page,
       url,
-      h1: String(item.h1 || item.title || "").trim(),
-      summary: String(item.summary || "").trim(),
-      content: String(item.content || ""),
+      h1: old?.h1 || String(item.title || "").trim(),
+      summary: old?.summary || "",
+      content: old?.content || "",
       sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : 0,
-      published: true,
+      published: old ? old.published : true,
     };
   });
   if (payload.some((item) => !item.title || (!!item.page !== !!item.url))) {
@@ -107,8 +127,6 @@ export async function importAdminNavigation(req, res) {
   if (items.some((item) => item.parent_key && !keys.has(item.parent_key))) {
     return res.status(400).json({ error: "Imported navigation contains a missing parent" });
   }
-  const cleared = await deleteAllNavigation();
-  if (!cleared.ok) return res.status(502).json({ error: "Could not replace existing navigation", details: cleared.error });
   const result = await upsertNavigation(payload);
   if (!result.ok) return res.status(502).json({ error: "Could not import navigation", details: result.error });
   return res.json({ items: result.data || payload });

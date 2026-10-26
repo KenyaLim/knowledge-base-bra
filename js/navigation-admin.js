@@ -148,6 +148,9 @@ document.addEventListener("DOMContentLoaded", function () {
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
                 id: document.getElementById("navigationId").value || undefined,
+                nav_key: document.getElementById("navigationPage").value
+                    ? `${document.querySelector('input[name="navigationScope"]:checked').value}:${document.getElementById("navigationPage").value}`
+                    : `${document.querySelector('input[name="navigationScope"]:checked').value}:category:${document.getElementById("navigationTitle").value.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
                 scope: document.querySelector('input[name="navigationScope"]:checked').value,
                 parent_id: parentId || null,
                 title: document.getElementById("navigationTitle").value,
