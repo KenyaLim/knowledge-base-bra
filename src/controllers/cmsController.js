@@ -73,7 +73,7 @@ export async function saveAdminNavigation(req, res) {
     parent_id: parentId,
     scope,
     title: String(item.title).trim(),
-    icon: String(item.icon || "ph-link").trim(),
+    icon: String(item.icon || (item.page ? "ph-file-text" : (parentId ? "ph-folder" : "ph-squares-four"))).trim(),
     page: item.page ? String(item.page).trim() : null,
     url: item.url ? String(item.url).trim() : null,
     h1: String(item.h1 || item.title || "").trim(),
