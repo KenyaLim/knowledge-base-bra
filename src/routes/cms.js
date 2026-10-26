@@ -6,7 +6,6 @@ import {
   getAdminContent,
   getAdminNavigation,
   getContent,
-  getDynamicPage,
   getNavigation,
   importAdminNavigation,
   removeAdminContent,
@@ -21,7 +20,6 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 
 
 router.get("/content", requireSession, getContent);
 router.get("/navigation", requireSession, getNavigation);
-router.get("/page/:page", requireSession, getDynamicPage);
 router.get("/admin/content", requireSession, requireAdmin, getAdminContent);
 router.get("/admin/navigation", requireSession, requireAdmin, getAdminNavigation);
 router.post("/admin/content", requireSession, requireAdmin, saveAdminContent);
