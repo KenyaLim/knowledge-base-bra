@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("navigationForm");
-    const pageForm = document.getElementById("pageNavigationForm");
-    if (!form || !pageForm) return;
+    if (!form) return;
     const list = document.getElementById("navigationList");
     const status = document.getElementById("navigationStatus");
     const iconInput = document.getElementById("navigationIcon");
@@ -25,13 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
         parentSelect.innerHTML = '<option value="">Tidak ada (root)</option>' + byParent(null, 0).join("");
     }
 
-    function syncFieldRequirements() {
-        const page = document.getElementById("navigationType").value === "page";
-        document.getElementById("navigationPage").required = page;
-        document.getElementById("navigationUrl").required = page;
-        document.getElementById("navigationPageTemplate").hidden = !page;
-        if (page && !document.getElementById("navigationH1").value) document.getElementById("navigationH1").value = document.getElementById("navigationTitle").value;
-    }
+    function syncFieldRequirements() {}
 
     function setIcon(icon) {
         const value = icon || "ph-folder";
@@ -73,6 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div class="navigation-admin-item">
                     <span><i class="ph ${escapeHtml(item.icon || "ph-link")}" aria-hidden="true"></i> <strong>${escapeHtml(item.title)}</strong><small>${item.page ? escapeHtml(item.page) : "Kategori"}</small></span>
                     <span class="navigation-admin-actions">
+                        ${item.page && item.url ? `<a class="cms-secondary-button" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">Buka</a>` : ""}
                         <button type="button" class="cms-secondary-button" data-action="edit" data-navigation-id="${item.id}">Edit</button>
                         <button type="button" class="cms-secondary-button" data-action="delete" data-navigation-id="${item.id}">Delete</button>
                     </span>
@@ -90,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     return `<section class="navigation-admin-group">
                         <div class="navigation-admin-heading"><strong>${escapeHtml(parent.title)}</strong>
                             <span class="navigation-admin-actions">
-                                <button type="button" class="cms-secondary-button" data-action="edit" data-navigation-id="${parent.id}">Edit</button><button type="button" class="cms-secondary-button" data-action="add-page" data-navigation-id="${parent.id}">Tambah Laman</button>
+                                <button type="button" class="cms-secondary-button" data-action="edit" data-navigation-id="${parent.id}">Edit</button>
                                 <button type="button" class="cms-secondary-button" data-action="delete" data-navigation-id="${parent.id}">Delete</button>
                             </span>
                         </div>
@@ -109,19 +103,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     deleteNavigation(item);
                     return;
                 }
-                if (button.dataset.action === "add-page") {
-                    preparePageCreate(item);
-                    return;
-                }
                 if (item.page) {
-                    document.getElementById("pageNavigationId").value = item.id;
-                    document.getElementById("pageNavigationParentId").value = item.parent_id || "";
-                    document.getElementById("pageNavigationParentTitle").value = (items.find(function (entry) { return entry.id === item.parent_id; }) || {}).title || "";
-                    document.getElementById("pageNavigationTitle").value = item.title;
-                    document.getElementById("pageNavigationH1").value = item.h1 || item.title;
-                    document.getElementById("pageNavigationSummary").value = item.summary || "";
-                    document.getElementById("pageNavigationContent").value = item.content || document.getElementById("pageNavigationContent").value;
-                    document.getElementById("pageNavigationPublished").checked = item.published;
+                    if (item.url) window.open(item.url, "_blank", "noopener");
                     return;
                 }
                 document.getElementById("navigationId").value = item.id;
@@ -133,9 +116,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 setIcon(item.icon || "ph-folder");
                 document.getElementById("navigationPage").value = item.page;
                 document.getElementById("navigationUrl").value = item.url || "";
-                document.getElementById("navigationH1").value = item.h1 || item.title || "";
-                document.getElementById("navigationSummary").value = item.summary || "";
-                document.getElementById("navigationContent").value = item.content || "<h2>Overview</h2><p>Tulis penjelasan modul di sini.</p>";
                 document.getElementById("navigationSortOrder").value = item.sort_order;
                 document.getElementById("navigationPublished").checked = item.published;
                 document.getElementById("deleteNavigation").hidden = false;
@@ -205,22 +185,6 @@ document.addEventListener("DOMContentLoaded", function () {
         renderList();
     }
 
-    pageForm.addEventListener("submit", async function (event) {
-        event.preventDefault();
-        const parentId = document.getElementById("pageNavigationParentId").value;
-        const title = document.getElementById("pageNavigationTitle").value.trim();
-        if (!parentId || !title) { status.textContent = "Pilih parent dan isi judul laman."; return; }
-        const page = document.getElementById("pageNavigationId").value || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-        const current = items.find(function (item) { return item.id === document.getElementById("pageNavigationId").value; });
-        if (current && !window.confirm(`Are you sure want to change "${current.title}"?`)) return;
-        const response = await fetch("/api/cms/admin/navigation", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
-            id: document.getElementById("pageNavigationId").value || undefined, scope: (items.find(function (item) { return item.id === parentId; }) || {}).scope || "stage", parent_id: parentId, title, page, url: `/api/cms/page/${page}`, icon: "ph-file-text", h1: document.getElementById("pageNavigationH1").value || title, summary: document.getElementById("pageNavigationSummary").value, content: document.getElementById("pageNavigationContent").value, published: document.getElementById("pageNavigationPublished").checked
-        }) });
-        const result = await response.json();
-        if (!response.ok) { status.textContent = result.error || "Gagal menyimpan laman."; return; }
-        await loadNavigation(); pageForm.reset(); document.getElementById("pageNavigationParentTitle").value = ""; status.textContent = "Laman tersimpan.";
-    });
-
     form.addEventListener("submit", async function (event) {
         event.preventDefault();
         const isPage = document.getElementById("navigationType").value === "page";
@@ -234,8 +198,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const editingId = document.getElementById("navigationId").value;
         const editingItem = editingId ? items.find(function (item) { return item.id === editingId; }) : null;
         if (editingItem && !window.confirm(`Are you sure want to change "${editingItem.title}"?`)) return;
-        if (editingItem && editingItem.content && !document.getElementById("navigationContent").value.trim()
-            && !window.confirm("Content lama akan dikosongkan. Lanjutkan?")) return;
         status.textContent = "Saving...";
         const response = await fetch("/api/cms/admin/navigation", {
             method: "POST",
@@ -246,11 +208,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 parent_id: parentId || null,
                 title: document.getElementById("navigationTitle").value,
                 icon: document.getElementById("navigationIcon").value,
-                page: document.getElementById("navigationPage").value,
-                url: isPage ? document.getElementById("navigationUrl").value : null,
-                h1: document.getElementById("navigationH1").value,
-                summary: document.getElementById("navigationSummary").value,
-                content: document.getElementById("navigationContent").value,
+                page: null,
+                url: null,
                 sort_order: document.getElementById("navigationSortOrder").value,
                 published: document.getElementById("navigationPublished").checked
             })
@@ -272,30 +231,13 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("navigationSelection").textContent = type === "page"
             ? "Pilih module/parent pada daftar navbar terlebih dahulu. Laman baru akan dibuat sebagai child dan URL dibuat otomatis."
             : "Pilih STAGE atau PROMAN, isi nama module, pilih icon, lalu tekan Simpan.";
-        if (type === "page") {
-            document.getElementById("navigationPageTemplate").hidden = false;
-            document.getElementById("navigationH1").value = "";
-            document.getElementById("navigationContent").value = "<section class=\"documentation-content\"><h2>Overview</h2><p>Tambahkan penjelasan modul di sini.</p><h2>Fungsi Utama</h2><ul><li>Tambahkan fungsi utama.</li></ul><h2>Langkah Penggunaan</h2><ol><li>Tambahkan langkah pertama.</li></ol><h2>Catatan</h2><p>Tambahkan catatan tambahan.</p></section>";
-        }
         syncParentOptions();
         syncFieldRequirements();
     }
 
     document.getElementById("newNavigation").addEventListener("click", clearForm);
     document.getElementById("addParentNavigation").addEventListener("click", function () { prepareCreate("category"); });
-    function preparePageCreate(parent) {
-        document.getElementById("pageNavigationId").value = "";
-        document.getElementById("pageNavigationParentId").value = parent.id;
-        document.getElementById("pageNavigationParentTitle").value = parent.title;
-        document.getElementById("pageNavigationTitle").value = "";
-        document.getElementById("pageNavigationH1").value = "";
-        document.getElementById("pageNavigationSummary").value = "";
-        document.getElementById("pageNavigationPublished").checked = true;
-        document.getElementById("pageNavigationContent").value = "<section class=\"documentation-content\"><h2>Overview</h2><p>Tambahkan penjelasan modul di sini.</p><h2>Fungsi Utama</h2><ul><li>Tambahkan fungsi utama.</li></ul><h2>Langkah Penggunaan</h2><ol><li>Tambahkan langkah pertama.</li></ol><h2>Catatan</h2><p>Tambahkan catatan tambahan.</p></section>";
-        document.getElementById("pageNavigationTitle").focus();
-    }
 
-    document.getElementById("cancelPageNavigation").addEventListener("click", function () { pageForm.reset(); document.getElementById("pageNavigationParentTitle").value = ""; });
     document.getElementById("navigationType").addEventListener("change", syncParentOptions);
     document.getElementById("navigationType").addEventListener("change", syncFieldRequirements);
     document.querySelectorAll('input[name="navigationScope"]').forEach(function (radio) {

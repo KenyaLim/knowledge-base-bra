@@ -546,7 +546,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     </button>
                                     <ul class="sidebar-children ${moduleActive ? "open" : ""}">
                                         ${children.filter(function (child) { return child.page && child.url; }).map(function (child) {
-                                            return `<li><a href="${ROOT}${String(child.url).replace(/^\/+/, "")}" class="${child.page === page ? "active" : ""}">${escapeHtml(child.title)}</a></li>`;
+                                            return `<li><a href="${navigationUrl(child.url)}" class="${child.page === page ? "active" : ""}">${escapeHtml(child.title)}</a></li>`;
                                         }).join("")}
                                     </ul>
                                 </div>`;
