@@ -490,10 +490,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: { Accept: "application/json" },
                 signal: AbortSignal.timeout(8000)
             });
-            if (!response.ok) return;
+            if (!response.ok) throw new Error(`Navigation request failed: ${response.status}`);
             const payload = await response.json();
-            const items = Array.isArray(payload.items) ? payload.items : [];
-            if (!items.length) return;
+            const rawItems = Array.isArray(payload.items) ? payload.items : [];
+            const byId = new Map(rawItems.filter(function (item) { return item && item.id; }).map(function (item) { return [item.id, item]; }));
+            const items = rawItems.filter(function (item) {
+                const scope = String(item.scope || "").toLowerCase();
+                if (!item || !item.id || !["stage", "proman"].includes(scope) || !String(item.title || "").trim()) return false;
+                if (!item.page) return !item.url || !String(item.url).trim();
+                if (!String(item.url || "").trim()) return false;
+                const parent = item.parent_id ? byId.get(item.parent_id) : null;
+                return parent ? parent.scope === item.scope && !parent.page : true;
+            });
 
             const sortedItems = items.slice().sort(function (left, right) {
                 return Number(left.sort_order || 0) - Number(right.sort_order || 0)
@@ -503,12 +511,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return !item.parent_id && ["stage", "proman"].includes(String(item.scope || "").toLowerCase());
             });
             const scopes = ["stage", "proman"];
-            const hasValidGroups = scopes.every(function (scope) {
-                return roots.some(function (root) {
-                    return String(root.scope || "").toLowerCase() === scope;
-                });
-            });
-            if (!hasValidGroups) return;
+            if (!roots.length) throw new Error("Navigation has no valid roots");
 
             function childrenOf(parentId) {
                 return sortedItems.filter(function (item) {
@@ -518,10 +521,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             sidebarContainer.querySelector(".sidebar-scroll").innerHTML = `
                 ${scopes.map(function (scope) {
-                    const root = roots.find(function (item) {
-                        return String(item.scope || "").toLowerCase() === scope;
-                    });
-                    const children = childrenOf(root.id);
+                     const root = roots.find(function (item) {
+                         return String(item.scope || "").toLowerCase() === scope;
+                     });
+                     if (!root) return "";
+                     const children = childrenOf(root.id);
                     const directPages = children.filter(function (item) { return item.page && item.url; });
                     const modules = children.filter(function (item) { return !item.page; });
                     return `

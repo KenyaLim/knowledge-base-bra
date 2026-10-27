@@ -21,12 +21,12 @@ export async function upsertNavigation(payload) {
   });
 }
 
-export async function deleteNavigation(id) {
-  return supabaseRequest("DELETE", `/rest/v1/cms_navigation?id=eq.${encodeURIComponent(id)}`);
+export async function listNavigationChildren(parentId) {
+  return supabaseRequest("GET", `/rest/v1/cms_navigation?select=id&parent_id=eq.${encodeURIComponent(parentId)}&limit=1`);
 }
 
-export async function deleteAllNavigation() {
-  return supabaseRequest("DELETE", "/rest/v1/cms_navigation?id=not.is.null");
+export async function deleteNavigation(id) {
+  return supabaseRequest("DELETE", `/rest/v1/cms_navigation?id=eq.${encodeURIComponent(id)}`);
 }
 
 function moduleFilter(module) {

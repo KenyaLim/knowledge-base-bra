@@ -47,6 +47,10 @@ alter table public.cms_materials add column if not exists image_url text not nul
 alter table public.cms_materials add column if not exists last_edited_at timestamptz;
 alter table public.cms_materials add column if not exists last_edited_by text not null default '';
 
+create index if not exists cms_navigation_parent_id_idx on public.cms_navigation(parent_id);
+create index if not exists cms_navigation_scope_sort_idx on public.cms_navigation(scope, sort_order);
+create unique index if not exists cms_navigation_scope_page_idx on public.cms_navigation(scope, page) where page is not null;
+
 insert into storage.buckets (id, name, public)
 values ('cms-materials', 'cms-materials', true)
 on conflict (id) do update set public = true;
