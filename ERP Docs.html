@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ERP Docs</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f5f8;--surface:#fff;--ink:#17202e;--muted:#5d6b7e;--line:#d8dee8;--accent:#27408b;--on-accent:#fff;--h:'Bricolage Grotesque',system-ui,sans-serif;--s:'Source Serif 4',Georgia,serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f141d;--surface:#171e2b;--ink:#e6ebf3;--muted:#93a0b4;--line:#2a3447}}
+:root[data-theme="dark"]{--bg:#0f141d;--surface:#171e2b;--ink:#e6ebf3;--muted:#93a0b4;--line:#2a3447}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--h);min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--accent);z-index:30}
+body.plain::before{background:var(--surface)}
+/* navbar */
+#app{display:flex;align-items:flex-start}
+#top{display:none}
+nav{width:264px;flex:none;position:sticky;top:env(safe-area-inset-top,0px);height:calc(100vh - env(safe-area-inset-top,0px));overflow:auto;background:var(--accent);color:var(--on-accent);padding:16px 12px;display:flex;flex-direction:column;gap:2px}
+body.plain nav{background:var(--surface);color:var(--ink);border-right:1px solid var(--line)}
+.brand{font-weight:700;font-size:1.15rem;display:flex;gap:8px;align-items:center;background:none;border:0;padding:6px 8px;margin-bottom:8px;white-space:nowrap}
+.spacer{flex:1;min-height:12px}
+.sec{border-top:1px solid rgba(127,127,127,.45);margin-top:10px;padding-top:12px}
+.st{display:block;font-size:.84rem;opacity:.75;font-weight:700;padding:0 10px 6px}
+.dd>button,.gear{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:none;border:0;padding:8px 10px;border-radius:8px;font-weight:500;opacity:.92}
+.dd>button:hover,.pgs button:hover{background:rgba(127,127,127,.22);opacity:1}
+.dd>button.cur{background:rgba(127,127,127,.28);opacity:1}
+.pgs{margin:2px 0 6px 12px;border-left:1px solid rgba(127,127,127,.45)}
+.pgs button{display:block;width:100%;text-align:left;background:none;border:0;padding:6px 12px;border-radius:8px;opacity:.85}
+body:not(.plain) .pgs button.on{background:var(--on-accent);color:var(--accent);opacity:1}
+body.plain .pgs button.on{background:var(--accent);color:var(--on-accent);opacity:1}
+.pgs .add{opacity:.6}
+.gear{border:1px solid currentColor;margin-top:10px}
+/* main */
+main{flex:1;min-width:0;padding:36px 28px 80px}
+@media(max-width:800px){
+#app{flex-direction:column;align-items:stretch}
+#top{display:flex;position:sticky;top:env(safe-area-inset-top,0px);z-index:20;align-items:center;justify-content:space-between;background:var(--accent);color:var(--on-accent);padding:8px 16px}
+body.plain #top{background:var(--surface);color:var(--ink);border-bottom:1px solid var(--line)}
+#top .brand{margin:0}
+#top .gear{width:auto;margin:0;padding:6px 14px}
+nav{position:fixed;left:0;top:0;bottom:0;height:auto;z-index:45;transform:translateX(-100%);transition:transform .22s;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:86vw}
+body.navopen nav{transform:none}
+main{padding:24px 16px 80px}
+}
+@media(prefers-reduced-motion:reduce){nav{transition:none}}
+.wrap{max-width:820px;margin:0 auto}
+h1{font-size:clamp(1.8rem,5vw,2.5rem);line-height:1.1;margin:0 0 16px;letter-spacing:-.02em}
+h2{font-size:1.3rem;margin:32px 0 6px}
+h4{margin:14px 0 6px;font-size:1rem;color:var(--muted);font-weight:500}
+.crumb{color:var(--muted);font-size:.92rem;margin-bottom:8px}
+.search{width:100%;padding:13px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:1.02rem;margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 14px;font-size:.92rem}
+.chip:hover{border-color:var(--accent)}
+.item{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.item:hover{border-color:var(--accent)}
+.item b{display:block}.item span{color:var(--muted);font-size:.9rem}
+.empty{color:var(--muted);padding:14px 0}
+.prose{font-family:var(--s);font-size:1.12rem;line-height:1.75;max-width:66ch}
+.prose h3{font-family:var(--h);margin:1.6em 0 .4em;font-size:1.25rem}
+.prose p{margin:0 0 1em}.prose ul{padding-left:1.3em}
+.prose code{background:var(--line);padding:1px 6px;border-radius:5px;font-size:.92em}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 0}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 16px;font-weight:500}
+.btn.pri{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn.del{color:#b3261e}.btn.sm{padding:5px 11px;font-size:.88rem}
+label{display:block;font-weight:500;margin:14px 0 5px;font-size:.92rem}
+.in{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+textarea.in{min-height:280px;font-family:var(--s);line-height:1.6;resize:vertical}
+.meta{color:var(--muted);font-size:.92rem;margin:-4px 0 20px}
+.crumb button{background:none;border:0;padding:0;color:var(--accent);font-weight:500}
+/* panel */
+#scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;display:none}
+#panel{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--bg);z-index:50;padding:calc(18px + env(safe-area-inset-top,0px)) 18px calc(18px + env(safe-area-inset-bottom,0px));overflow:auto;transform:translateX(100%);transition:transform .22s;border-left:1px solid var(--line)}
+body.open #panel{transform:none}body.open #scrim,body.navopen #scrim{display:block}
+@media(prefers-reduced-motion:reduce){#panel{transition:none}}
+#panel h2{margin:0 0 4px}
+.sw{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sw button{width:30px;height:30px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.sw button.on{box-shadow:0 0 0 2px var(--ink)}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{flex:1;border:0;background:var(--surface);padding:8px}
+.seg button.on{background:var(--accent);color:var(--on-accent)}
+.grp{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}
+.mn{border-left:2px solid var(--line);padding-left:10px;margin-top:12px}
+.mi{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:6px;align-items:center}
+.pg{margin-left:14px}
+.mi .in{padding:7px 9px;min-width:0}
+.mi .x{display:flex;gap:2px}
+.mi .x button{border:0;background:none;padding:4px 7px;border-radius:6px}
+.mi .x button:hover{background:var(--line)}
+.b .in{font-weight:700}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="top"></div>
+<nav id="nav" aria-label="Navigasi utama"></nav>
+<main><div class="wrap" id="view"></div></main>
+</div>
+<div id="scrim"></div>
+<aside id="panel" aria-label="Pengaturan menu"></aside>
+
+<script>
+const KEY = 'erp-kb-v2';
+let n = 100; const P = (name, body) => ({id: n++, name, body: body || '', updated: Date.now() - 864e5 * (n % 9)});
+const defaults = {
+  settings: {brand: 'ERP Docs', logo: '🏭', accent: '#27408b', style: 'solid'},
+  sections: [
+    {id: 1, name: 'Stage', menus: [
+      {id: 11, name: 'Order', pages: [P('Modul 1', '# Membuat order baru\nBuka form order, pilih pelanggan, lalu tambahkan item.\n- Isi tanggal kirim\n- Cek stok tersedia\n- Klik `Konfirmasi`'), P('Modul 2', 'Order yang sudah dikonfirmasi bisa dibatalkan selama belum masuk **MRP**.')]},
+      {id: 12, name: 'Costing', pages: [P('Modul 1', '# Komponen biaya\n- Bahan baku dari BOM\n- Biaya jam mesin\n- Overhead per unit'), P('Modul 2')]},
+      {id: 13, name: 'MRP', pages: [P('Modul 1', 'Jalankan MRP untuk melihat kebutuhan bahan per periode.\n\n- Pilih periode\n- Klik **Hitung kebutuhan**'), P('Modul 2')]}
+    ]},
+    {id: 2, name: 'Proman', menus: [
+      {id: 21, name: 'Production', pages: [P('Modul 1', '# Lapor hasil produksi\n- Buka Work Order\n- Isi jumlah hasil dan reject\n- Klik `Selesai`'), P('Modul 2')]},
+      {id: 22, name: 'Inventory', pages: [P('Modul 1', 'Stok barang jadi bertambah otomatis setelah laporan produksi selesai.'), P('Modul 2')]}
+    ]}
+  ]
+};
+const PRESETS = ['#27408b', '#1f6f78', '#a8324a', '#3f6b3a', '#7a4b12', '#2b2b33'];
+
+let S = load();
+let ui = {view: 'home', sid: null, mid: null, pid: null, q: ''};
+let open = null;
+
+function load() { try { const r = localStorage.getItem(KEY); if (r) return JSON.parse(r); } catch (e) {} return JSON.parse(JSON.stringify(defaults)); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const uid = () => Date.now() + Math.floor(Math.random() * 1000);
+const fmt = t => new Date(t).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
+const sec = sid => S.sections.find(s => s.id === sid);
+const menu = (sid, mid) => (sec(sid) || {menus: []}).menus.find(m => m.id === mid);
+const page = (sid, mid, pid) => (menu(sid, mid) || {pages: []}).pages.find(p => p.id === pid);
+const allPages = () => S.sections.flatMap(s => s.menus.flatMap(m => m.pages.map(p => ({s, m, p}))));
+
+function md(t) {
+  const inl = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`(.+?)`/g, '<code>$1</code>');
+  let out = '', list = false;
+  t.split('\n').forEach(l => {
+    if (/^- /.test(l)) { if (!list) { out += '<ul>'; list = true; } out += '<li>' + inl(l.slice(2)) + '</li>'; return; }
+    if (list) { out += '</ul>'; list = false; }
+    if (/^# /.test(l)) out += '<h3>' + inl(l.slice(2)) + '</h3>'; else if (l.trim()) out += '<p>' + inl(l) + '</p>';
+  });
+  return out + (list ? '</ul>' : '');
+}
+
+/* ---------- tema & navbar ---------- */
+function applyTheme() {
+  document.documentElement.style.setProperty('--accent', S.settings.accent);
+  document.body.classList.toggle('plain', S.settings.style === 'plain');
+  document.title = S.settings.brand;
+}
+function renderNav() {
+  const s = S.settings;
+  const brand = `<button class="brand" onclick="go('home')"><span>${esc(s.logo)}</span>${esc(s.brand)}</button>`;
+  $('top').innerHTML = brand + `<button class="gear" onclick="toggleNav()">Menu</button>`;
+  $('nav').innerHTML = brand +
+    S.sections.map(sc => `<div class="sec"><span class="st">${esc(sc.name)}</span>` + sc.menus.map(m =>
+      `<div class="dd"><button class="${ui.mid === m.id ? 'cur' : ''}" aria-expanded="${open === m.id}" onclick="toggleDD(${m.id})">${esc(m.name)}<span>${open === m.id ? '▴' : '▾'}</span></button>` +
+      (open === m.id ? `<div class="pgs">${m.pages.map(p => `<button class="${ui.pid === p.id ? 'on' : ''}" onclick="go('page',{sid:${sc.id},mid:${m.id},pid:${p.id}})">${esc(p.name)}</button>`).join('')}<button class="add" onclick="newPage(${sc.id},${m.id})">+ Halaman baru</button></div>` : '') + `</div>`).join('') + `</div>`).join('') +
+    `<span class="spacer"></span><button class="gear" onclick="togglePanel(true)">Atur menu</button>`;
+}
+function toggleDD(id) { open = open === id ? null : id; renderNav(); }
+function toggleNav() { document.body.classList.toggle('navopen'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { togglePanel(false); document.body.classList.remove('navopen'); } });
+
+/* ---------- halaman ---------- */
+function go(view, x = {}) { ui = Object.assign({view, sid: null, mid: null, pid: null, q: ''}, x); open = ui.mid; document.body.classList.remove('navopen'); render(); window.scrollTo(0, 0); }
+function render() { renderNav(); ({home, page: pageView, edit})[ui.view](); }
+
+function home() {
+  $('view').innerHTML = `<h1>Dokumentasi ERP</h1><input class="search" id="q" type="search" placeholder="Cari halaman di semua menu…" aria-label="Cari halaman"><div id="out"></div>`;
+  const draw = () => {
+    const q = ui.q.toLowerCase();
+    if (q) {
+      const r = allPages().filter(x => (x.p.name + ' ' + x.p.body).toLowerCase().includes(q));
+      $('out').innerHTML = `<h2>${r.length} hasil</h2>` + (r.length ? r.map(x => `<button class="item" onclick="go('page',{sid:${x.s.id},mid:${x.m.id},pid:${x.p.id}})"><b>${esc(x.m.name)}: ${esc(x.p.name)}</b><span>${esc(x.s.name)}, diperbarui ${fmt(x.p.updated)}</span></button>`).join('') : '<p class="empty">Tidak ada halaman yang cocok. Coba kata kunci lain.</p>');
+      return;
+    }
+    $('out').innerHTML = S.sections.map(sc => `<h2>${esc(sc.name)}</h2>` + (sc.menus.map(m => `<h4>${esc(m.name)}</h4><div class="chips">${m.pages.map(p => `<button class="chip" onclick="go('page',{sid:${sc.id},mid:${m.id},pid:${p.id}})">${esc(p.name)}</button>`).join('')}<button class="chip" style="color:var(--muted)" onclick="newPage(${sc.id},${m.id})">+ Halaman baru</button></div>`).join('') || '<p class="empty">Belum ada menu. Tambahkan lewat Atur menu.</p>')).join('');
+  };
+  $('q').oninput = e => { ui.q = e.target.value; draw(); }; draw();
+}
+function pageView() {
+  const sc = sec(ui.sid), m = menu(ui.sid, ui.mid), p = page(ui.sid, ui.mid, ui.pid); if (!p) return go('home');
+  $('view').innerHTML = `<div class="crumb"><button onclick="go('home')">Beranda</button> / ${esc(sc.name)} / ${esc(m.name)}</div>` +
+    `<h1>${esc(p.name)}</h1><p class="meta">Diperbarui ${fmt(p.updated)}</p>` +
+    (p.body.trim() ? `<div class="prose">${md(p.body)}</div>` : `<p class="empty">Halaman ini masih kosong. Klik “Tulis isi halaman” untuk mulai menulis.</p>`) +
+    `<div class="row"><button class="btn pri" onclick="go('edit',{sid:${sc.id},mid:${m.id},pid:${p.id}})">${p.body.trim() ? 'Sunting halaman' : 'Tulis isi halaman'}</button><button class="btn del" onclick="delPage(${sc.id},${m.id},${p.id})">Hapus halaman</button></div>`;
+}
+function edit() {
+  const p = page(ui.sid, ui.mid, ui.pid); if (!p) return go('home');
+  $('view').innerHTML = `<div class="crumb">${esc(sec(ui.sid).name)} / ${esc(menu(ui.sid, ui.mid).name)}</div><h1>Sunting halaman</h1>` +
+    `<label for="et">Nama halaman</label><input class="in" id="et" value="${esc(p.name)}">` +
+    `<label for="eb">Isi (“# ” subjudul, “- ” daftar, **tebal**, \`kode\`)</label><textarea class="in" id="eb">${esc(p.body)}</textarea>` +
+    `<div class="row"><button class="btn pri" onclick="savePage()">Simpan halaman</button><button class="btn" onclick="go('page',{sid:ui.sid,mid:ui.mid,pid:ui.pid})">Batal</button></div>`;
+}
+function savePage() {
+  const name = $('et').value.trim(); if (!name) { $('et').focus(); return; }
+  Object.assign(page(ui.sid, ui.mid, ui.pid), {name, body: $('eb').value, updated: Date.now()});
+  save(); go('page', {sid: ui.sid, mid: ui.mid, pid: ui.pid});
+}
+function newPage(sid, mid) {
+  const p = {id: uid(), name: 'Halaman baru', body: '', updated: Date.now()};
+  menu(sid, mid).pages.push(p); save(); go('edit', {sid, mid, pid: p.id});
+}
+function delPage(sid, mid, pid) {
+  if (!confirm('Hapus halaman ini? Tindakan ini tidak bisa dibatalkan.')) return;
+  const m = menu(sid, mid); m.pages = m.pages.filter(p => p.id !== pid); save(); go('home');
+}
+
+/* ---------- panel atur menu ---------- */
+function togglePanel(o) { document.body.classList.toggle('open', o); if (o) renderPanel(); }
+$('scrim').onclick = () => { togglePanel(false); document.body.classList.remove('navopen'); };
+const btns = (up, down, del, lbl) => `<div class="x"><button aria-label="Naikkan" onclick="${up}">↑</button><button aria-label="Turunkan" onclick="${down}">↓</button><button aria-label="Hapus ${lbl}" onclick="${del}">✕</button></div>`;
+function renderPanel() {
+  const s = S.settings;
+  $('panel').innerHTML = `<h2>Atur menu</h2><p class="meta">Perubahan langsung terlihat dan tersimpan di browser Anda.</p>` +
+    `<label for="pb">Nama situs</label><input class="in" id="pb" value="${esc(s.brand)}">` +
+    `<label for="pl">Logo (emoji)</label><input class="in" id="pl" maxlength="4" value="${esc(s.logo)}">` +
+    `<label>Warna utama</label><div class="sw">${PRESETS.map(c => `<button style="background:${c}" class="${c === s.accent ? 'on' : ''}" aria-label="Warna ${c}" onclick="setS('accent','${c}')"></button>`).join('')}<input type="color" id="pc" value="${s.accent}" aria-label="Warna kustom"></div>` +
+    `<label>Gaya navbar</label><div class="seg"><button class="${s.style === 'solid' ? 'on' : ''}" onclick="setS('style','solid')">Berwarna</button><button class="${s.style === 'plain' ? 'on' : ''}" onclick="setS('style','plain')">Polos</button></div>` +
+    `<label>Judul grup, menu navbar, dan halaman</label>` +
+    S.sections.map((sc, si) => `<div class="grp"><div class="mi b"><input class="in" data-s="${sc.id}" value="${esc(sc.name)}" aria-label="Judul grup">${btns(`mvSec(${si},-1)`, `mvSec(${si},1)`, `rmSec(${sc.id})`, 'grup')}</div>` +
+      sc.menus.map((m, mi) => `<div class="mn"><div class="mi b"><input class="in" data-s="${sc.id}" data-m="${m.id}" value="${esc(m.name)}" aria-label="Nama menu navbar">${btns(`mvMenu(${sc.id},${mi},-1)`, `mvMenu(${sc.id},${mi},1)`, `rmMenu(${sc.id},${m.id})`, 'menu')}</div>` +
+        m.pages.map((p, pi) => `<div class="mi pg"><input class="in" data-s="${sc.id}" data-m="${m.id}" data-p="${p.id}" value="${esc(p.name)}" aria-label="Nama halaman">${btns(`mvPage(${sc.id},${m.id},${pi},-1)`, `mvPage(${sc.id},${m.id},${pi},1)`, `rmPage(${sc.id},${m.id},${p.id})`, 'halaman')}</div>`).join('') +
+        `<div class="row pg" style="margin-top:8px"><button class="btn sm" onclick="addPage(${sc.id},${m.id})">Tambah halaman</button></div></div>`).join('') +
+      `<div class="row"><button class="btn sm" onclick="addMenu(${sc.id})">Tambah menu navbar</button></div></div>`).join('') +
+    `<div class="row"><button class="btn" onclick="addSec()">Tambah grup</button><button class="btn del" onclick="resetAll()">Kembalikan contoh awal</button></div>`;
+  $('pb').oninput = e => { s.brand = e.target.value; commit(false); };
+  $('pl').oninput = e => { s.logo = e.target.value; commit(false); };
+  $('pc').oninput = e => { s.accent = e.target.value; commit(false); };
+  $('panel').querySelectorAll('[data-s]').forEach(el => el.oninput = () => {
+    const d = el.dataset, v = el.value;
+    if (d.p) page(+d.s, +d.m, +d.p).name = v; else if (d.m) menu(+d.s, +d.m).name = v; else sec(+d.s).name = v;
+    commit(false);
+  });
+}
+function commit(redraw) { save(); applyTheme(); renderNav(); if (redraw) renderPanel(); }
+function swap(a, i, d) { const j = i + d; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; }
+function setS(k, v) { S.settings[k] = v; commit(true); }
+function mvSec(i, d) { swap(S.sections, i, d); commit(true); }
+function mvMenu(sid, i, d) { swap(sec(sid).menus, i, d); commit(true); }
+function mvPage(sid, mid, i, d) { swap(menu(sid, mid).pages, i, d); commit(true); }
+function addSec() { S.sections.push({id: uid(), name: 'Grup baru', menus: []}); commit(true); }
+function addMenu(sid) { sec(sid).menus.push({id: uid(), name: 'Menu baru', pages: []}); commit(true); }
+function addPage(sid, mid) { menu(sid, mid).pages.push({id: uid(), name: 'Halaman baru', body: '', updated: Date.now()}); commit(true); }
+function rmSec(sid) { if (!confirm('Hapus grup ini beserta semua menu dan halamannya?')) return; S.sections = S.sections.filter(s => s.id !== sid); commit(true); go('home'); }
+function rmMenu(sid, mid) { if (!confirm('Hapus menu ini beserta semua halamannya?')) return; const sc = sec(sid); sc.menus = sc.menus.filter(m => m.id !== mid); commit(true); go('home'); }
+function rmPage(sid, mid, pid) { if (!confirm('Hapus halaman ini?')) return; const m = menu(sid, mid); m.pages = m.pages.filter(p => p.id !== pid); commit(true); go('home'); }
+function resetAll() {
+  if (!confirm('Kembalikan semuanya ke contoh awal? Semua perubahan, termasuk isi halaman yang Anda tulis, akan hilang.')) return;
+  S = JSON.parse(JSON.stringify(defaults)); commit(true); go('home');
+}
+
+applyTheme(); render();
+</script>
+</body>
+</html>

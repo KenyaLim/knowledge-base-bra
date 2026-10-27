@@ -58,11 +58,38 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderList() {
         function renderNode(item, depth) {
             const children = items.filter(function (entry) { return entry.parent_id === item.id; }).sort(function (a, b) { return a.sort_order - b.sort_order; });
-            return `<div class="navigation-admin-child navigation-admin-depth-${Math.min(depth, 3)}" draggable="true" data-drag-id="${escapeHtml(item.id)}"><div class="navigation-admin-item ${item.id === selectedId() ? "is-selected" : ""}" data-select-id="${escapeHtml(item.id)}"><span><i class="ph ${escapeHtml(item.icon || "ph-link")}"></i> <strong>${escapeHtml(item.title)}</strong><small>${item.page ? escapeHtml(item.page) : "Module"}${item.published ? "" : " · Draft"}</small></span><span class="navigation-admin-actions"><button type="button" class="cms-secondary-button" data-action="edit" data-navigation-id="${escapeHtml(item.id)}">Edit</button><button type="button" class="cms-danger-button" data-action="delete" data-navigation-id="${escapeHtml(item.id)}">Delete</button></span></div>${children.map(function (child) { return renderNode(child, depth + 1); }).join("")}</div>`;
+            const position = items.filter(function (entry) { return (entry.parent_id || null) === (item.parent_id || null) && entry.scope === item.scope; }).sort(function (a, b) { return a.sort_order - b.sort_order; }).indexOf(item);
+            const addPageButton = !item.page ? `<button type="button" class="cms-secondary-button" data-action="add-page" data-navigation-id="${escapeHtml(item.id)}">+ Halaman</button>` : "";
+            const childList = children.length ? children.map(function (child) { return renderNode(child, depth + 1); }).join("") : "";
+            return `<div class="navigation-admin-child navigation-admin-depth-${Math.min(depth, 3)}" draggable="true" data-drag-id="${escapeHtml(item.id)}"><div class="navigation-admin-item ${item.id === selectedId() ? "is-selected" : ""}" data-select-id="${escapeHtml(item.id)}"><span class="navigation-admin-label"><i class="ph ${escapeHtml(item.icon || (item.page ? "ph-file-text" : "ph-folder"))}"></i><strong>${escapeHtml(item.title)}</strong><small>${item.page ? escapeHtml(item.page) : "Module"}${item.published ? "" : " · Draft"}</small></span><span class="navigation-admin-actions">${addPageButton}<button type="button" class="cms-secondary-button" data-action="up" data-navigation-id="${escapeHtml(item.id)}" ${position === 0 ? "disabled" : ""} aria-label="Move up">↑</button><button type="button" class="cms-secondary-button" data-action="down" data-navigation-id="${escapeHtml(item.id)}" aria-label="Move down">↓</button><button type="button" class="cms-secondary-button" data-action="edit" data-navigation-id="${escapeHtml(item.id)}">Edit</button><button type="button" class="cms-danger-button" data-action="delete" data-navigation-id="${escapeHtml(item.id)}">Delete</button></span></div>${childList}</div>`;
         }
         list.innerHTML = ["stage", "proman"].map(function (scope) { const roots = items.filter(function (item) { return item.scope === scope && !item.parent_id; }).sort(function (a, b) { return a.sort_order - b.sort_order; }); return `<section class="navigation-admin-scope"><h3>${scope.toUpperCase()}</h3>${roots.length ? roots.map(function (item) { return renderNode(item, 0); }).join("") : "<p class=\"form-help\">No modules yet.</p>"}</section>`; }).join("");
-        list.querySelectorAll("[data-action]").forEach(function (button) { button.addEventListener("click", function () { const item = items.find(function (entry) { return entry.id === button.dataset.navigationId; }); if (!item) return; button.dataset.action === "delete" ? deleteNavigation(item) : editNavigation(item); }); });
+        list.querySelectorAll("[data-action]").forEach(function (button) { button.addEventListener("click", function () { const item = items.find(function (entry) { return entry.id === button.dataset.navigationId; }); if (!item) return;             if (button.dataset.action === "delete") return deleteNavigation(item); if (button.dataset.action === "edit") return editNavigation(item); if (button.dataset.action === "add-page") return addPage(item); moveItem(item, button.dataset.action === "up" ? -1 : 1); }); });
         list.querySelectorAll("[data-drag-id]").forEach(bindDragEvents);
+    }
+
+    async function addPage(parent) {
+        clearForm("page");
+        document.querySelector(`input[name="navigationScope"][value="${parent.scope}"]`).checked = true;
+        syncParentOptions();
+        parentSelect.value = parent.id;
+        titleInput.focus();
+        setStatus(`Menambahkan halaman di module ${parent.title}.`);
+    }
+
+    async function moveItem(item, direction) {
+        const siblings = items.filter(function (entry) { return (entry.parent_id || null) === (item.parent_id || null) && entry.scope === item.scope; }).sort(function (a, b) { return a.sort_order - b.sort_order; });
+        const index = siblings.findIndex(function (entry) { return entry.id === item.id; });
+        const target = siblings[index + direction];
+        if (!target) return;
+        siblings.splice(index, 1);
+        siblings.splice(index + direction, 0, item);
+        try {
+            for (let position = 0; position < siblings.length; position += 1) {
+                await saveItem({...siblings[position], sort_order: position * 100});
+            }
+            await loadNavigation();
+        } catch (error) { setStatus(error.message); }
     }
 
     function editNavigation(item) {

@@ -8,6 +8,25 @@
 .navigation-list-panel .section-heading { position: sticky; top: -1px; z-index: 1; background: #fff; padding: .25rem 0 .75rem; }
 .navigation-actions-grid { grid-row: 2; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: start; }
 .navigation-form-panel { width: 100%; position: static; max-height: none; overflow: visible; }
+.navigation-admin-scope { border-top: 1px solid #d8dee8; margin-top: 14px; padding-top: 12px; }
+.navigation-admin-scope > h3 { font-size: .84rem; letter-spacing: .08em; color: #5d6b7e; margin: 0 0 8px; }
+.navigation-admin-item { min-height: 48px; border-radius: 8px; padding: 8px 10px; background: #fff; border: 1px solid #d8dee8; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.navigation-admin-item:hover, .navigation-admin-item.is-selected { border-color: #27408b; background: #f3f5f8; }
+.navigation-admin-label { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.navigation-admin-label strong, .navigation-admin-label small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.navigation-admin-label small { display: block; color: #5d6b7e; font-size: .78rem; }
+.navigation-admin-actions { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.navigation-admin-actions button { padding: 5px 8px; }
+.navigation-admin-depth-1 { margin-left: 18px; border-left: 1px solid #d8dee8; padding-left: 10px; }
+.navigation-admin-depth-2, .navigation-admin-depth-3 { margin-left: 18px; }
+.navigation-admin-actions button:disabled { opacity: .4; cursor: not-allowed; }
+.navigation-admin-scope > h3 { border-bottom: 1px solid #d8dee8; padding-bottom: 8px; }
+.navigation-admin-depth-1 { background: #fafbfc; margin-top: 4px; }
+.navigation-admin-depth-1 .navigation-admin-item { border-left: 3px solid #27408b; }
+.navigation-admin-actions .cms-secondary-button { min-width: 34px; }
+.navigation-list-panel .navigation-toolbar { align-items: flex-start; }
+@media (max-width: 900px) { .navigation-list-panel .navigation-toolbar-actions { width: 100%; } .navigation-list-panel .navigation-toolbar-actions button { flex: 1; } }
+@media (max-width: 700px) { .navigation-admin-item { align-items: flex-start; flex-direction: column; } .navigation-admin-actions { width: 100%; justify-content: flex-start; } }
 .navigation-form-panel .cms-form-actions { display: flex; flex-wrap: wrap; gap: .6rem; }
 @media (max-width: 900px) { .navigation-actions-grid { grid-template-columns: 1fr; } .navigation-list-panel { min-height: 20rem; max-height: 58vh; } .navigation-form-panel { max-height: none; } }
 .form-help { color: #68738a; font-size: .85rem; line-height: 1.4; margin: -.35rem 0 .75rem; }
