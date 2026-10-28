@@ -1,5 +1,6 @@
 {
   "buildCommand": "npm run build",
+  "outputDirectory": ".",
   "functions": {
     "api/index.js": {
       "includeFiles": "generated/sanitize-html.cjs"
