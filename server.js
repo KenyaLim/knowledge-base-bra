@@ -10,7 +10,7 @@ import { requireSession } from "./src/middlewares/auth.js";
 import { COOKIE_NAME, SESSION_MS, cookieOptions, isCmsAdmin, readSessionFromToken, refreshSession, safeNext } from "./src/utils/session.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = __dirname;
+const ROOT = path.join(__dirname, "public");
 
 export function createApp() {
   const app = express();

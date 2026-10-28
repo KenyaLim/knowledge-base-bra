@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir, mkdtemp, mkdir, writeFile, cp, rm, symlink } from 'node:fs/promises';
+import path from 'node:path';
+import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
+import middleware from './middleware.js';
 import { execFileSync } from 'node:child_process';
 import { PGlite } from '@electric-sql/pglite';
 import { JSDOM } from 'jsdom';
@@ -8,6 +12,66 @@ import { sanitizeContent } from './src/utils/content.js';
 import { renderDocumentationPage } from './src/templates/documentationPage.js';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
+
+test('deployment output contains only website files and keeps function routing separate', async () => {
+    const root = fileURLToPath(new URL('.', import.meta.url));
+    const entries = await readdir(path.join(root, 'public'), { recursive: true, withFileTypes: true });
+    const files = entries.filter((entry) => entry.isFile()).map((entry) => path.relative(path.join(root, 'public'), path.join(entry.parentPath, entry.name))).sort();
+    const tracked = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' }).trim().split('\n');
+    const expected = tracked.filter((file) => /^(?:[^/]+\.html|css\/style\.css|js\/(?:admin|cms|erp-editor|navbar|navigation-admin)\.js|(?:erp|proman|stage|getting-started)\/.*\.html)$/.test(file)).sort();
+    assert.deepEqual(files, expected);
+    for (const file of files) {
+        assert.deepEqual(await readFile(path.join(root, 'public', file)), await readFile(path.join(root, file)));
+        assert.doesNotMatch(await readFile(path.join(root, 'public', file), 'utf8'), /process\.env|SUPABASE_SERVICE_ROLE_KEY|AUTH_SECRET|createApp/);
+    }
+    const config = JSON.parse(await read('vercel.json'));
+    assert.equal(config.outputDirectory, 'public');
+    assert.equal(config.framework, null);
+    assert.deepEqual(config.rewrites, [
+        { source: '/docs/:page', destination: '/api/index' },
+        { source: '/api/(.*)', destination: '/api/index' },
+    ]);
+    assert.equal(config.functions['api/index.js'].includeFiles, 'generated/sanitize-html.cjs');
+    assert.ok((await read('generated/sanitize-html.cjs')).length > 0);
+});
+
+test('build clears stale output and excludes secrets, backend files and symlinks', async () => {
+    const root = fileURLToPath(new URL('.', import.meta.url));
+    const fixture = await mkdtemp(path.join(tmpdir(), 'kb-public-'));
+    try {
+        for (const file of ['build.js', 'package.json', 'index.html', 'login.html', 'admin.html', 'materials.html', 'ERP Docs.html', 'css', 'js', 'erp', 'proman', 'stage', 'getting-started']) {
+            await cp(path.join(root, file), path.join(fixture, file), { recursive: true });
+        }
+        await symlink(path.join(root, 'node_modules'), path.join(fixture, 'node_modules'), 'dir');
+        for (const file of ['.env', 'api/index.js', 'src/secret.js', 'sql/private.sql', 'middleware.js', 'js/private.js', 'css/.env', 'erp/secret.sql', 'erp/.private/secret.html', 'public/api/index.js']) {
+            await mkdir(path.dirname(path.join(fixture, file)), { recursive: true });
+            await writeFile(path.join(fixture, file), 'PRIVATE_BUILD_SENTINEL');
+        }
+        await symlink(path.join(fixture, '.env'), path.join(fixture, 'erp/leak.html'));
+        execFileSync(process.execPath, [path.join(fixture, 'build.js')], { cwd: fixture, timeout: 30000 });
+        const entries = await readdir(path.join(fixture, 'public'), { recursive: true, withFileTypes: true });
+        for (const entry of entries) {
+            assert.equal(entry.isSymbolicLink(), false);
+            if (entry.isFile()) assert.doesNotMatch(await readFile(path.join(entry.parentPath, entry.name), 'utf8'), /PRIVATE_BUILD_SENTINEL/);
+        }
+        assert.ok(entries.some((entry) => entry.name === 'index.html'));
+        assert.ok(!entries.some((entry) => entry.name === 'api' || entry.name === 'leak.html'));
+    } finally {
+        await rm(fixture, { recursive: true, force: true });
+    }
+});
+
+test('deployment middleware preserves anonymous static gating and API pass-through', async () => {
+    for (const route of ['/index.html', '/erp/0-order/order.html', '/docs/example']) {
+        const response = await middleware(new Request(`https://example.test${route}`));
+        assert.equal(response.status, 302);
+        assert.equal(new URL(response.headers.get('location')).pathname, '/login.html');
+    }
+    for (const route of ['/login.html', '/css/style.css', '/js/navbar.js', '/api/session']) {
+        const response = await middleware(new Request(`https://example.test${route}`));
+        assert.equal(response.headers.get('x-middleware-next'), '1');
+    }
+});
 
 test('sanitizer removes executable legacy markup and preserves documentation', () => {
     const html = sanitizeContent('<script>alert(1)</script><img src="javascript:evil()" onerror="evil()"><a href="jav&#97;script:evil()">x</a><h2 class="editor-heading">Heading</h2><table><tr><td>Cell</td></tr></table><ul><li>Item</li></ul><img src="https://example.test/image.png">');
@@ -30,6 +94,14 @@ test('sanitizer and API load without require(ESM) support', () => {
             const response = await fetch('http://127.0.0.1:' + server.address().port + '/healthz');
             assert.equal(response.status, 200);
             assert.deepEqual(await response.json(), { ok: true });
+            const base = 'http://127.0.0.1:' + server.address().port;
+            const session = await fetch(base + '/api/session');
+            assert.match(session.headers.get('content-type'), /application\\/json/);
+            await session.json();
+            for (const route of ['/api/index.js', '/server.js', '/src/utils/session.js', '/generated/sanitize-html.cjs', '/sql/cms.sql', '/package.json', '/.env']) {
+                const denied = await fetch(base + route);
+                assert.equal(denied.status, 404, route);
+            }
         } finally {
             await new Promise(resolve => server.close(resolve));
         }

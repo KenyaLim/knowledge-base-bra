@@ -6,7 +6,7 @@
   "description": "Knowledge Base untuk dokumentasi ERP garment **STAGE** dan **PROMAN**. Website statis (HTML + JS) + Vercel Middleware + Supabase sebagai database & storage.",
   "main": "server.js",
   "scripts": {
-    "build": "esbuild node_modules/sanitize-html/index.js --bundle --platform=node --target=node24 --format=cjs --legal-comments=none --outfile=generated/sanitize-html.cjs",
+    "build": "node build.js",
     "pretest": "npm run build",
     "test": "node --test navigation.test.js",
     "prestart": "npm run build",
