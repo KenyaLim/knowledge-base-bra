@@ -1,4 +1,4 @@
-import sanitizeHtml from "sanitize-html";
+import sanitizeHtml from "../../generated/sanitize-html.cjs";
 
 export function sanitizeContent(value) {
   return sanitizeHtml(String(value || ""), {

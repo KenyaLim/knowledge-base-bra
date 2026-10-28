@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
 import { PGlite } from '@electric-sql/pglite';
 import { JSDOM } from 'jsdom';
 import { sanitizeContent } from './src/utils/content.js';
@@ -14,6 +15,31 @@ test('sanitizer removes executable legacy markup and preserves documentation', (
     assert.match(html, /<table>/);
     assert.match(html, /editor-heading/);
     assert.match(html, /https:\/\/example.test/);
+});
+
+test('sanitizer and API load without require(ESM) support', () => {
+    execFileSync(process.execPath, ['--no-experimental-require-module', '--input-type=module', '-e', `
+        import assert from 'node:assert/strict';
+        import { sanitizeContent } from './src/utils/content.js';
+        import app from './api/index.js';
+        assert.equal(typeof app, 'function');
+        assert.equal(sanitizeContent('<script>bad()</script><p>Safe</p>'), '<p>Safe</p>');
+        const server = app.listen(0, '127.0.0.1');
+        await new Promise(resolve => server.once('listening', resolve));
+        try {
+            const response = await fetch('http://127.0.0.1:' + server.address().port + '/healthz');
+            assert.equal(response.status, 200);
+            assert.deepEqual(await response.json(), { ok: true });
+        } finally {
+            await new Promise(resolve => server.close(resolve));
+        }
+    `], { cwd: new URL('.', import.meta.url), env: { ...process.env, VERCEL: '1' }, timeout: 15000, stdio: 'pipe' });
+});
+
+test('sanitizer preserves its URL, attribute, and class restrictions', () => {
+    assert.equal(sanitizeContent('<img src="//example.test/a"><img src="data:image/png;base64,AA"><img src="mailto:a@example.test">'), '<img /><img /><img />');
+    assert.equal(sanitizeContent('<a href="mailto:a@example.test" onclick="bad()">Mail</a>'), '<a href="mailto:a@example.test">Mail</a>');
+    assert.equal(sanitizeContent('<u id="note" class="editor-heading unwanted">Text</u><img class="erp-editor-image unwanted" src="https://example.test/a" alt="A" width="20" height="10">'), '<u id="note" class="editor-heading">Text</u><img class="erp-editor-image" src="https://example.test/a" alt="A" width="20" height="10" />');
 });
 
 test('dynamic template starts read-only with complete editor controls', () => {
