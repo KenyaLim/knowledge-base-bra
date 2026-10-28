@@ -5,6 +5,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import authRoutes from "./src/routes/auth.js";
 import cmsRoutes from "./src/routes/cms.js";
+import { getDynamicPage } from "./src/controllers/cmsController.js";
+import { requireSession } from "./src/middlewares/auth.js";
 import { COOKIE_NAME, SESSION_MS, cookieOptions, isCmsAdmin, readSessionFromToken, refreshSession, safeNext } from "./src/utils/session.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -19,6 +21,7 @@ export function createApp() {
 
   app.use("/api", authRoutes);
   app.use("/api/cms", cmsRoutes);
+  app.get("/docs/:page", requireSession, getDynamicPage);
 
   app.use("/css", express.static(path.join(ROOT, "css")));
   app.use("/js", express.static(path.join(ROOT, "js")));

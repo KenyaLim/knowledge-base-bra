@@ -51,6 +51,18 @@ create index if not exists cms_navigation_parent_id_idx on public.cms_navigation
 create index if not exists cms_navigation_scope_sort_idx on public.cms_navigation(scope, sort_order);
 create unique index if not exists cms_navigation_scope_page_idx on public.cms_navigation(scope, page) where page is not null;
 
+create or replace function public.cms_navigation_validate() returns trigger language plpgsql as $$
+begin
+    if new.scope not in ('stage', 'proman') then raise exception 'Invalid CMS navigation scope'; end if;
+    if new.page is null and new.url is not null then raise exception 'Modules cannot have URLs'; end if;
+    if new.page is not null and new.parent_id is null then raise exception 'Pages must belong to a module'; end if;
+    return new;
+end;
+$$;
+
+drop trigger if exists cms_navigation_validate_trigger on public.cms_navigation;
+create trigger cms_navigation_validate_trigger before insert or update on public.cms_navigation for each row execute function public.cms_navigation_validate();
+
 insert into storage.buckets (id, name, public)
 values ('cms-materials', 'cms-materials', true)
 on conflict (id) do update set public = true;

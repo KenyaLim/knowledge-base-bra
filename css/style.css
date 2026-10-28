@@ -2,6 +2,42 @@
     box-sizing: border-box;
 }
 
+body.admin-page .navigation-management-section { display: flex; flex-direction: column; gap: 20px; }
+body.admin-page .navigation-header { max-width: 1000px; margin: 36px auto 24px; }
+body.admin-page .navigation-header h1 { margin: 0 0 8px; font-size: clamp(26px, 4vw, 36px); }
+body.admin-page .navigation-header p { color: #666; margin: 0; }
+body.admin-page .navigation-list-panel { min-height: 0; max-height: none; overflow: visible; }
+body.admin-page .navigation-form-panel { position: static !important; top: auto !important; }
+body.admin-page .navigation-segments { display: flex; gap: 4px; padding: 4px; border: 1px solid #d4d4d4; background: #eee; margin: 0 0 16px; width: fit-content; max-width: 100%; }
+body.admin-page .navigation-scope { margin-bottom: 0; }
+body.admin-page .navigation-segments label { position: relative; margin: 0; cursor: pointer; }
+body.admin-page .navigation-segments input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+body.admin-page .navigation-segments span { display: block; padding: 10px 18px; font-size: 13px; font-weight: 700; }
+body.admin-page .navigation-segments input:checked + span { background: #fff; color: #14532d; box-shadow: 0 1px 3px #0002; }
+body.admin-page .navigation-segments input:focus-visible + span { outline: 2px solid #14532d; }
+body.admin-page #navigationList, body.admin-page .navigation-pages { list-style: none; padding: 0; margin: 0; }
+body.admin-page .navigation-list-panel h2 { font-size: 14px; margin: 0 0 16px; }
+body.admin-page .navigation-module { border-top: 1px solid #e5e5e5; }
+body.admin-page .navigation-module-row, body.admin-page .navigation-page-row { display: flex; align-items: center; gap: 8px; padding: 10px 0; min-width: 0; }
+body.admin-page .navigation-toggle { display: flex; align-items: center; gap: 10px; flex: 1; text-align: left; min-width: 0; font-weight: 700; }
+body.admin-page .navigation-toggle span, body.admin-page .navigation-page-row a { overflow-wrap: anywhere; }
+body.admin-page .navigation-module-row button, body.admin-page .navigation-page-row button { background: transparent; border: 0; padding: 7px; cursor: pointer; color: #444; }
+body.admin-page .navigation-module-row button:hover, body.admin-page .navigation-page-row button:hover { background: #eff9ed; }
+body.admin-page .navigation-context-actions { display: inline-flex; flex-shrink: 0; }
+body.admin-page .navigation-context-actions button { width: 32px; height: 32px; }
+body.admin-page .navigation-context-actions button:disabled { opacity: .3; cursor: default; }
+body.admin-page .navigation-pages { margin: 0 0 8px 26px; padding-left: 18px; border-left: 1px solid #ddd; }
+body.admin-page .navigation-pages[hidden] { display: none; }
+body.admin-page .navigation-page-row a, body.admin-page .navigation-page-row > span:not(.navigation-context-actions) { flex: 1; font-size: 14px; }
+body.admin-page .navigation-page-row a:hover { text-decoration: underline; }
+body.admin-page .navigation-empty { color: #777; padding: 12px 0; font-size: 13px; }
+body.admin-page .navigation-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media (hover: hover) { body.admin-page .navigation-context-actions { opacity: 0; } body.admin-page .navigation-module-row:hover .navigation-context-actions, body.admin-page .navigation-page-row:hover .navigation-context-actions, body.admin-page .navigation-context-actions:focus-within { opacity: 1; } }
+@media (max-width: 600px) { body.admin-page .main-content { padding: 0 16px 24px; } body.admin-page .cms-panel { padding: 14px; } body.admin-page .navigation-module-row, body.admin-page .navigation-page-row { flex-wrap: wrap; } body.admin-page .navigation-toggle { flex-basis: 55%; } body.admin-page .navigation-context-actions { margin-left: auto; } body.admin-page .navigation-segments span { padding: 10px; } }
+.erp-editor .doc-block table { border-collapse: collapse; width: 100%; }
+.erp-editor .doc-block th, .erp-editor .doc-block td { border: 1px solid #bbb; padding: 8px; }
+.erp-editor .doc-block { min-width: 0; overflow-x: auto; }
+
 .navigation-guide { margin-bottom: 1rem; }
 .navigation-management-section { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
 .navigation-list-panel { grid-row: 1; width: 100%; min-height: 28rem; max-height: 68vh; overflow: auto; }

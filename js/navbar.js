@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function getRootPath() {
         const path = window.location.pathname;
 
+        if (path.startsWith("/docs/")) return "/";
         const marker = "/erp/";
         const markerIndex = path.indexOf(marker);
 
@@ -498,7 +499,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const scope = String(item.scope || "").toLowerCase();
                 if (!item || !item.id || !["stage", "proman"].includes(scope) || !String(item.title || "").trim()) return false;
                 if (!item.page) return !item.url || !String(item.url).trim();
-                if (!String(item.url || "").trim()) return false;
+                if (!String(item.url || "").trim() || /^(?:[a-z]+:|\/\/)/i.test(item.url) || String(item.url).includes("\\")) return false;
                 const parent = item.parent_id ? byId.get(item.parent_id) : null;
                 return parent ? parent.scope === item.scope && !parent.page : true;
             });
@@ -511,7 +512,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return !item.parent_id && ["stage", "proman"].includes(String(item.scope || "").toLowerCase());
             });
             const scopes = ["stage", "proman"];
-            if (!roots.length) throw new Error("Navigation has no valid roots");
+            if (rawItems.length && !roots.length) throw new Error("Navigation has no valid roots");
 
             function childrenOf(parentId) {
                 return sortedItems.filter(function (item) {
@@ -519,15 +520,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
 
-            sidebarContainer.querySelector(".sidebar-scroll").innerHTML = `
+            const sidebarScroll = sidebarContainer.querySelector(".sidebar-scroll");
+            const dashboard = sidebarScroll.querySelector(".sidebar-dashboard")?.outerHTML || "";
+            const otherGroups = Array.from(sidebarScroll.querySelectorAll(".sidebar-app-group")).filter(function (group) { return !group.classList.contains("sidebar-app-group-stage") && !group.classList.contains("sidebar-app-group-proman"); }).map(function (group) { return group.outerHTML; }).join("");
+            sidebarScroll.innerHTML = `${dashboard}
                 ${scopes.map(function (scope) {
-                     const root = roots.find(function (item) {
-                         return String(item.scope || "").toLowerCase() === scope;
-                     });
-                     if (!root) return "";
-                     const children = childrenOf(root.id);
-                    const directPages = children.filter(function (item) { return item.page && item.url; });
-                    const modules = children.filter(function (item) { return !item.page; });
+                      const scopeRoots = roots.filter(function (item) {
+                          return String(item.scope || "").toLowerCase() === scope;
+                      });
+                      if (!scopeRoots.length) return "";
+                       const wrappers = scopeRoots.filter(function (item) { return !item.page && item.title.toLowerCase() === scope; });
+                       const root = { title: scope.toUpperCase() };
+                       const children = wrappers.flatMap(function (rootItem) { return childrenOf(rootItem.id); });
+                     const directPages = children.filter(function (item) { return item.page && item.url; });
+                     const modules = scopeRoots.filter(function (item) { return !item.page && !wrappers.includes(item); }).concat(children.filter(function (item) { return !item.page; })).sort(function (a, b) { return a.sort_order - b.sort_order || a.title.localeCompare(b.title); });
                     return `
                         <section class="sidebar-app-group sidebar-app-group-${scope}">
                             <h2 class="sidebar-app-heading">${escapeHtml(root.title || scope.toUpperCase())}</h2>
@@ -559,6 +565,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     `;
                 }).join("")}
             `;
+            sidebarScroll.insertAdjacentHTML("beforeend", otherGroups);
             bindSidebarAccordions();
         } catch (error) {
             console.warn("CMS navigation is unavailable; using the built-in navigation.", error);
@@ -567,6 +574,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     bindSidebarAccordions();
     loadCmsNavigation();
+    document.addEventListener("kb:navigation-changed", loadCmsNavigation);
 
     document.addEventListener("click", function (event) {
         const image = event.target.closest(".documentation img, .cms-image-preview");

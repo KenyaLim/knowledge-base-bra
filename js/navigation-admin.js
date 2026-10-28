@@ -3,135 +3,134 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!form) return;
     const list = document.getElementById("navigationList");
     const status = document.getElementById("navigationStatus");
-    const typeInput = document.getElementById("navigationType");
-    const typeSelect = document.getElementById("navigationTypeSelect");
-    const titleInput = document.getElementById("navigationTitle");
-    const pageInput = document.getElementById("navigationPage");
-    const urlInput = document.getElementById("navigationUrl");
-    const parentSelect = document.getElementById("navigationParentId");
-    const iconInput = document.getElementById("navigationIcon");
-    const iconPreview = document.getElementById("navigationIconPreview");
-    const iconPicker = document.getElementById("navigationIconPicker");
-    const pageFields = document.getElementById("navigationPageFields");
-    const parentField = document.getElementById("navigationParentField");
-    const saveButton = document.getElementById("saveNavigation");
+    const title = document.getElementById("navigationTitle");
+    const parent = document.getElementById("navigationParentId");
+    const id = document.getElementById("navigationId");
+    const collapsed = new Set();
     let items = [];
-    const phosphorIcons = ["ph-squares-four", "ph-folder", "ph-file-text", "ph-shopping-cart", "ph-money", "ph-chart-bar", "ph-receipt", "ph-box-arrow-down", "ph-package", "ph-truck", "ph-address-book", "ph-timer", "ph-arrow-square-up", "ph-scissors", "ph-factory", "ph-check-circle", "ph-users", "ph-gear", "ph-question", "ph-list", "ph-house-line", "ph-calendar", "ph-calendar-check", "ph-chart-line-up", "ph-clipboard-text", "ph-cube", "ph-database", "ph-download-simple", "ph-envelope", "ph-eye", "ph-globe", "ph-grid-four", "ph-hard-hat", "ph-identification-card", "ph-kanban", "ph-map-pin", "ph-note-pencil", "ph-plus-circle", "ph-printer", "ph-seal-check", "ph-shield-check", "ph-stack", "ph-tag", "ph-upload-simple", "ph-user-circle", "ph-wrench"];
+    let busy = false;
+    const scope = () => document.querySelector('[name="navigationScope"]:checked').value;
+    const type = () => document.querySelector('[name="navigationType"]:checked').value;
+    const escape = (value) => String(value || "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character]));
+    const wrapper = (item) => !item.page && !item.parent_id && item.title.toLowerCase() === item.scope;
+    const sorted = (values) => values.slice().sort((a, b) => a.sort_order - b.sort_order || a.title.localeCompare(b.title) || a.id.localeCompare(b.id));
+    const modules = () => sorted(items.filter((item) => item.scope === scope() && !item.page && !wrapper(item)));
 
-    function escapeHtml(value) { return String(value || "").replace(/[&<>"']/g, function (character) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"}[character]; }); }
-    function selectedId() { return document.getElementById("navigationId").value; }
-    function setStatus(message) { status.textContent = message; }
-    function setIcon(icon) { const value = icon || "ph-folder"; iconInput.value = value; iconPreview.innerHTML = `<i class="ph ${escapeHtml(value)}"></i> ${escapeHtml(value)}`; }
-
-    function syncParentOptions() {
-        const scope = document.querySelector('input[name="navigationScope"]:checked').value;
-        const currentId = selectedId();
-        parentSelect.innerHTML = '<option value="">No parent</option>' + items.filter(function (item) { return item.scope === scope && !item.parent_id && item.id !== currentId && !item.page; }).map(function (item) { return `<option value="${escapeHtml(item.id)}">${escapeHtml(item.title)}</option>`; }).join("");
+    async function request(path, method, body) {
+        const response = await fetch(`/api/cms/admin/navigation${path}`, { method, headers: { "Content-Type": "application/json" }, ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(15000) });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Permintaan gagal");
+        return result;
     }
 
-    function syncFields() {
-        const isPage = typeSelect.value === "page";
-        typeInput.value = typeSelect.value;
-        pageFields.hidden = !isPage;
-        parentField.hidden = !isPage;
-        parentSelect.required = isPage;
-        pageInput.required = isPage;
-        urlInput.required = isPage;
-        if (!isPage) { pageInput.value = ""; urlInput.value = ""; setIcon(iconInput.value || "ph-folder"); }
-        document.getElementById("navigationFormHeading").textContent = selectedId() ? `Edit ${isPage ? "page" : "module"}` : `Add ${isPage ? "page" : "module"}`;
-        document.getElementById("navigationSelection").textContent = isPage ? "Create a page inside an existing module." : "Create a module under STAGE or PROMAN.";
+    function fields() {
+        const isPage = type() === "page";
+        const selected = parent.value;
+        parent.innerHTML = '<option value="">Pilih modul</option>' + modules().map((item) => `<option value="${escape(item.id)}">${escape(item.title)}</option>`).join("");
+        parent.value = selected;
+        parent.required = isPage;
+        document.getElementById("navigationParentField").hidden = !isPage;
+        document.getElementById("navigationTitleLabel").textContent = isPage ? "Judul halaman baru" : "Nama modul baru";
+        document.getElementById("saveNavigation").textContent = id.value ? "Simpan" : "Tambah";
+        document.getElementById("newNavigation").hidden = !id.value && !title.value;
     }
 
-    function clearForm(type) {
-        form.reset();
-        document.getElementById("navigationId").value = "";
-        typeSelect.value = type || "category";
-        document.querySelector('input[name="navigationScope"][value="stage"]').checked = true;
-        document.getElementById("navigationSortOrder").value = "0";
-        document.getElementById("deleteNavigation").hidden = true;
-        setIcon(typeSelect.value === "page" ? "ph-file-text" : "ph-folder");
-        syncParentOptions();
-        syncFields();
-        list.querySelectorAll(".is-selected").forEach(function (node) { node.classList.remove("is-selected"); });
+    function reset(mode = "module") {
+        id.value = "";
+        title.value = "";
+        parent.value = "";
+        document.querySelector(`[name="navigationType"][value="${mode}"]`).checked = true;
+        fields();
     }
 
-    function renderList() {
-        function renderNode(item, depth) {
-            const children = items.filter(function (entry) { return entry.parent_id === item.id; }).sort(function (a, b) { return a.sort_order - b.sort_order; });
-            const position = items.filter(function (entry) { return (entry.parent_id || null) === (item.parent_id || null) && entry.scope === item.scope; }).sort(function (a, b) { return a.sort_order - b.sort_order; }).indexOf(item);
-            const addPageButton = !item.page ? `<button type="button" class="cms-secondary-button" data-action="add-page" data-navigation-id="${escapeHtml(item.id)}">+ Halaman</button>` : "";
-            const childList = children.length ? children.map(function (child) { return renderNode(child, depth + 1); }).join("") : "";
-            return `<div class="navigation-admin-child navigation-admin-depth-${Math.min(depth, 3)}" draggable="true" data-drag-id="${escapeHtml(item.id)}"><div class="navigation-admin-item ${item.id === selectedId() ? "is-selected" : ""}" data-select-id="${escapeHtml(item.id)}"><span class="navigation-admin-label"><i class="ph ${escapeHtml(item.icon || (item.page ? "ph-file-text" : "ph-folder"))}"></i><strong>${escapeHtml(item.title)}</strong><small>${item.page ? escapeHtml(item.page) : "Module"}${item.published ? "" : " · Draft"}</small></span><span class="navigation-admin-actions">${addPageButton}<button type="button" class="cms-secondary-button" data-action="up" data-navigation-id="${escapeHtml(item.id)}" ${position === 0 ? "disabled" : ""} aria-label="Move up">↑</button><button type="button" class="cms-secondary-button" data-action="down" data-navigation-id="${escapeHtml(item.id)}" aria-label="Move down">↓</button><button type="button" class="cms-secondary-button" data-action="edit" data-navigation-id="${escapeHtml(item.id)}">Edit</button><button type="button" class="cms-danger-button" data-action="delete" data-navigation-id="${escapeHtml(item.id)}">Delete</button></span></div>${childList}</div>`;
-        }
-        list.innerHTML = ["stage", "proman"].map(function (scope) { const roots = items.filter(function (item) { return item.scope === scope && !item.parent_id; }).sort(function (a, b) { return a.sort_order - b.sort_order; }); return `<section class="navigation-admin-scope"><h3>${scope.toUpperCase()}</h3>${roots.length ? roots.map(function (item) { return renderNode(item, 0); }).join("") : "<p class=\"form-help\">No modules yet.</p>"}</section>`; }).join("");
-        list.querySelectorAll("[data-action]").forEach(function (button) { button.addEventListener("click", function () { const item = items.find(function (entry) { return entry.id === button.dataset.navigationId; }); if (!item) return;             if (button.dataset.action === "delete") return deleteNavigation(item); if (button.dataset.action === "edit") return editNavigation(item); if (button.dataset.action === "add-page") return addPage(item); moveItem(item, button.dataset.action === "up" ? -1 : 1); }); });
-        list.querySelectorAll("[data-drag-id]").forEach(bindDragEvents);
+    function actions(item) {
+        const siblings = item.page ? sorted(items.filter((entry) => entry.scope === item.scope && entry.parent_id === item.parent_id)) : modules();
+        const index = siblings.findIndex((entry) => entry.id === item.id);
+        return `<span class="navigation-context-actions">${[["edit", "pencil-simple", "Edit", false], ["delete", "trash", "Hapus", false], ["up", "arrow-up", "Naik", index === 0], ["down", "arrow-down", "Turun", index === siblings.length - 1]].filter((entry) => !item.page || entry[0] !== "edit").map(([action, icon, label, disabled]) => `<button type="button" data-action="${action}" data-id="${escape(item.id)}" aria-label="${label} ${escape(item.title)}" title="${label}" ${disabled ? "disabled" : ""}><i class="ph ph-${icon}" aria-hidden="true"></i></button>`).join("")}</span>`;
     }
 
-    async function addPage(parent) {
-        clearForm("page");
-        document.querySelector(`input[name="navigationScope"][value="${parent.scope}"]`).checked = true;
-        syncParentOptions();
-        parentSelect.value = parent.id;
-        titleInput.focus();
-        setStatus(`Menambahkan halaman di module ${parent.title}.`);
+    function pageRow(item) {
+        const url = String(item.url || "");
+        const safe = url && !/^(?:[a-z]+:|\/\/)/i.test(url) && !url.includes("\\");
+        return `<li class="navigation-page-row"><i class="ph ph-file-text" aria-hidden="true"></i>${safe ? `<a href="${escape(url.startsWith("/") ? url : "/" + url)}">${escape(item.title)}</a>` : `<span>${escape(item.title)}</span>`}<button type="button" data-action="edit" data-id="${escape(item.id)}">Edit</button>${actions(item)}</li>`;
     }
 
-    async function moveItem(item, direction) {
-        const siblings = items.filter(function (entry) { return (entry.parent_id || null) === (item.parent_id || null) && entry.scope === item.scope; }).sort(function (a, b) { return a.sort_order - b.sort_order; });
-        const index = siblings.findIndex(function (entry) { return entry.id === item.id; });
-        const target = siblings[index + direction];
-        if (!target) return;
-        siblings.splice(index, 1);
-        siblings.splice(index + direction, 0, item);
+    function render() {
+        document.getElementById("navigationStructureHeading").textContent = scope().toUpperCase();
+        const roots = modules();
+        const direct = sorted(items.filter((item) => item.scope === scope() && item.page && items.some((entry) => entry.id === item.parent_id && wrapper(entry))));
+        list.innerHTML = direct.map(pageRow).join("") + roots.map((item) => {
+            const open = !collapsed.has(item.id);
+            const children = sorted(items.filter((entry) => entry.parent_id === item.id && entry.page));
+            return `<li class="navigation-module"><div class="navigation-module-row"><button type="button" class="navigation-toggle" data-action="toggle" data-id="${escape(item.id)}" aria-expanded="${open}" aria-controls="pages-${escape(item.id)}"><i class="ph ph-caret-${open ? "down" : "right"}" aria-hidden="true"></i><i class="ph ph-folder" aria-hidden="true"></i><span>${escape(item.title)}</span></button><button type="button" data-action="add-page" data-id="${escape(item.id)}">+ Halaman</button>${actions(item)}</div><ul class="navigation-pages" id="pages-${escape(item.id)}" ${open ? "" : "hidden"}>${children.length ? children.map(pageRow).join("") : '<li class="navigation-empty">Belum ada halaman.</li>'}</ul></li>`;
+        }).join("") || '<li class="navigation-empty">Belum ada modul.</li>';
+    }
+
+    async function load() {
+        const result = await request("", "GET");
+        items = result.items || [];
+        fields();
+        render();
+    }
+
+    async function mutate(operation, message) {
+        if (busy) return;
+        busy = true;
+        form.setAttribute("aria-busy", "true");
+        document.getElementById("saveNavigation").disabled = true;
+        status.textContent = "Menyimpan...";
         try {
-            for (let position = 0; position < siblings.length; position += 1) {
-                await saveItem({...siblings[position], sort_order: position * 100});
+            await operation();
+            await load();
+            document.dispatchEvent(new Event("kb:navigation-changed"));
+            status.textContent = message;
+        } catch (error) {
+            status.textContent = error.message;
+        } finally {
+            busy = false;
+            form.removeAttribute("aria-busy");
+            document.getElementById("saveNavigation").disabled = false;
+        }
+    }
+
+    list.addEventListener("click", function (event) {
+        const button = event.target.closest("[data-action]");
+        if (!button || busy) return;
+        const item = items.find((entry) => entry.id === button.dataset.id);
+        if (!item) return;
+        const action = button.dataset.action;
+        if (action === "toggle") {
+            collapsed.has(item.id) ? collapsed.delete(item.id) : collapsed.add(item.id);
+            render();
+            list.querySelector(`[data-action="toggle"][data-id="${item.id}"]`).focus();
+        } else if (action === "edit" || action === "add-page") {
+            reset(action === "add-page" || item.page ? "page" : "module");
+            if (action === "edit") { id.value = item.id; title.value = item.title; }
+            fields();
+            if (item.page && !Array.from(parent.options).some((option) => option.value === item.parent_id)) {
+                const existingParent = items.find((entry) => entry.id === item.parent_id);
+                if (existingParent) parent.add(new Option(existingParent.title, existingParent.id));
             }
-            await loadNavigation();
-        } catch (error) { setStatus(error.message); }
-    }
+            parent.value = action === "add-page" ? item.id : item.parent_id || "";
+            form.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            title.focus();
+        } else if (action === "delete") {
+            if (window.confirm(`Hapus "${item.title}"? Modul yang masih memiliki halaman tidak dapat dihapus.`)) mutate(async () => { await request(`?id=${encodeURIComponent(item.id)}`, "DELETE"); if (id.value === item.id) reset(); }, "Item dihapus.");
+        } else {
+            mutate(() => request("/move", "POST", { id: item.id, direction: action === "up" ? -1 : 1 }), "Urutan disimpan.");
+        }
+    });
 
-    function editNavigation(item) {
-        document.getElementById("navigationId").value = item.id;
-        typeSelect.value = item.page ? "page" : "category";
-        titleInput.value = item.title || "";
-        document.querySelector(`input[name="navigationScope"][value="${item.scope || "stage"}"]`).checked = true;
-        syncParentOptions();
-        parentSelect.value = item.parent_id || "";
-        pageInput.value = item.page || "";
-        urlInput.value = item.url || "";
-        setIcon(item.icon || (item.page ? "ph-file-text" : "ph-folder"));
-        document.getElementById("navigationSortOrder").value = item.sort_order || 0;
-        document.getElementById("navigationPublished").checked = Boolean(item.published);
-        document.getElementById("deleteNavigation").hidden = false;
-        syncFields();
-        renderList();
-    }
-
-    function bindDragEvents(node) {
-        node.addEventListener("dragstart", function (event) { event.dataTransfer.setData("text/plain", node.dataset.dragId); node.classList.add("is-dragging"); });
-        node.addEventListener("dragend", function () { node.classList.remove("is-dragging"); });
-        node.addEventListener("dragover", function (event) { event.preventDefault(); node.classList.add("drag-over"); });
-        node.addEventListener("dragleave", function () { node.classList.remove("drag-over"); });
-        node.addEventListener("drop", async function (event) { event.preventDefault(); node.classList.remove("drag-over"); const dragged = items.find(function (item) { return item.id === event.dataTransfer.getData("text/plain"); }); const target = items.find(function (item) { return item.id === node.dataset.dragId; }); if (!dragged || !target || dragged.id === target.id || (dragged.parent_id || null) !== (target.parent_id || null)) return; const siblings = items.filter(function (item) { return (item.parent_id || null) === (target.parent_id || null); }).sort(function (a, b) { return a.sort_order - b.sort_order; }); siblings.splice(siblings.indexOf(dragged), 1); siblings.splice(siblings.indexOf(target), 0, dragged); setStatus("Saving order..."); try { for (let index = 0; index < siblings.length; index += 1) await saveItem({...siblings[index], sort_order: index * 100}); await loadNavigation(); setStatus("Order saved."); } catch (error) { setStatus(`Could not save order: ${error.message}`); } });
-    }
-
-    async function saveItem(payload) { const response = await fetch("/api/cms/admin/navigation", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); const result = await response.json(); if (!response.ok) throw new Error(result.error || "Save failed"); return result; }
-    async function deleteNavigation(item) { const descendants = items.filter(function (entry) { let parentId = entry.parent_id; while (parentId) { if (parentId === item.id) return true; const parent = items.find(function (candidate) { return candidate.id === parentId; }); parentId = parent ? parent.parent_id : null; } return false; }); if (!window.confirm(`Delete "${item.title}"? Only this item will be deleted. Items with child pages cannot be deleted.`)) return; setStatus("Deleting..."); try { const response = await fetch(`/api/cms/admin/navigation?id=${encodeURIComponent(item.id)}`, { method: "DELETE" }); const result = await response.json(); if (!response.ok) throw new Error(result.error || "Delete failed"); clearForm(); await loadNavigation(); setStatus("Deleted."); } catch (error) { setStatus(error.message); } }
-    async function loadNavigation() { setStatus("Loading navigation..."); const response = await fetch("/api/cms/admin/navigation", { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(8000) }); const result = await response.json(); if (!response.ok) throw new Error(result.error || "Navigation load failed"); items = result.items || []; syncParentOptions(); renderList(); setStatus(""); }
-
-    form.addEventListener("submit", async function (event) { event.preventDefault(); const isPage = typeSelect.value === "page"; const pageKey = pageInput.value.trim() || titleInput.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); if (isPage && !parentSelect.value) return setStatus("A page must have a parent module."); if (isPage && !pageKey) return setStatus("Page key is required."); const editing = items.find(function (item) { return item.id === selectedId(); }); if (editing && !window.confirm(`Save changes to "${editing.title}"?`)) return; saveButton.disabled = true; setStatus("Saving..."); try { await saveItem({ id: selectedId() || undefined, scope: document.querySelector('input[name="navigationScope"]:checked').value, parent_id: isPage ? parentSelect.value : null, title: titleInput.value.trim(), icon: iconInput.value, page: isPage ? pageKey : null, url: isPage ? (urlInput.value.trim() || `/api/cms/page/${pageKey}`) : null, sort_order: document.getElementById("navigationSortOrder").value, published: document.getElementById("navigationPublished").checked }); clearForm(isPage ? "page" : "category"); await loadNavigation(); setStatus("Saved."); } catch (error) { setStatus(error.message); } finally { saveButton.disabled = false; } });
-
-    iconPicker.innerHTML = phosphorIcons.map(function (icon) { return `<button type="button" class="navigation-icon-button" data-icon="${icon}" title="${icon}"><i class="ph ${icon}"></i></button>`; }).join("");
-    iconPicker.addEventListener("click", function (event) { const button = event.target.closest("[data-icon]"); if (button) setIcon(button.dataset.icon); });
-    typeSelect.addEventListener("change", syncFields);
-    document.querySelectorAll('input[name="navigationScope"]').forEach(function (radio) { radio.addEventListener("change", syncParentOptions); });
-    document.getElementById("newNavigation").addEventListener("click", function () { clearForm(typeSelect.value); });
-    document.getElementById("addParentNavigation").addEventListener("click", function () { clearForm("category"); });
-    document.getElementById("addPageNavigation").addEventListener("click", function () { clearForm("page"); });
-    document.getElementById("deleteNavigation").addEventListener("click", function () { const item = items.find(function (entry) { return entry.id === selectedId(); }); if (item) deleteNavigation(item); });
-    document.getElementById("importNavigation").addEventListener("click", async function () { const defaults = Array.isArray(window.KB_DEFAULT_NAVIGATION) ? window.KB_DEFAULT_NAVIGATION : []; if (!defaults.length || !window.confirm("Replace current navigation with the existing navbar?")) return; setStatus("Syncing..."); try { const response = await fetch("/api/cms/admin/navigation/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: defaults }) }); const result = await response.json(); if (!response.ok) throw new Error(result.error || "Sync failed"); await loadNavigation(); setStatus(`${(result.items || defaults).length} items synced.`); } catch (error) { setStatus(error.message); } });
-    clearForm("category");
-    loadNavigation().catch(function (error) { setStatus(error.message); });
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        if (!title.value.trim()) return;
+        const existing = items.find((item) => item.id === id.value);
+        const payload = { ...(existing ? { id: existing.id } : {}), type: existing ? (existing.page ? "page" : "module") : type(), scope: scope(), title: title.value.trim(), parent_id: type() === "page" ? parent.value : existing?.parent_id || null };
+        mutate(async () => { await request("", "POST", payload); reset(type()); }, "Tersimpan.");
+    });
+    document.querySelectorAll('[name="navigationScope"]').forEach((input) => input.addEventListener("change", () => { reset(); render(); }));
+    document.querySelectorAll('[name="navigationType"]').forEach((input) => input.addEventListener("change", () => reset(input.value)));
+    document.getElementById("newNavigation").addEventListener("click", () => reset(type()));
+    title.addEventListener("input", () => { document.getElementById("newNavigation").hidden = !id.value && !title.value; });
+    load().catch((error) => { status.textContent = error.message; });
 });

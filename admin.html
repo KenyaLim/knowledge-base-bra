@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Navigation Admin | Knowledge Base</title>
+    <title>Navigation Management | Knowledge Base</title>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -12,45 +12,34 @@
     <div class="app-layout">
         <aside id="sidebar"></aside>
         <main class="main-content">
-            <section class="hero">
-                <div class="hero-content">
-                    <p class="eyebrow">NAVIGATION MANAGEMENT</p>
-                    <h1>Navbar CRUD</h1>
-                    <p class="hero-description">Add, edit, delete, and publish modules and pages from one simple editor.</p>
-                </div>
-            </section>
+            <header class="navigation-header">
+                <h1>Navigation Management</h1>
+                <p>Kelola modul dan halaman ERP</p>
+            </header>
             <section class="section navigation-management-section">
-                <div class="cms-panel navigation-list-panel" aria-labelledby="navigationStructureHeading">
-                    <div class="navigation-toolbar">
-                        <div class="section-heading"><i class="ph ph-list"></i><h2 id="navigationStructureHeading">Navbar structure</h2></div>
-                        <div class="navigation-toolbar-actions">
-                            <button type="button" id="importNavigation" class="cms-secondary-button">Sync existing</button>
-                            <button type="button" id="addParentNavigation" class="navbar-signin">Tambah module</button>
-                            <button type="button" id="addPageNavigation" class="navbar-signin">Tambah halaman</button>
-                        </div>
-                    </div>
-                    <p class="form-help">Kelola grup STAGE dan PROMAN seperti menu ERP Docs. Buka module untuk menambah halaman, mengubah urutan, atau mengedit item.</p>
-                    <div id="navigationList" class="cms-material-list" aria-live="polite"></div>
-                </div>
+                <fieldset class="navigation-segments navigation-scope">
+                    <legend class="navigation-visually-hidden">Area</legend>
+                    <label><input type="radio" name="navigationScope" value="stage" checked><span>STAGE</span></label>
+                    <label><input type="radio" name="navigationScope" value="proman"><span>PROMAN</span></label>
+                </fieldset>
+                <section class="cms-panel navigation-list-panel" aria-labelledby="navigationStructureHeading">
+                    <h2 id="navigationStructureHeading">STAGE</h2>
+                    <ul id="navigationList" aria-live="polite"></ul>
+                </section>
                 <form id="navigationForm" class="cms-panel cms-form navigation-form-panel">
-                    <div class="section-heading"><i class="ph ph-pencil-simple"></i><h2 id="navigationFormHeading">Atur item navbar</h2></div>
-                    <p id="navigationSelection" class="form-help">Create a module under STAGE or PROMAN.</p>
+                    <fieldset class="navigation-segments">
+                        <legend class="navigation-visually-hidden">Tambah item</legend>
+                        <label><input type="radio" name="navigationType" value="module" checked><span>+ Tambah Modul</span></label>
+                        <label><input type="radio" name="navigationType" value="page"><span>+ Tambah Halaman</span></label>
+                    </fieldset>
                     <input type="hidden" id="navigationId">
-                    <input type="hidden" id="navigationSortOrder" value="0">
-                    <input type="hidden" id="navigationType" value="category">
-                    <label>Type<select id="navigationTypeSelect"><option value="category">Module</option><option value="page">Page</option></select></label>
-                    <label>Title<input id="navigationTitle" required autocomplete="off"></label>
-                    <fieldset class="navigation-scope"><legend>Area</legend><label><input type="radio" name="navigationScope" value="stage" checked> STAGE</label><label><input type="radio" name="navigationScope" value="proman"> PROMAN</label></fieldset>
-                    <label id="navigationParentField">Parent module<select id="navigationParentId"><option value="">No parent</option></select></label>
-                    <div id="navigationPageFields">
-                        <label>Page key<input id="navigationPage" autocomplete="off"></label>
-                        <label>URL<input id="navigationUrl" placeholder="/api/cms/page/example"></label>
+                    <label id="navigationParentField" hidden>Modul induk<select id="navigationParentId"></select></label>
+                    <label><span id="navigationTitleLabel">Nama modul baru</span><input id="navigationTitle" required maxlength="200" autocomplete="off"></label>
+                    <div class="cms-form-actions">
+                        <button type="submit" id="saveNavigation" class="navbar-signin">Tambah</button>
+                        <button type="button" id="newNavigation" class="cms-secondary-button" hidden>Batal</button>
                     </div>
-                    <label>Icon<input id="navigationIcon" value="ph-folder" readonly><span id="navigationIconPreview" class="navigation-icon-preview"><i class="ph ph-folder"></i> ph-folder</span></label>
-                    <div id="navigationIconPicker" class="navigation-icon-picker" aria-label="Choose icon"></div>
-                    <label class="cms-checkbox"><input id="navigationPublished" type="checkbox" checked> Published</label>
-                    <div class="cms-form-actions"><button type="button" id="newNavigation" class="cms-secondary-button">Cancel</button><button type="button" id="deleteNavigation" class="cms-danger-button" hidden>Delete</button><button type="submit" id="saveNavigation" class="navbar-signin">Save</button></div>
-                    <p id="navigationStatus" class="search-status" aria-live="polite"></p>
+                    <p id="navigationStatus" role="status" aria-live="polite"></p>
                 </form>
             </section>
         </main>

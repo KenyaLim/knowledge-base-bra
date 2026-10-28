@@ -1,3 +1,5 @@
+import { sanitizeContent } from "../utils/content.js";
+
 function escapeHtml(value) {
   return String(value || "").replace(/[&<>\"]/g, (character) => ({
     "&": "&amp;",
@@ -22,7 +24,7 @@ export function renderDocumentationPage({ page, material }) {
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="/css/style.css">
 </head>
-<body data-page="${pageKey}" data-cms-slug="${pageKey}">
+<body data-page="${pageKey}" data-cms-slug="${escapeHtml(material?.slug || page.page)}" data-module="${escapeHtml(material?.module || page.title)}">
     <div id="navbar"></div>
     <div class="app-layout">
         <aside id="sidebar"></aside>
@@ -36,8 +38,19 @@ export function renderDocumentationPage({ page, material }) {
             </section>
             <section class="section">
                 <div class="documentation erp-editor" data-erp-editor>
-                    <div class="erp-editor-toolbar" aria-label="Documentation editor" hidden></div>
-                    <article class="doc-block"><div contenteditable="true" spellcheck="true">${content}</div></article>
+                    <div class="erp-editor-toolbar" aria-label="Documentation editor" hidden>
+                        <button type="button" data-command="bold">Bold</button>
+                        <button type="button" data-command="italic">Italic</button>
+                        <button type="button" data-command="insertUnorderedList">Daftar</button>
+                        <button type="button" data-command="insertOrderedList">Nomor</button>
+                        <button type="button" data-insert-table>Tabel</button>
+                        <label class="erp-editor-file">Gambar<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-image-file></label>
+                        <input type="url" data-image-url aria-label="URL gambar" placeholder="URL gambar">
+                        <button type="button" data-insert-image>Tambah gambar</button>
+                        <button type="button" data-reset-editor>Reset</button>
+                    </div>
+                    <article class="doc-block"><div contenteditable="false" spellcheck="true">${sanitizeContent(content)}</div></article>
+                    <p data-editor-status class="editor-status" role="status" aria-live="polite"></p>
                 </div>
             </section>
         </main>

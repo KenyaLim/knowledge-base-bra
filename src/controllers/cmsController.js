@@ -1,221 +1,121 @@
-import {
-  deleteMaterial,
-  deleteNavigation,
-  listMaterials,
-  listNavigation,
-  listNavigationChildren,
-  getNavigationPage,
-  normalizePayload,
-  upsertMaterial,
-  upsertNavigation,
-} from "../models/cmsModel.js";
-import { parsePaging } from "../utils/session.js";
-import { storageBucket, supabaseBaseUrl } from "../config/supabase.js";
-import { newId } from "../utils/session.js";
+import { deleteMaterial, listMaterials, listNavigation, getNavigationPage, normalizePayload, upsertMaterial, upsertNavigation } from "../models/cmsModel.js";
+import { parsePaging, newId } from "../utils/session.js";
+import { storageBucket, supabaseBaseUrl, supabaseRequest } from "../config/supabase.js";
 import { renderDocumentationPage } from "../templates/documentationPage.js";
+import { sanitizeContent, sanitizeMaterial } from "../utils/content.js";
 
 export async function getDynamicPage(req, res) {
   const result = await getNavigationPage(req.params.page, { publishedOnly: true });
   if (!result.ok) return res.status(502).json({ error: "Could not load page" });
-  const page = Array.isArray(result.data) ? result.data[0] : null;
+  const page = result.data?.[0];
   if (!page) return res.status(404).send("Page not found");
-  const materialResults = await Promise.all([
-    listMaterials({ slug: page.page, publishedOnly: true }),
-    listMaterials({ slug: `erp-${page.page}`, publishedOnly: true }),
-  ]);
-  const material = materialResults.map((result) => result.ok ? result.data : null).find(Boolean);
+  const results = await Promise.all([listMaterials({ slug: page.page }), listMaterials({ slug: `erp-${page.page}` })]);
+  const material = results.map((entry) => entry.ok ? entry.data : null).find(Boolean);
+  res.set("Cache-Control", "private, no-store");
   return res.send(renderDocumentationPage({ page, material }));
 }
 
 export async function getNavigation(req, res) {
   const result = await listNavigation({ publishedOnly: true });
-  if (!result.ok) return res.status(502).json({ error: "Could not load navigation" });
-  return res.json({ items: result.data });
+  return result.ok ? res.json({ items: result.data }) : res.status(502).json({ error: "Could not load navigation" });
 }
 
 export async function getAdminNavigation(req, res) {
   const result = await listNavigation({ publishedOnly: false });
-  if (!result.ok) return res.status(502).json({ error: "Could not load navigation" });
-  return res.json({ items: result.data });
+  return result.ok ? res.json({ items: result.data }) : res.status(502).json({ error: "Could not load navigation" });
 }
 
 export async function saveAdminNavigation(req, res) {
   const item = req.body || {};
-  const scope = String(item.scope || "").toLowerCase();
-  const parentId = item.parent_id || null;
-  if (!["stage", "proman"].includes(scope)) {
-    return res.status(400).json({ error: "Choose STAGE or PROMAN" });
-  }
-  if (!item.title || (item.page && !parentId)) {
-    return res.status(400).json({ error: "Title is required and a page must have a parent" });
-  }
-  const existingResult = await listNavigation({ publishedOnly: false });
-  if (!existingResult.ok) return res.status(502).json({ error: "Could not validate navigation hierarchy" });
-  const existingItems = existingResult.data || [];
-  const existingItem = item.id ? existingItems.find((entry) => entry.id === item.id) : null;
-  const parent = parentId ? existingItems.find((entry) => entry.id === parentId) : null;
-  if (parentId && !parent) return res.status(400).json({ error: "Parent navigation was not found" });
-  if (parent && (parent.scope !== scope || parent.page || parent.url)) {
-    return res.status(400).json({ error: "Parent must be a category in the same area" });
-  }
-  if (existingItem && existingItem.id === parentId) {
-    return res.status(400).json({ error: "An item cannot be its own parent" });
-  }
-  let ancestor = parent;
-  while (ancestor) {
-    if (ancestor.id === existingItem?.id) return res.status(400).json({ error: "Navigation hierarchy cannot contain a cycle" });
-    ancestor = existingItems.find((entry) => entry.id === ancestor.parent_id);
-  }
-  const page = item.page ? String(item.page).trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") : null;
-  const duplicate = page && existingItems.find((entry) => entry.id !== existingItem?.id && entry.scope === scope && entry.page === page);
-  if (duplicate) return res.status(409).json({ error: "Page key must be unique within its scope" });
-  const payload = {
-    id: item.id || newId(),
-    parent_id: parentId,
-    scope,
-    title: String(item.title).trim(),
-    icon: item.icon === undefined ? (existingItem?.icon || "ph-link") : String(item.icon).trim(),
-    page,
-    url: page ? (String(item.url || existingItem?.url || `/api/cms/page/${page}`).trim()) : null,
-    h1: item.h1 === undefined ? (existingItem?.h1 || String(item.title).trim()) : String(item.h1).trim(),
-    summary: item.summary === undefined ? (existingItem?.summary || "") : String(item.summary).trim(),
-    content: item.content === undefined ? (existingItem?.content || "") : String(item.content),
-    sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : 0,
-    published: Boolean(item.published),
-  };
-  const result = await upsertNavigation(payload);
-  if (!result.ok) return res.status(502).json({ error: "Could not save navigation", details: result.error });
-  return res.json({ item: Array.isArray(result.data) ? result.data[0] : result.data });
+  if (!["module", "page"].includes(item.type) || !["stage", "proman"].includes(item.scope) || typeof item.title !== "string" || !item.title.trim()) return res.status(400).json({ error: "Type, area and title are required" });
+  const result = await supabaseRequest("POST", "/rest/v1/rpc/cms_navigation_save", {
+    p_item: { type: item.type, scope: item.scope, title: item.title.trim(), parent_id: item.parent_id || null, ...(item.id ? { id: item.id } : {}) },
+    p_editor: req.session?.n || req.session?.e || req.session?.u || "",
+  });
+  return result.ok ? res.json({ item: result.data }) : res.status(400).json({ error: result.error || "Apply the navigation migration before saving" });
 }
 
-export async function importAdminNavigation(req, res) {
-  const items = Array.isArray(req.body?.items) ? req.body.items : [];
-  if (!items.length) return res.status(400).json({ error: "Navigation items are required" });
-  const existingResult = await listNavigation({ publishedOnly: false });
-  if (!existingResult.ok) return res.status(502).json({ error: "Could not load existing navigation" });
-  const existing = existingResult.data || [];
-  const byKey = new Map(existing.map((item) => [item.page || item.title.toLowerCase(), item]));
-  const keyToId = new Map();
-  items.forEach((item) => {
-    const match = item.id && existing.find((entry) => entry.id === item.id) || byKey.get(item.key) || byKey.get(String(item.title || "").trim().toLowerCase());
-    keyToId.set(item.key, match?.id || item.id || newId());
-  });
-  const payload = items.map((item) => {
-    const id = keyToId.get(item.key);
-    const previous = existing.find((entry) => entry.id === id);
-    const page = item.page ? String(item.page).trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") : null;
-    return {
-      id,
-      parent_id: item.parent_key ? keyToId.get(item.parent_key) || null : null,
-      scope: item.scope === "proman" ? "proman" : "stage",
-      title: String(item.title || previous?.title || "").trim(),
-      icon: String(item.icon || previous?.icon || (page ? "ph-file-text" : "ph-folder")).trim(),
-      page,
-      url: page ? String(item.url || previous?.url || `/api/cms/page/${page}`).trim() : null,
-      sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : (previous?.sort_order || 0),
-      published: item.published === undefined ? (previous?.published ?? true) : Boolean(item.published),
-    };
-  });
-  if (payload.some((item) => !item.title || (!!item.page !== !!item.url) || (item.parent_id === item.id))) return res.status(400).json({ error: "Imported navigation contains invalid data" });
-  const result = await upsertNavigation(payload);
-  if (!result.ok) return res.status(502).json({ error: "Could not import navigation", details: result.error });
-  return res.json({ items: result.data || payload });
+export async function moveAdminNavigation(req, res) {
+  if (![-1, 1].includes(req.body?.direction)) return res.status(400).json({ error: "Invalid direction" });
+  const result = await supabaseRequest("POST", "/rest/v1/rpc/cms_navigation_move", { p_id: req.body.id, p_direction: req.body.direction });
+  return result.ok ? res.json(result.data) : res.status(400).json({ error: result.error });
 }
 
 export async function removeAdminNavigation(req, res) {
-  const id = String(req.query.id || "");
-  if (!/^[0-9a-f-]{36}$/i.test(id)) {
-    return res.status(400).json({ error: "A valid navigation id is required" });
-  }
-  const children = await listNavigationChildren(id);
-  if (!children.ok) return res.status(502).json({ error: "Could not validate navigation children" });
-  if (children.data?.length) return res.status(409).json({ error: "Cannot delete a module that still has child pages" });
-  const result = await deleteNavigation(id);
-  if (!result.ok) return res.status(502).json({ error: "Could not delete navigation" });
-  return res.json({ deleted: true });
+  const result = await supabaseRequest("POST", "/rest/v1/rpc/cms_navigation_remove", { p_id: req.query.id });
+  return result.ok ? res.json(result.data) : res.status(400).json({ error: result.error });
 }
 
-export async function getContent(req, res) {
-  const { page, limit, module, slug, usePaging } = parsePaging(req.query);
-  if (slug && !usePaging) {
-    const result = await listMaterials({ slug, publishedOnly: true });
-    if (!result.ok) return res.status(502).json({ error: "CMS database request failed" });
-    return res.json(result.data);
+export async function importAdminNavigation(req, res) {
+  const items = req.body?.items;
+  if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: "Navigation items are required" });
+  const existing = await listNavigation({ publishedOnly: false });
+  if (!existing.ok) return res.status(502).json({ error: "Could not load navigation" });
+  const keys = new Map();
+  const additions = [];
+  for (const item of items) {
+    if (!item.key || keys.has(item.key) || !["stage", "proman"].includes(item.scope) || !String(item.title || "").trim()) return res.status(400).json({ error: "Invalid import" });
+    const parentId = item.parent_key ? keys.get(item.parent_key) : null;
+    if (item.parent_key && !parentId) return res.status(400).json({ error: "Parents must precede children" });
+    const parent = parentId ? existing.data.concat(additions).find((entry) => entry.id === parentId) : null;
+    if (parentId && (!parent || parent.scope !== item.scope || parent.page)) return res.status(400).json({ error: "Invalid import parent" });
+    const match = existing.data.find((entry) => entry.scope === item.scope && (item.page ? entry.page === item.page : !entry.page && entry.title === item.title && entry.parent_id === parentId));
+    const id = match?.id || newId();
+    keys.set(item.key, id);
+    if (match) continue;
+    const page = item.page ? String(item.page) : null;
+    const url = page ? String(item.url || "") : null;
+    if (page && (!parentId || !url || /^(?:[a-z]+:|\/\/)/i.test(url))) return res.status(400).json({ error: "Invalid imported page URL" });
+    additions.push({ id, parent_id: parentId, scope: item.scope, title: String(item.title).trim(), icon: item.icon || (page ? "ph-file-text" : "ph-folder"), page, url, published: true, sort_order: Number(item.sort_order) || 0 });
   }
-  const result = await listMaterials({ module, page, limit, publishedOnly: true, slug: usePaging ? slug : "" });
-  if (!result.ok) return res.status(502).json({ error: "CMS database request failed" });
-  if (result.single) return res.json(result.data);
-  if (!usePaging) return res.json(result.data);
-  return res.json({ data: result.data, meta: result.meta });
+  if (!additions.length) return res.json({ items: existing.data });
+  const result = await upsertNavigation(additions);
+  return result.ok ? res.json({ items: existing.data.concat(result.data || additions) }) : res.status(502).json({ error: "Could not import navigation" });
 }
 
-export async function getAdminContent(req, res) {
+async function contentResponse(req, res, publishedOnly) {
   const { page, limit, module, slug, usePaging } = parsePaging(req.query);
-  if (slug && !usePaging) {
-    const result = await listMaterials({ slug, publishedOnly: false });
-    if (!result.ok) return res.status(502).json({ error: "CMS database request failed" });
-    return res.json(result.data);
-  }
-  const result = await listMaterials({ module, page, limit, publishedOnly: false, slug: usePaging ? slug : "" });
+  const result = await listMaterials({ module, page, limit, publishedOnly, slug });
   if (!result.ok) return res.status(502).json({ error: "CMS database request failed" });
-  if (result.single) return res.json(result.data);
-  if (!usePaging) return res.json(result.data);
-  return res.json({ data: result.data, meta: result.meta });
+  const data = sanitizeMaterial(result.data);
+  return res.json(result.single || !usePaging ? data : { data, meta: result.meta });
 }
+
+export async function getContent(req, res) { return contentResponse(req, res, true); }
+export async function getAdminContent(req, res) { return contentResponse(req, res, false); }
 
 export async function saveAdminContent(req, res) {
   const material = req.body || {};
-  if (!["string", "object"].includes(typeof material)) return res.status(400).json({ error: "Invalid JSON" });
-  if (!(typeof material.slug === "string" && material.slug.trim()) || !(typeof material.title === "string" && material.title.trim())) {
-    return res.status(400).json({ error: "Slug and title are required" });
-  }
-  const editedBy = req.session?.n || req.session?.e || req.session?.u || "";
-  const payload = normalizePayload(material, editedBy);
+  if (typeof material.slug !== "string" || !material.slug.trim() || typeof material.title !== "string" || !material.title.trim()) return res.status(400).json({ error: "Slug and title are required" });
+  const payload = normalizePayload({ ...material, content: sanitizeContent(material.content) }, req.session?.n || req.session?.e || req.session?.u || "");
   const result = await upsertMaterial(payload);
-  if (!result.ok) {
-    return res.status(502).json({ error: "Could not save CMS material", details: result.error || "Supabase request failed" });
-  }
-  const saved = result.data?.[0] || payload;
-  if (result.metadata_warning) return res.json({ ...saved, metadata_warning: result.metadata_warning });
-  return res.json(saved);
+  if (!result.ok) return res.status(502).json({ error: "Could not save CMS material" });
+  return res.json({ ...sanitizeMaterial(result.data?.[0] || payload), ...(result.metadata_warning ? { metadata_warning: result.metadata_warning } : {}) });
 }
 
 export async function removeAdminContent(req, res) {
-  const id = req.query.id;
-  const slug = req.query.slug;
+  const { id, slug } = req.query;
   if (!id && !slug) return res.status(400).json({ error: "A material id or slug is required" });
-  if (id && !/^[0-9a-f-]{36}$/i.test(id)) return res.status(400).json({ error: "A valid material id is required" });
   const result = await deleteMaterial({ id, slug });
-  if (!result.ok) return res.status(502).json({ error: "Could not delete CMS material" });
-  return res.json({ deleted: true });
+  return result.ok ? res.json({ deleted: true }) : res.status(502).json({ error: "Could not delete CMS material" });
 }
-
-const ALLOWED_TYPES = /^application\/pdf$|^image\/(png|jpeg|jpg|webp|gif)$/;
 
 export async function uploadAdminFile(req, res) {
   const file = req.file;
-  if (!file) return res.status(400).json({ error: "A file is required" });
-  if (file.size > 15 * 1024 * 1024) return res.status(400).json({ error: "File size must be 15 MB or less" });
-  if (!ALLOWED_TYPES.test(file.mimetype)) return res.status(400).json({ error: "Only PDF and image files are supported" });
+  const extensions = { "application/pdf": "pdf", "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif" };
+  if (!file || !extensions[file.mimetype] || file.size > 15 * 1024 * 1024) return res.status(400).json({ error: "Choose a PDF or image up to 15 MB" });
   const baseUrl = supabaseBaseUrl();
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
   if (!baseUrl || !serviceKey) return res.status(502).json({ error: "Storage is not configured" });
-  const bucket = storageBucket();
-  const ext = file.originalname.includes(".") ? file.originalname.split(".").pop().toLowerCase() : "bin";
-  const path = `${newId()}.${ext}`;
+  const path = `${newId()}.${extensions[file.mimetype]}`;
   try {
-    const response = await fetch(`${baseUrl}/storage/v1/object/${bucket}/${path}`, {
+    const response = await fetch(`${baseUrl}/storage/v1/object/${storageBucket()}/${path}`, {
       method: "POST",
-      headers: {
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
-        "Content-Type": file.mimetype,
-        "x-upsert": "true",
-      },
+      headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, "Content-Type": file.mimetype, "x-upsert": "false" },
       body: file.buffer,
     });
-    if (!response.ok) return res.status(502).json({ error: "Could not upload file" });
-    return res.json({ url: `${baseUrl}/storage/v1/object/public/${bucket}/${path}` });
+    if (!response.ok) throw new Error("Upload failed");
+    return res.json({ url: `${baseUrl}/storage/v1/object/public/${storageBucket()}/${path}` });
   } catch {
     return res.status(502).json({ error: "Could not upload file" });
   }

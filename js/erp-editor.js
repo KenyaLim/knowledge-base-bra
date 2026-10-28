@@ -3,12 +3,19 @@
     if (!editor) return;
 
     const content = editor.querySelector("[contenteditable]");
+    if (!content) return;
     const htmlBaseline = content.innerHTML;
     const documentBlock = editor.querySelector(".doc-block");
     const imageFile = editor.querySelector("[data-image-file]");
     const imageUrl = editor.querySelector("[data-image-url]");
-    const status = editor.querySelector("[data-editor-status]");
+    let status = editor.querySelector("[data-editor-status]");
+    if (!status) {
+        status = document.createElement("p");
+        status.setAttribute("role", "status");
+        editor.appendChild(status);
+    }
     const toolbar = editor.querySelector(".erp-editor-toolbar");
+    if (!toolbar) { content.contentEditable = "false"; return; }
     const moduleName = document.body.dataset.module || "ERP";
     const slug = editor.dataset.cmsSlug
         || document.body.dataset.cmsSlug
@@ -173,6 +180,9 @@
     }
 
     function insertImage(source, alt) {
+        if (!isAdmin) return;
+        const url = new URL(source, location.origin);
+        if (!["http:", "https:"].includes(url.protocol)) { status.textContent = "URL gambar tidak valid"; return; }
         content.focus();
         const image = document.createElement("img");
         image.src = source;
@@ -247,7 +257,7 @@
             button.addEventListener("click", toggleHeading);
             return;
         }
-        if (!["bold", "italic", "underline"].includes(button.dataset.command)) {
+        if (!["bold", "italic", "underline", "insertUnorderedList", "insertOrderedList"].includes(button.dataset.command)) {
             button.hidden = true;
             return;
         }
@@ -257,7 +267,7 @@
     });
 
     toolbar.addEventListener("mousedown", function (event) {
-        if (event.target.closest("[data-command], [data-insert-image]")) event.preventDefault();
+        if (event.target.closest("[data-command], [data-insert-image], [data-insert-table]")) event.preventDefault();
     });
 
     function updateToolbarOffset() {
@@ -271,15 +281,20 @@
     window.addEventListener("resize", updateToolbarOffset);
 
 
-    imageFile.addEventListener("change", function () {
+    editor.querySelector("[data-insert-table]")?.addEventListener("click", function () {
+        if (!isAdmin) return;
+        applyCommand("insertHTML", "<table><tbody><tr><th>Kolom 1</th><th>Kolom 2</th></tr><tr><td>Isi</td><td>Isi</td></tr></tbody></table><p><br></p>");
+    });
+
+    imageFile?.addEventListener("change", function () {
         const file = imageFile.files && imageFile.files[0];
         if (!file || !file.type.startsWith("image/")) return;
         uploadImage(file).catch(function (error) { status.textContent = error.message; });
         imageFile.value = "";
     });
 
-    editor.querySelector("[data-insert-image]").addEventListener("click", function () {
-        const url = imageUrl.value.trim();
+    editor.querySelector("[data-insert-image]")?.addEventListener("click", function () {
+        const url = imageUrl?.value.trim();
         if (!url) return;
         insertImage(url, "Screenshot dokumentasi");
         imageUrl.value = "";
@@ -336,7 +351,7 @@
     }
 
     function wrapOrphanInlineNodes() {
-        const blockTags = new Set(["P", "DIV", "H1", "H2", "H3", "H4", "H5", "H6", "LI", "UL", "OL", "PRE", "BLOCKQUOTE"]);
+        const blockTags = new Set(["P", "DIV", "H1", "H2", "H3", "H4", "H5", "H6", "LI", "UL", "OL", "PRE", "BLOCKQUOTE", "TABLE", "IMG", "HR"]);
         Array.from(content.childNodes).forEach(function (node) {
             if (node.nodeType !== Node.ELEMENT_NODE || blockTags.has(node.tagName)) return;
             const paragraph = document.createElement("p");
@@ -406,7 +421,7 @@
         save().catch(function (error) { status.textContent = `Gagal menyimpan: ${error.message}`; });
     });
 
-    editor.querySelector("[data-reset-editor]").addEventListener("click", async function () {
+    editor.querySelector("[data-reset-editor]")?.addEventListener("click", async function () {
         if (!isAdmin || !window.confirm("Reset ke isi HTML bawaan modul dan hapus versi Supabase?")) return;
         clearTimeout(saveTimer);
         editVersion += 1;
