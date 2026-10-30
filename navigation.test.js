@@ -19,7 +19,8 @@ test('deployment output contains only website files and keeps function routing s
     const files = entries.filter((entry) => entry.isFile()).map((entry) => path.relative(path.join(root, 'public'), path.join(entry.parentPath, entry.name))).sort();
     const tracked = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' }).trim().split('\n');
     const expected = tracked.filter((file) => /^(?:[^/]+\.html|css\/style\.css|js\/(?:admin|cms|erp-editor|navbar|navigation-admin)\.js|(?:erp|proman|stage|getting-started)\/.*\.html)$/.test(file)).sort();
-    assert.deepEqual(files, expected);
+    expected.push('users.html', 'password-setup.html', 'js/users.js', 'js/password-setup.js', 'css/users.css');
+    assert.deepEqual(files, [...new Set(expected)].sort());
     for (const file of files) {
         assert.deepEqual(await readFile(path.join(root, 'public', file)), await readFile(path.join(root, file)));
         assert.doesNotMatch(await readFile(path.join(root, 'public', file), 'utf8'), /process\.env|SUPABASE_SERVICE_ROLE_KEY|AUTH_SECRET|createApp/);
@@ -39,7 +40,7 @@ test('build clears stale output and excludes secrets, backend files and symlinks
     const root = fileURLToPath(new URL('.', import.meta.url));
     const fixture = await mkdtemp(path.join(tmpdir(), 'kb-public-'));
     try {
-        for (const file of ['build.js', 'package.json', 'index.html', 'login.html', 'admin.html', 'materials.html', 'ERP Docs.html', 'css', 'js', 'erp', 'proman', 'stage', 'getting-started']) {
+        for (const file of ['build.js', 'package.json', 'users.html', 'password-setup.html', 'index.html', 'login.html', 'admin.html', 'materials.html', 'ERP Docs.html', 'css', 'js', 'erp', 'proman', 'stage', 'getting-started']) {
             await cp(path.join(root, file), path.join(fixture, file), { recursive: true });
         }
         await symlink(path.join(root, 'node_modules'), path.join(fixture, 'node_modules'), 'dir');
@@ -158,6 +159,89 @@ test('editor initializes without crashes and preserves tables for readers', asyn
     assert.equal(dom.window.document.querySelector('.erp-editor-toolbar').hidden, true);
     dom.window.close();
 });
+
+for (const page of ['proman/timestudy/timestud.html', 'proman/fabrictime/fabtime.html']) {
+    test(`${page} bold stays reversible without inferred headings (mocked execCommand)`, async () => {
+        const dom = new JSDOM(await read(page), { runScripts: 'outside-only', url: `https://example.test/${page}` });
+        try {
+            const { document } = dom.window;
+            const requests = [];
+            dom.window.fetch = async (url, options) => {
+                requests.push({ url, options });
+                return { ok: true, json: async () => url === '/api/session' ? { isAdmin: true } : options ? {} : { content: '<p>Text</p><p class="editor-heading"><strong>Legacy</strong></p>' } };
+            };
+            dom.window.eval(await read('js/erp-editor.js'));
+            await new Promise((resolve) => setTimeout(resolve, 10));
+            const content = document.querySelector('[contenteditable]');
+            const selection = dom.window.getSelection();
+            const select = (node) => selection.setBaseAndExtent(node, 0, node, node.length);
+            const click = (command) => document.querySelector(`[data-command="${command}"]`).click();
+            document.execCommand = (command) => {
+                if (command === 'styleWithCSS') return true;
+                const text = selection.anchorNode;
+                const wrapper = text.parentElement;
+                if (command === 'bold' && wrapper.matches('strong, b')) {
+                    wrapper.replaceWith(text);
+                } else {
+                    const element = document.createElement(command === 'bold' ? 'strong' : command === 'italic' ? 'em' : 'u');
+                    text.replaceWith(element);
+                    element.appendChild(text);
+                }
+                select(text);
+                content.dispatchEvent(new dom.window.Event('input'));
+                return true;
+            };
+            select(content.firstChild.firstChild);
+            click('bold');
+            assert.ok(content.querySelector('p strong'));
+            assert.equal(content.firstChild.classList.contains('editor-heading'), false);
+            assert.equal(selection.toString(), 'Text');
+            click('bold');
+            assert.equal(content.firstChild.querySelector('strong, b'), null);
+            assert.equal(selection.toString(), 'Text');
+            click('heading');
+            assert.ok(content.firstChild.classList.contains('editor-heading'));
+            assert.equal(selection.toString(), 'Text');
+            click('bold');
+            assert.equal(content.firstChild.classList.contains('editor-heading'), false);
+            assert.equal(content.firstChild.querySelector('strong, b'), null);
+            select(content.lastChild.querySelector('strong').firstChild);
+            click('bold');
+            assert.equal(content.querySelector('.editor-heading'), null);
+            assert.equal(document.querySelector('.editor-outline').hidden, true);
+            click('italic');
+            click('underline');
+            assert.ok(content.querySelector('em u'));
+            assert.equal(selection.toString(), 'Legacy');
+            content.innerHTML = '<span style="font-weight: bold">Orphan</span><ul><li>Item</li></ul><img class="erp-editor-image" src="https://example.test/a"><table><tbody><tr><td>Cell</td></tr></tbody></table>';
+            const text = content.firstChild.firstChild;
+            selection.setBaseAndExtent(text, 5, text, 1);
+            content.dispatchEvent(new dom.window.Event('input'));
+            assert.equal(selection.anchorNode, text);
+            assert.equal(selection.anchorOffset, 5);
+            assert.equal(selection.focusOffset, 1);
+            assert.ok(content.querySelector('p strong'));
+            assert.equal(content.querySelector('.editor-heading'), null);
+            assert.ok(content.querySelector('ul li'));
+            assert.ok(content.querySelector('img.erp-editor-image'));
+            assert.ok(content.querySelector('table td'));
+            Array.from(document.querySelectorAll('button')).find((button) => button.textContent === 'Simpan ke Supabase').click();
+            await new Promise((resolve) => setTimeout(resolve, 10));
+            const saved = requests.find(({ options }) => options?.method === 'POST');
+            assert.equal(JSON.parse(saved.options.body).content, content.innerHTML);
+            dom.window.confirm = () => true;
+            document.querySelector('[data-reset-editor]').click();
+            await new Promise((resolve) => setTimeout(resolve, 10));
+            assert.equal(content.textContent.trim(), '');
+            assert.ok(requests.some(({ options }) => options?.method === 'DELETE'));
+            const css = await read('css/style.css');
+            const headingRule = css.match(/\.erp-editor \[contenteditable\] \.editor-heading \{([^}]+)\}/)[1];
+            assert.doesNotMatch(headingRule, /font-weight/);
+        } finally {
+            dom.window.close();
+        }
+    });
+}
 
 test('sidebar handles mixed roots and refreshes while retaining dashboard and FAQ', async () => {
     const dom = new JSDOM('<body data-page="admin"><div id="navbar"></div><aside id="sidebar"></aside></body>', { runScripts: 'outside-only', url: 'https://example.test/docs/test' });

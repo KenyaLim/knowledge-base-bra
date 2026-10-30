@@ -1,0 +1,15 @@
+.user-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px; margin:24px 0; }
+.user-summary article { padding:20px; border:1px solid #e2e8f0; border-radius:12px; background:white; }
+.user-summary strong { display:block; font-size:28px; }
+.user-toolbar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
+.user-toolbar input,.user-toolbar select { padding:10px; border:1px solid #cbd5e1; border-radius:8px; }
+.user-pagination { display:flex; align-items:center; gap:12px; margin:12px 0; }
+.user-pagination button:disabled { opacity:.5; cursor:not-allowed; }
+.user-table { overflow:auto; }
+.user-table table { width:100%; border-collapse:collapse; text-align:left; }
+.user-table td,.user-table th { padding:14px; border-bottom:1px solid #e2e8f0; }
+.user-table button { margin:4px; padding:6px 10px; cursor:pointer; }
+.user-badge { display:inline-block; border-radius:16px; padding:4px 10px; background:#e2e8f0; }
+.user-badge.active { background:#dcfce7; color:#166534; }
+#editor { margin:auto; border:0; border-radius:12px; padding:28px; width:min(480px,90vw); }
+#editor::backdrop { background:#0006; }

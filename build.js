@@ -9,6 +9,7 @@ const files = [
     'index.html', 'login.html', 'admin.html', 'materials.html', 'ERP Docs.html',
     'css/style.css', 'js/admin.js', 'js/cms.js', 'js/erp-editor.js',
     'js/navbar.js', 'js/navigation-admin.js',
+    'users.html', 'password-setup.html', 'js/users.js', 'js/password-setup.js', 'css/users.css',
 ];
 
 async function collectPages(directory) {

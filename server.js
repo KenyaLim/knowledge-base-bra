@@ -4,6 +4,8 @@ import cookieParser from "cookie-parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import authRoutes from "./src/routes/auth.js";
+import userRoutes from "./src/routes/users.js";
+import { sameOrigin } from "./src/middlewares/security.js";
 import cmsRoutes from "./src/routes/cms.js";
 import { getDynamicPage } from "./src/controllers/cmsController.js";
 import { requireSession } from "./src/middlewares/auth.js";
@@ -19,6 +21,8 @@ export function createApp() {
   app.use(express.json({ limit: "2mb" }));
   app.use(express.urlencoded({ extended: true }));
 
+  app.use("/api", sameOrigin);
+  app.use("/api/users", userRoutes);
   app.use("/api", authRoutes);
   app.use("/api/cms", cmsRoutes);
   app.get("/docs/:page", requireSession, getDynamicPage);
@@ -31,13 +35,16 @@ export function createApp() {
     if (req.path.startsWith("/css/") || req.path.startsWith("/js/")) return next();
     if (req.path === "/favicon.ico") return next();
     if (req.method !== "GET") return next();
-    if (!req.path.endsWith(".html") && req.path !== "/") return next();
+    if (req.path === "/healthz" || req.path === "/password-setup.html") return next();
+    if (req.path.split("/").some(part => part.startsWith("."))) return res.sendStatus(404);
+    if (path.extname(req.path) && !req.path.endsWith(".html")) return next();
 
     const secret = process.env.AUTH_SECRET || "";
     const token = req.cookies?.[COOKIE_NAME];
     const session = await readSessionFromToken(token, secret);
     const isLogin = req.path === "/login.html";
-    const isAdminPage = req.path === "/admin.html";
+    if (["/users", "/users.html"].includes(req.path) && !(session?.id && session.db && session.r === "admin")) return res.status(403).send("Forbidden");
+    const isAdminPage = ["/admin", "/admin.html"].includes(req.path);
 
     if (isLogin) {
       if (session) return res.redirect(safeNext(req.query.next, `${req.protocol}://${req.get("host")}`));

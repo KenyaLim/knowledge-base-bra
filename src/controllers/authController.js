@@ -12,6 +12,8 @@ import {
   safeNext,
 } from "../utils/session.js";
 
+import { rateLimit } from "../middlewares/security.js";
+
 function originOf(req) {
   return `${req.protocol}://${req.get("host")}`;
 }
@@ -24,12 +26,17 @@ export async function login(req, res) {
   const identity = String(req.body?.identity || req.body?.email || "").trim();
   const password = String(req.body?.password || "");
   const nextPath = safeNext(String(req.body?.next || "/index.html"));
-  let user = await authenticateWithManualUser(secret, identity, password);
+  const enforce = process.env.AUTH_MODE === "enforce";
+  if (enforce && !await rateLimit("login", identity, 10)) return res.redirect(loginUrl(originOf(req), "invalid", nextPath));
+  let user = enforce ? false : await authenticateWithManualUser(secret, identity, password);
   if (!user && supabaseUrl && supabaseAnonKey) {
+    if (!enforce && !await rateLimit("login", identity, 10)) return res.redirect(loginUrl(originOf(req), "invalid", nextPath));
     user = await authenticateWithSupabase(supabaseUrl, supabaseAnonKey, identity, password);
   }
   if (!user) return res.redirect(loginUrl(originOf(req), "invalid", nextPath));
   const token = await createSession(secret, {
+    id: user.id,
+    session_version: user.session_version,
     email: user.email || identity,
     name: user.name || user.user_metadata?.full_name || user.user_metadata?.name || "",
     role: user.role || "user",
