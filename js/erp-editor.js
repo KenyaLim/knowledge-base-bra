@@ -204,9 +204,7 @@
     }
 
     function applyCommand(command, value) {
-        const restoreSelection = preserveSelection();
         content.focus();
-        restoreSelection();
         document.execCommand("styleWithCSS", false, false);
         document.execCommand(command, false, value || null);
         normalizeContent();
@@ -223,7 +221,6 @@
     }
 
     function toggleHeading() {
-        const restoreSelection = preserveSelection();
         wrapOrphanTextNodes();
         const block = getSelectedBlock();
         if (!block || block === content) return;
@@ -251,7 +248,6 @@
             });
             block.classList.add("editor-heading");
         }
-        restoreSelection();
         normalizeContent();
         saveLater();
     }
@@ -319,7 +315,7 @@
             const isBold = textNodes.length > 0 && textNodes.every(function (textNode) {
                 return Boolean(textNode.parentElement.closest("strong, b"));
             });
-            if (!isBold) block.classList.remove("editor-heading");
+            block.classList.toggle("editor-heading", isBold);
         });
     }
 
@@ -364,40 +360,7 @@
         });
     }
 
-    function preserveSelection() {
-        const selection = window.getSelection();
-        if (!selection || !selection.rangeCount || !content.contains(selection.anchorNode)
-            || !content.contains(selection.focusNode)) return function () {};
-        const anchorNode = selection.anchorNode;
-        const anchorOffset = selection.anchorOffset;
-        const focusNode = selection.focusNode;
-        const focusOffset = selection.focusOffset;
-        const positions = [ [anchorNode, anchorOffset], [focusNode, focusOffset] ].map(function ([node, offset]) {
-            const range = document.createRange();
-            range.selectNodeContents(content);
-            range.setEnd(node, offset);
-            return range.toString().length;
-        });
-        return function () {
-            function endpoint(node, offset, position) {
-                if (node.nodeType === Node.TEXT_NODE && content.contains(node)) return [node, offset];
-                const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
-                let text;
-                while ((text = walker.nextNode())) {
-                    if (position <= text.length) return [text, position];
-                    position -= text.length;
-                }
-                return [content, content.childNodes.length];
-            }
-            selection.setBaseAndExtent(
-                ...endpoint(anchorNode, anchorOffset, positions[0]),
-                ...endpoint(focusNode, focusOffset, positions[1])
-            );
-        };
-    }
-
     function normalizeContent() {
-        const restoreSelection = preserveSelection();
         content.querySelectorAll("span[style]").forEach(function (element) {
             const style = element.style;
             const tagName = style.fontWeight === "bold" || Number(style.fontWeight) >= 600
@@ -433,7 +396,6 @@
         wrapOrphanInlineNodes();
         markHeadingBlocks();
         renderOutline();
-        restoreSelection();
     }
 
     content.addEventListener("input", function () {

@@ -1,5 +1,4 @@
 import { createHmac, randomUUID } from "node:crypto";
-import { resolveIdentity } from "./identity.js";
 
 export const COOKIE_NAME = "kb_session";
 export const SESSION_MS = 1000 * 60 * 60 * 12;
@@ -41,8 +40,6 @@ export function newId() {
 
 export async function createSession(secret, user) {
   const payload = encodePayload({
-    id: user.id,
-    v: user.session_version,
     e: user.email,
     n: user.name,
     r: user.role === "admin" ? "admin" : "user",
@@ -65,7 +62,7 @@ export async function readSessionFromToken(token, secret) {
     const lastActivity = typeof data.a === "number" ? data.a : data.exp - SESSION_MS;
     if (Date.now() - lastActivity >= IDLE_SESSION_MS) return null;
     data.a = lastActivity;
-    return await resolveIdentity(data);
+    return data;
   } catch {
     return null;
   }
@@ -73,8 +70,6 @@ export async function readSessionFromToken(token, secret) {
 
 export async function refreshSession(secret, session) {
   const payload = encodePayload({
-    id: session.id,
-    v: session.v,
     e: session.e || session.u || "",
     n: session.n || "",
     r: session.r === "admin" ? "admin" : "user",
@@ -131,11 +126,7 @@ export async function authenticateWithSupabase(url, anonKey, email, password) {
       body: JSON.stringify({ email, password }),
     });
     if (!response.ok) return false;
-    const data = await response.json();
-    if (!data.user?.id) return false;
-    const profile = await resolveIdentity({ id: data.user.id }, true);
-    if (!profile) return false;
-    return { id: profile.id, session_version: profile.v, email: profile.e, name: profile.n, role: profile.r };
+    return await response.json();
   } catch {
     return false;
   }
@@ -143,8 +134,6 @@ export async function authenticateWithSupabase(url, anonKey, email, password) {
 
 export function isCmsAdmin(session) {
   if (!session) return false;
-  if (session.id) return session.db === true && session.r === "admin";
-  if (process.env.AUTH_MODE === "enforce") return false;
   if (session.r === "admin") return true;
   const admins = (process.env.CMS_ADMIN_EMAILS || "")
     .split(",")
@@ -177,7 +166,7 @@ export function cookieOptions(maxAge, secure) {
     sameSite: "lax",
     path: "/",
     maxAge: maxAge * 1000,
-    secure: process.env.NODE_ENV === "production" || process.env.VERCEL === "1" || Boolean(secure),
+    secure: Boolean(secure),
   };
 }
 

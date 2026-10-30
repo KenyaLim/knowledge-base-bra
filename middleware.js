@@ -1,5 +1,3 @@
-import { resolveIdentity } from "./src/utils/identity.js";
-
 const COOKIE_NAME = "kb_session";
 const SESSION_MS = 1000 * 60 * 60 * 12;
 const IDLE_SESSION_MS = 1000 * 60 * 7;
@@ -27,9 +25,7 @@ export default async function middleware(request) {
     const secret = process.env.AUTH_SECRET || "";
     const session = await readSession(request, secret);
 
-    if (path === "/password-setup.html") return next({ headers: { "Referrer-Policy": "no-referrer", "Cache-Control": "no-store" } });
-    if (["/users", "/users.html"].includes(path) && !(session?.id && session.db && session.r === "admin")) return new Response("Forbidden", { status: 403 });
-    if (["/admin", "/admin.html"].includes(path) && !isCmsAdmin(session)) {
+    if (path === "/admin.html" && !isCmsAdmin(session)) {
         return redirectTo(new URL("/index.html", url.origin).toString());
     }
 
@@ -70,8 +66,6 @@ function isPublicAsset(path) {
 
 function isCmsAdmin(session) {
     if (!session) return false;
-    if (session.id) return session.db === true && session.r === "admin";
-    if (process.env.AUTH_MODE === "enforce") return false;
     if (session.r === "admin") return true;
     const admins = (process.env.CMS_ADMIN_EMAILS || "")
         .split(",")
@@ -102,7 +96,7 @@ async function readSession(request, secret) {
             return null;
         }
         data.a = lastActivity;
-        return await resolveIdentity(data);
+        return data;
     } catch {
         return null;
     }
@@ -110,8 +104,6 @@ async function readSession(request, secret) {
 
 async function refreshSession(secret, session) {
     const payload = encodePayload({
-        id: session.id,
-        v: session.v,
         e: session.e || session.u || "",
         n: session.n || "",
         r: session.r === "admin" ? "admin" : "user",
