@@ -29,6 +29,7 @@
     let isAdmin = false;
     let saveTimer;
     let editVersion = 0;
+    let savedRange = null;
 
     const metadataFooter = document.createElement("footer");
     metadataFooter.className = "cms-material-footer erp-material-footer";
@@ -203,10 +204,25 @@
         saveLater();
     }
 
-    function applyCommand(command, value) {
+    function saveSelection() {
+        const selection = window.getSelection();
+        if (!selection || !selection.rangeCount || !content.contains(selection.anchorNode)) return;
+        savedRange = selection.getRangeAt(0).cloneRange();
+    }
+
+    function restoreSelection() {
+        if (!savedRange) return;
         content.focus();
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(savedRange);
+    }
+
+    function applyCommand(command, value) {
+        restoreSelection();
         document.execCommand("styleWithCSS", false, false);
         document.execCommand(command, false, value || null);
+        savedRange = null;
         normalizeContent();
         saveLater();
     }
@@ -398,8 +414,11 @@
         renderOutline();
     }
 
+    content.addEventListener("mouseup", saveSelection);
+    content.addEventListener("keyup", saveSelection);
     content.addEventListener("input", function () {
         normalizeContent();
+        saveSelection();
         saveLater();
     });
     content.addEventListener("paste", function (event) {
