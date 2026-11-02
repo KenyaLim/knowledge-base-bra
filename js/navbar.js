@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 id: "stage",
                 title: "STAGE",
-                home: { title: "", page: "stage-home", url: "stage/home.html" },
+                // home: { title: "", page: "stage-home", url: "stage/home.html" },
                 modules: [
                     {
                         id: "stage-order",
@@ -210,7 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 id: "proman",
                 title: "PROMAN",
-                home: { title: "", page: "proman-home", url: "proman/home.html" },
+                // home: { title: "", page: "proman-home", url: "proman/home.html" },
                 modules: [
                     {
                         id: "proman-time-study",
@@ -266,14 +266,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 // id: "other",
                 // title: "",
                 modules: [
-                    {
-                        id: "faq",
-                        title: "FAQ",
-                        icon: "ph-question",
-                        children: [
-                            { title: "Frequently Asked Questions", page: "faq", url: "getting-started/faq.html" }
-                        ]
-                    }
+                    // {
+                    //     id: "faq",
+                    //     title: "FAQ",
+                    //     icon: "ph-question",
+                    //     children: [
+                    //         { title: "Frequently Asked Questions", page: "faq", url: "getting-started/faq.html" }
+                    //     ]
+                    // }
                 ]
             }
         ];
