@@ -261,21 +261,21 @@ document.addEventListener("DOMContentLoaded", function () {
                         ]
                     }
                 ]
-            },
-            {
-                // id: "other",
-                // title: "",
-                modules: [
-                    // {
-                    //     id: "faq",
-                    //     title: "FAQ",
-                    //     icon: "ph-question",
-                    //     children: [
-                    //         { title: "Frequently Asked Questions", page: "faq", url: "getting-started/faq.html" }
-                    //     ]
-                    // }
-                ]
             }
+            // {
+            //     // id: "other",
+            //     // title: "",
+            //     modules: [
+            //         // {
+            //         //     id: "faq",
+            //         //     title: "FAQ",
+            //         //     icon: "ph-question",
+            //         //     children: [
+            //         //         { title: "Frequently Asked Questions", page: "faq", url: "getting-started/faq.html" }
+            //         //     ]
+            //         // }
+            //     ]
+            // }
         ];
 
     window.KB_DEFAULT_NAVIGATION = appGroups.filter(function (group) {
