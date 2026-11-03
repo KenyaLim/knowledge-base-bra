@@ -77,7 +77,7 @@ async function loadMaterials() {
         materials.forEach(function (material) {
             const card = document.createElement("a");
             card.className = "card";
-            card.href = `material.html?slug=${encodeURIComponent(material.slug)}`;
+            card.href = `${window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1)}material.html?slug=${encodeURIComponent(material.slug)}`;
             const number = document.createElement("span");
             number.className = "card-number";
             number.textContent = material.module || "DOC";

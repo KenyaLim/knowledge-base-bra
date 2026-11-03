@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material | Knowledge Base</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="material">
+    <div id="navbar"></div>
+    <div class="app-layout">
+        <aside id="sidebar"></aside>
+        <main class="main-content">
+            <section class="hero">
+                <div class="hero-content">
+                    <p id="materialModule" class="eyebrow">KNOWLEDGE BASE</p>
+                    <h1 id="materialTitle">Loading material...</h1>
+                    <p id="materialSummary" class="hero-description"></p>
+                </div>
+            </section>
+            <article class="doc-block">
+                <div id="materialContent"></div>
+            </article>
+            <section id="pdfPanel" class="section" hidden>
+                <iframe id="materialPdf" title="Material PDF" style="width: 100%; min-height: 720px; border: 1px solid #d4d4d4;"></iframe>
+            </section>
+            <p id="materialStatus" class="search-status"></p>
+            <p id="materialFooter" hidden><small id="materialMeta"></small></p>
+        </main>
+    </div>
+    <script src="js/navbar.js"></script>
+    <script src="js/cms.js"></script>
+</body>
+</html>

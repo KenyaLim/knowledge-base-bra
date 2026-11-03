@@ -765,7 +765,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     text: `${material.title} ${material.module} ${material.summary} ${materialContent}`,
                     html: material.content || "",
                     summary: material.summary || materialContent.slice(0, 240),
-                    url: `${ROOT}material.html?slug=${encodeURIComponent(material.slug)}`
+                    url: navigationUrl(`material.html?slug=${encodeURIComponent(material.slug)}`)
                 });
             });
 

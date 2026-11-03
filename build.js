@@ -6,7 +6,7 @@ import { build } from 'esbuild';
 const root = path.dirname(fileURLToPath(import.meta.url));
 const output = path.join(root, 'public');
 const files = [
-    'index.html', 'login.html', 'admin.html', 'materials.html', 'ERP Docs.html',
+    'index.html', 'login.html', 'admin.html', 'materials.html', 'material.html', 'ERP Docs.html',
     'css/style.css', 'js/admin.js', 'js/cms.js', 'js/erp-editor.js',
     'js/navbar.js', 'js/navigation-admin.js',
 ];
