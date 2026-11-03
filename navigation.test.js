@@ -185,6 +185,36 @@ test('sidebar handles mixed roots and refreshes while retaining dashboard and FA
     dom.window.close();
 });
 
+test('search uses original CMS module URLs and keeps standalone material links', async () => {
+    const dom = new JSDOM('<body><input id="searchInput" value="needle"><button id="searchButton"></button><p id="searchStatus"></p><div id="searchResults"></div></body>', { runScripts: 'outside-only', url: 'https://example.test/index.html' });
+    const items = [
+        { page: 'custom', url: '/docs/custom' },
+        { page: 'legacy', url: '/docs/legacy' },
+    ];
+    dom.window.fetch = async (url) => ({
+        ok: true,
+        json: async () => url === '/api/cms/navigation' ? { items } : url.startsWith('/api/cms/content?') ? {
+            data: ['custom', 'erp-legacy', 'standalone'].map((slug) => ({ slug, title: slug, content: '<p>needle</p>' })),
+            meta: { totalPages: 1 },
+        } : {},
+        text: async () => '<body><main>Other content</main></body>',
+    });
+    try {
+        dom.window.eval(await read('js/navbar.js'));
+        dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        const links = Array.from(dom.window.document.querySelectorAll('#searchResults a'), (link) => new URL(link.href));
+        assert.equal(links.length, 3);
+        assert.equal(links[0].pathname, '/docs/custom');
+        assert.equal(links[1].pathname, '/docs/legacy');
+        assert.equal(links[2].pathname, '/material.html');
+        assert.equal(links[2].searchParams.get('slug'), 'standalone');
+        assert.ok(links.every((link) => link.searchParams.get('search') === 'needle'));
+    } finally {
+        dom.window.close();
+    }
+});
+
 test('unauthenticated docs middleware rejects before handler', async () => {
     const { requireSession } = await import('./src/middlewares/auth.js');
     let code;

@@ -717,8 +717,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         async function loadDocumentationIndex() {
-            const [materialsResult, ...pageResults] = await Promise.allSettled([
+            const [materialsResult, navigationResult, ...pageResults] = await Promise.allSettled([
                 loadSearchMaterials(),
+                fetch("/api/cms/navigation").then(function (response) {
+                    if (!response.ok) throw new Error("Could not load search navigation");
+                    return response.json();
+                }),
                 ...modulePages.map(function (page) {
                     return fetch(page.url).then(function (response) {
                         if (!response.ok) throw new Error(`Could not load ${page.title}`);
@@ -732,6 +736,18 @@ document.addEventListener("DOMContentLoaded", function () {
             const materialsBySlug = new Map(materials.map(function (material) {
                 return [material.slug, material];
             }));
+            const navigationPages = navigationResult.status === "fulfilled"
+                ? (navigationResult.value.items || []).filter(function (item) { return item.page && item.url; })
+                : [];
+            const materialUrls = new Map();
+            navigationPages.forEach(function (item) {
+                materialUrls.set(item.page, navigationUrl(item.url));
+            });
+            navigationPages.forEach(function (item) {
+                if (!materialUrls.has(`erp-${item.page}`)) {
+                    materialUrls.set(`erp-${item.page}`, navigationUrl(item.url));
+                }
+            });
             const indexedSlugs = new Set();
 
             documentationIndex = modulePages.map(function (page, index) {
@@ -765,11 +781,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     text: `${material.title} ${material.module} ${material.summary} ${materialContent}`,
                     html: material.content || "",
                     summary: material.summary || materialContent.slice(0, 240),
-                    url: navigationUrl(`material.html?slug=${encodeURIComponent(material.slug)}`)
+                    url: materialUrls.get(material.slug)
+                        || navigationUrl(`material.html?slug=${encodeURIComponent(material.slug)}`)
                 });
             });
 
-            if (materialsResult.status === "rejected") searchIndexError = true;
+            if (materialsResult.status === "rejected" || navigationResult.status === "rejected") searchIndexError = true;
             searchIndexReady = true;
             runSearch();
         }
