@@ -687,12 +687,38 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
 
+        async function loadSearchMaterials() {
+            const materials = [];
+            let page = 1;
+            let totalPages = 1;
+
+            while (page <= totalPages) {
+                const response = await fetch(`/api/cms/content?limit=50&page=${page}`);
+                if (!response.ok) throw new Error("Could not load CMS search content");
+                const payload = await response.json();
+                const paged = payload && Array.isArray(payload.data) && payload.meta;
+                materials.push(...(paged ? payload.data : Array.isArray(payload) ? payload : []));
+                totalPages = paged ? payload.meta.totalPages : 1;
+                page += 1;
+            }
+
+            return materials;
+        }
+
+        function getPageContent(parsedPage) {
+            const contentRoot = parsedPage.querySelector("main") || parsedPage.body;
+            contentRoot.querySelectorAll("script, style, nav, footer, .erp-editor-toolbar").forEach(function (element) {
+                element.remove();
+            });
+            return {
+                text: contentRoot.textContent.replace(/\s+/g, " ").trim(),
+                html: contentRoot.innerHTML
+            };
+        }
+
         async function loadDocumentationIndex() {
             const [materialsResult, ...pageResults] = await Promise.allSettled([
-                fetch("/api/cms/content").then(function (response) {
-                    if (!response.ok) throw new Error("Could not load CMS search content");
-                    return response.json();
-                }),
+                loadSearchMaterials(),
                 ...modulePages.map(function (page) {
                     return fetch(page.url).then(function (response) {
                         if (!response.ok) throw new Error(`Could not load ${page.title}`);
@@ -703,11 +729,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const materials = materialsResult.status === "fulfilled"
                 ? materialsResult.value
                 : [];
-            const materialsBySlug = new Map(
-                materials.map(function (material) {
-                    return [material.slug, material];
-                })
-            );
+            const materialsBySlug = new Map(materials.map(function (material) {
+                return [material.slug, material];
+            }));
+            const indexedSlugs = new Set();
 
             documentationIndex = modulePages.map(function (page, index) {
                 const result = pageResults[index];
@@ -720,25 +745,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 const slug = parsedPage.body.dataset.cmsSlug
                     || `erp-${parsedPage.body.dataset.page || page.page}`;
                 const material = materialsBySlug.get(slug);
-                const pageTitle = parsedPage.querySelector("main h1, .hero h1")?.textContent.trim() || "";
-                const pageText = Array.from(parsedPage.querySelectorAll("[contenteditable], .doc-block"))
-                    .map(function (element) { return element.textContent; })
-                    .join(" ");
-                const searchableContent = Array.from(parsedPage.querySelectorAll("[contenteditable], .doc-block"))
-                    .map(function (element) { return element.innerHTML; })
-                    .join("\n");
-                const storedText = material
-                    ? `${material.title} ${material.summary} ${new DOMParser().parseFromString(material.content, "text/html").body.textContent}`
-                    : "";
+                const pageContent = getPageContent(parsedPage);
+                indexedSlugs.add(slug);
 
                 return {
-                    title: [page.module, page.title, material ? material.title : pageTitle].filter(Boolean).join(" "),
-                    text: material ? storedText : pageText,
-                    html: material ? material.content : searchableContent,
-                    summary: material?.summary || pageText.replace(/\s+/g, " ").trim().slice(0, 240),
+                    title: [page.module, page.title, material?.title || parsedPage.querySelector("main h1, .hero h1")?.textContent.trim()].filter(Boolean).join(" "),
+                    text: material ? `${material.title} ${material.module} ${material.summary} ${new DOMParser().parseFromString(material.content, "text/html").body.textContent} ${pageContent.text}` : pageContent.text,
+                    html: material?.content || pageContent.html,
+                    summary: material?.summary || pageContent.text.slice(0, 240),
                     url: page.url
                 };
             }).filter(Boolean);
+
+            materials.forEach(function (material) {
+                if (indexedSlugs.has(material.slug)) return;
+                const materialContent = new DOMParser().parseFromString(material.content || "", "text/html").body.textContent;
+                documentationIndex.push({
+                    title: [material.module, material.title].filter(Boolean).join(" "),
+                    text: `${material.title} ${material.module} ${material.summary} ${materialContent}`,
+                    html: material.content || "",
+                    summary: material.summary || materialContent.slice(0, 240),
+                    url: `${ROOT}material.html?slug=${encodeURIComponent(material.slug)}`
+                });
+            });
 
             if (materialsResult.status === "rejected") searchIndexError = true;
             searchIndexReady = true;
@@ -849,8 +878,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const terms = getSearchTerms(params.get("search"));
             if (!terms.length) return;
 
-            const documentation = document.querySelector("main .doc-block [contenteditable], main .doc-block")
-                || document.querySelector("main .doc-block");
+            const documentation = document.querySelector("main .doc-block [contenteditable], main .doc-block, #materialContent")
+                || document.querySelector("main .doc-block, #materialContent");
             if (!documentation) return;
 
             const match = terms.find(function (term) {
