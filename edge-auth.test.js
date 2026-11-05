@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import middleware from './middleware.js';
-import { createSession, readSessionFromToken, encodePayload, sign, isCmsAdmin, SESSION_MS, IDLE_SESSION_MS } from './src/utils/session.js';
+import { createSession, readSessionFromToken, encodePayload, sign, isCmsAdmin, safeNext, SESSION_MS, IDLE_SESSION_MS } from './src/utils/session.js';
 
 const secret = 'edge-auth-test-secret';
 
@@ -26,6 +26,45 @@ function visit(token, path = '/index.html') {
         headers: token === undefined ? {} : { Cookie: `other=value; kb_session=${token}` },
     }));
 }
+
+test('safe next destinations agree across Node and authenticated edge login', async (t) => {
+    setup(t);
+    const token = await createSession(secret, { id: 'reader', provider: 'manual', role: 'user' });
+    const rejected = [
+        '', 'https://evil.test', '//evil.test', '/\\evil.test', '/\\\\evil.test',
+        '/%5cevil.test', '/%2fevil.test', '/login', '/login?next=/index.html',
+        '/login#section', '/login.html', '/login.html?next=/index.html', '/login.html#section',
+        '/%6cogin.html', '/log%69n', '/nested/../login.html', '/%2e/login',
+        '/nested/%2e%2e/login.html', '/nested%2f..%2flogin.html', '/bad%encoding',
+    ];
+    for (const code of [...Array.from({ length: 32 }, (_, index) => index), 127]) {
+        const control = String.fromCharCode(code);
+        rejected.push(`/${control}/evil.test`, `/docs${control}`, `/docs%${code.toString(16).padStart(2, '0')}`);
+    }
+    const accepted = ['/', '/index.html', '/materials.html?module=stage#details', '/ERP%20Docs.html', '/nested/../materials.html', '/login.html/guide', '/materials.html?next=/login.html'];
+    for (const value of [...rejected, ...accepted]) {
+        const label = JSON.stringify(value);
+        const relative = rejected.includes(value) ? '/index.html' : value;
+        const absolute = rejected.includes(value) ? '/index.html' : new URL(value, 'https://example.test').toString();
+        assert.equal(safeNext(value), relative, label);
+        assert.equal(safeNext(value, 'https://example.test'), absolute, label);
+        for (const path of ['/login', '/login.html']) {
+            const response = await visit(token, `${path}?${new URLSearchParams({ next: value })}`);
+            assert.equal(response.status, 302, label);
+            assert.equal(response.headers.get('location'), absolute, label);
+            assert.equal(response.headers.get('set-cookie'), null, label);
+        }
+    }
+    for (const value of [undefined, null, 42, {}, []]) {
+        assert.equal(safeNext(value), '/index.html');
+        assert.equal(safeNext(value, 'https://example.test'), '/index.html');
+    }
+    for (const path of ['/login', '/login.html']) {
+        const response = await visit(undefined, `${path}?${new URLSearchParams({ next: '/\\evil.test' })}`);
+        assert.equal(response.status, 200);
+        assert.equal(response.headers.get('x-middleware-next'), '1');
+    }
+});
 
 async function refreshed(response) {
     assert.equal(response.status, 200);
@@ -83,6 +122,30 @@ test('non-admin remains denied after refresh', async (t) => {
     assert.equal(denied.status, 302);
     assert.equal(denied.headers.get('location'), 'https://example.test/index.html');
     assert.equal(denied.headers.get('set-cookie'), null);
+});
+
+test('database edge revalidation isolates the verified cookie and fails closed', async (t) => {
+    setup(t);
+    const originalFetch = globalThis.fetch;
+    t.after(() => { globalThis.fetch = originalFetch; });
+    const token = await createSession(secret, { id: 'database-user', provider: 'database', version: 1, role: 'admin' });
+    const manual = await createSession(secret, { id: 'owner', provider: 'manual', role: 'admin' });
+    globalThis.fetch = async (url, options) => {
+        assert.equal(new URL(url).pathname, '/api/session');
+        assert.equal(options.headers.cookie, `kb_session=${token}`);
+        assert.equal(options.cache, 'no-store');
+        assert.equal(options.redirect, 'error');
+        return Response.json({ authenticated: false }, { status: 401 });
+    };
+    const denied = await middleware(new Request('https://example.test/users.html', {
+        headers: { cookie: `kb_session=${token}; kb_session=${manual}` },
+    }));
+    assert.equal(denied.status, 302);
+    assert.equal(denied.headers.get('set-cookie'), null);
+    globalThis.fetch = async () => Response.json({ authenticated: true, role: 'user' });
+    assert.equal((await visit(token, '/users.html')).status, 302);
+    globalThis.fetch = async () => { throw new Error('offline'); };
+    assert.equal((await visit(token)).status, 302);
 });
 
 test('invalid and tampered cookies are rejected without refresh', async (t) => {

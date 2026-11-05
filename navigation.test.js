@@ -17,8 +17,8 @@ test('deployment output contains only website files and keeps function routing s
     const root = fileURLToPath(new URL('.', import.meta.url));
     const entries = await readdir(path.join(root, 'public'), { recursive: true, withFileTypes: true });
     const files = entries.filter((entry) => entry.isFile()).map((entry) => path.relative(path.join(root, 'public'), path.join(entry.parentPath, entry.name))).sort();
-    const tracked = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' }).trim().split('\n');
-    const expected = tracked.filter((file) => /^(?:[^/]+\.html|css\/style\.css|js\/(?:admin|cms|erp-editor|navbar|navigation-admin)\.js|(?:erp|proman|stage|getting-started)\/.*\.html)$/.test(file)).sort();
+    const tracked = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' }).trim().split('\n');
+    const expected = tracked.filter((file) => /^(?:[^/]+\.html|css\/style\.css|js\/(?:admin|cms|erp-editor|navbar|navigation-admin|users)\.js|(?:erp|proman|stage|getting-started)\/.*\.html)$/.test(file)).sort();
     assert.deepEqual(files, expected);
     for (const file of files) {
         assert.deepEqual(await readFile(path.join(root, 'public', file)), await readFile(path.join(root, file)));
@@ -39,7 +39,7 @@ test('build clears stale output and excludes secrets, backend files and symlinks
     const root = fileURLToPath(new URL('.', import.meta.url));
     const fixture = await mkdtemp(path.join(tmpdir(), 'kb-public-'));
     try {
-        for (const file of ['build.js', 'package.json', 'index.html', 'login.html', 'admin.html', 'materials.html', 'ERP Docs.html', 'css', 'js', 'erp', 'proman', 'stage', 'getting-started']) {
+        for (const file of ['build.js', 'package.json', 'index.html', 'login.html', 'admin.html', 'materials.html', 'material.html', 'users.html', 'ERP Docs.html', 'css', 'js', 'erp', 'proman', 'stage', 'getting-started']) {
             await cp(path.join(root, file), path.join(fixture, file), { recursive: true });
         }
         await symlink(path.join(root, 'node_modules'), path.join(fixture, 'node_modules'), 'dir');
@@ -159,8 +159,9 @@ test('editor initializes without crashes and preserves tables for readers', asyn
     dom.window.close();
 });
 
-test('sidebar handles mixed roots and refreshes while retaining dashboard and FAQ', async () => {
+test('sidebar handles mixed roots and refreshes while retaining dashboard', async (t) => {
     const dom = new JSDOM('<body data-page="admin"><div id="navbar"></div><aside id="sidebar"></aside></body>', { runScripts: 'outside-only', url: 'https://example.test/docs/test' });
+    t.after(() => dom.window.close());
     let items = [
         { id: 'wrapper', title: 'STAGE', scope: 'stage', parent_id: null },
         { id: 'module', title: 'Wrapped', scope: 'stage', parent_id: 'wrapper' },
@@ -174,14 +175,14 @@ test('sidebar handles mixed roots and refreshes while retaining dashboard and FA
     const sidebar = dom.window.document.querySelector('#sidebar');
     assert.match(sidebar.textContent, /Wrapped/);
     assert.match(sidebar.textContent, /Root module/);
-    assert.match(sidebar.textContent, /FAQ/);
+    assert.equal(sidebar.querySelector('[data-page="faq"]'), null);
     assert.ok(sidebar.querySelector('.sidebar-dashboard'));
     assert.equal(sidebar.querySelector('a[href="/erp/legacy.html"]').pathname, '/erp/legacy.html');
     items = [];
     dom.window.document.dispatchEvent(new dom.window.Event('kb:navigation-changed'));
     await new Promise((resolve) => setTimeout(resolve, 10));
     assert.doesNotMatch(sidebar.textContent, /Root module/);
-    assert.match(sidebar.textContent, /FAQ/);
+    assert.equal(sidebar.querySelector('[data-page="faq"]'), null);
     dom.window.close();
 });
 

@@ -23,13 +23,26 @@ export default async function middleware(request) {
     }
 
     const secret = process.env.AUTH_SECRET || "";
-    const session = await readSession(request, secret);
+    let session = await readSession(request, secret);
+    if (session?.provider === "database") {
+        try {
+            const verification = await fetch(new URL("/api/session", url.origin), {
+                headers: { cookie: `${COOKIE_NAME}=${getCookie(request, COOKIE_NAME)}` },
+                redirect: "error",
+                cache: "no-store"
+            });
+            const verified = verification.ok ? await verification.json() : null;
+            session = verified?.authenticated ? { ...session, r: verified.role } : null;
+        } catch {
+            session = null;
+        }
+    }
 
-    if (path === "/admin.html" && !isCmsAdmin(session)) {
+    if (["/admin.html", "/admin", "/users.html", "/users"].includes(path) && !isCmsAdmin(session)) {
         return redirectTo(new URL("/index.html", url.origin).toString());
     }
 
-    if (path === "/login.html") {
+    if (["/login.html", "/login"].includes(path)) {
         if (session) {
             return redirectTo(safeNext(url.searchParams.get("next"), url.origin));
         }
@@ -67,6 +80,7 @@ function isPublicAsset(path) {
 function isCmsAdmin(session) {
     if (!session) return false;
     if (session.r === "admin") return true;
+    if (session.provider === "database") return false;
     const admins = (process.env.CMS_ADMIN_EMAILS || "")
         .split(",")
         .map((email) => email.trim().toLowerCase())
@@ -106,6 +120,7 @@ async function refreshSession(secret, session) {
     const payload = encodePayload({
         sub: session.sub,
         provider: session.provider,
+        v: session.v,
         e: session.e || session.u || "",
         n: session.n || "",
         r: session.r === "admin" ? "admin" : "user",
@@ -186,9 +201,18 @@ function safeNext(value, origin) {
     if (!value.startsWith("/")) return fallback;
     if (value.startsWith("//")) return fallback;
     if (value.includes("://")) return fallback;
-    if (value === "/login.html" || value.startsWith("/login.html?")) return fallback;
-    if (origin) return new URL(value, origin).toString();
-    return value;
+    try {
+        const decoded = decodeURIComponent(value);
+        if (/[\\\u0000-\u001f\u007f]/.test(value) || /[\\\u0000-\u001f\u007f]/.test(decoded)) return fallback;
+        const base = new URL(origin || "https://localhost");
+        const target = new URL(value, base);
+        const normalized = new URL(decoded, base);
+        if (target.origin !== base.origin || normalized.origin !== base.origin) return fallback;
+        if (["/login", "/login.html"].includes(normalized.pathname)) return fallback;
+        return origin ? target.toString() : value;
+    } catch {
+        return fallback;
+    }
 }
 
 function cookieValue(token, maxAge, secure) {

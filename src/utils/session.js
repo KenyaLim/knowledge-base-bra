@@ -1,4 +1,5 @@
 import { createHmac, randomUUID } from "node:crypto";
+import { validateDatabaseSession } from "../models/userModel.js";
 
 export const COOKIE_NAME = "kb_session";
 export const SESSION_MS = 1000 * 60 * 60 * 12;
@@ -42,6 +43,7 @@ export async function createSession(secret, user) {
   const payload = encodePayload({
     sub: user.id,
     provider: user.provider,
+    v: user.version,
     e: user.email,
     n: user.name,
     r: user.role === "admin" ? "admin" : "user",
@@ -64,7 +66,7 @@ export async function readSessionFromToken(token, secret) {
     const lastActivity = typeof data.a === "number" ? data.a : data.exp - SESSION_MS;
     if (Date.now() - lastActivity >= IDLE_SESSION_MS) return null;
     data.a = lastActivity;
-    return data;
+    return await validateDatabaseSession(data);
   } catch {
     return null;
   }
@@ -74,6 +76,7 @@ export async function refreshSession(secret, session) {
   const payload = encodePayload({
     sub: session.sub,
     provider: session.provider,
+    v: session.v,
     e: session.e || session.u || "",
     n: session.n || "",
     r: session.r === "admin" ? "admin" : "user",
@@ -145,6 +148,7 @@ export async function authenticateWithSupabase(url, anonKey, email, password) {
 export function isCmsAdmin(session) {
   if (!session) return false;
   if (session.r === "admin") return true;
+  if (session.provider === "database") return false;
   const admins = (process.env.CMS_ADMIN_EMAILS || "")
     .split(",")
     .map((email) => email.trim().toLowerCase())
@@ -158,9 +162,18 @@ export function safeNext(value, origin) {
   if (!value.startsWith("/")) return fallback;
   if (value.startsWith("//")) return fallback;
   if (value.includes("://")) return fallback;
-  if (value === "/login.html" || value.startsWith("/login.html?")) return fallback;
-  if (origin) return new URL(value, origin).toString();
-  return value;
+  try {
+    const decoded = decodeURIComponent(value);
+    if (/[\\\u0000-\u001f\u007f]/.test(value) || /[\\\u0000-\u001f\u007f]/.test(decoded)) return fallback;
+    const base = new URL(origin || "https://localhost");
+    const target = new URL(value, base);
+    const normalized = new URL(decoded, base);
+    if (target.origin !== base.origin || normalized.origin !== base.origin) return fallback;
+    if (["/login", "/login.html"].includes(normalized.pathname)) return fallback;
+    return origin ? target.toString() : value;
+  } catch {
+    return fallback;
+  }
 }
 
 export function loginUrl(origin, error, nextPath) {

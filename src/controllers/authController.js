@@ -7,10 +7,17 @@ import {
   createSession,
   isCmsAdmin,
   loginUrl,
+  parseManualUsers,
   readSessionFromToken,
   refreshSession,
   safeNext,
 } from "../utils/session.js";
+
+import { authenticateDatabaseUser } from "../models/userModel.js";
+import { supabaseRequest } from "../config/supabase.js";
+import { sign } from "../utils/session.js";
+
+const fallbackAttempts = new Map();
 
 function originOf(req) {
   return `${req.protocol}://${req.get("host")}`;
@@ -24,8 +31,21 @@ export async function login(req, res) {
   const identity = String(req.body?.identity || req.body?.email || "").trim();
   const password = String(req.body?.password || "");
   const nextPath = safeNext(String(req.body?.next || "/index.html"));
+  const reserved = parseManualUsers(process.env.MANUAL_USERS || "").some((entry) => entry.username.toLowerCase() === identity.toLowerCase());
+  const key = sign(secret, `login:${identity.toLowerCase()}`);
+  const limit = await supabaseRequest("POST", "/rest/v1/rpc/kb_action_limit", { p_key: key, p_limit: 10, p_seconds: 900 });
+  if (limit.ok && limit.data !== true) return res.status(429).json({ error: "Terlalu banyak percobaan login" });
+  if (!limit.ok) {
+    if (!reserved && !(supabaseUrl && supabaseAnonKey)) return res.status(503).json({ error: "Layanan login belum tersedia" });
+    const previous = fallbackAttempts.get(key);
+    const entry = previous && previous.expires > Date.now() ? previous : { count: 0, expires: Date.now() + 900000 };
+    entry.count += 1;
+    fallbackAttempts.set(key, entry);
+    if (entry.count > 10) return res.sendStatus(429);
+  }
   let user = await authenticateWithManualUser(secret, identity, password);
-  if (!user && supabaseUrl && supabaseAnonKey) {
+  if (!user && !reserved && limit.ok) user = await authenticateDatabaseUser(identity, password);
+  if (!user && !reserved && supabaseUrl && supabaseAnonKey) {
     user = await authenticateWithSupabase(supabaseUrl, supabaseAnonKey, identity, password);
   }
   if (!user) return res.redirect(loginUrl(originOf(req), "invalid", nextPath));

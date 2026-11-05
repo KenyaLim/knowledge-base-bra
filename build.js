@@ -8,7 +8,7 @@ const output = path.join(root, 'public');
 const files = [
     'index.html', 'login.html', 'admin.html', 'materials.html', 'material.html', 'ERP Docs.html',
     'css/style.css', 'js/admin.js', 'js/cms.js', 'js/erp-editor.js',
-    'js/navbar.js', 'js/navigation-admin.js',
+    'js/navbar.js', 'js/navigation-admin.js', 'users.html', 'js/users.js',
 ];
 
 async function collectPages(directory) {

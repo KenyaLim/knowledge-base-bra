@@ -8,7 +8,7 @@
   "scripts": {
     "build": "node build.js",
     "pretest": "npm run build",
-    "test": "node --test navigation.test.js auth.test.js edge-auth.test.js",
+    "test": "node --test navigation.test.js auth.test.js edge-auth.test.js users.test.js",
     "prestart": "npm run build",
     "start": "node server.js",
     "predev": "npm run build",
@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/KenyaLim/knowledge-base-bra#readme",
   "dependencies": {
+    "argon2": "^0.45.2",
     "cookie-parser": "^1.4.7",
     "dotenv": "^18.0.8",
     "express": "^5.3.0",

@@ -46,6 +46,8 @@ async function harness(t) {
     globalThis.fetch = async (input, options = {}) => {
         const url = new URL(input);
         assert.equal(url.origin, upstream, 'only fixture Supabase requests are allowed');
+        if (url.pathname === '/rest/v1/rpc/kb_action_limit') return json(true);
+        if (url.pathname === '/rest/v1/kb_users') return json([]);
         calls.push({ url, ...options });
         return handler(url, options);
     };
@@ -63,7 +65,7 @@ async function harness(t) {
     await new Promise((resolve, reject) => { server.once('listening', resolve); server.once('error', reject); });
     const send = (method, path, body, cookie, headers = {}) => new Promise((resolve, reject) => {
         const data = body === undefined ? undefined : typeof body === 'string' ? body : JSON.stringify(body);
-        const req = request({ hostname: '127.0.0.1', port: server.address().port, method, path, headers: { ...(data === undefined ? {} : { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) }), ...(cookie ? { Cookie: cookie } : {}), ...headers } }, (res) => {
+        const req = request({ hostname: '127.0.0.1', port: server.address().port, method, path, headers: { Origin: `http://127.0.0.1:${server.address().port}`, ...(data === undefined ? {} : { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) }), ...(cookie ? { Cookie: cookie } : {}), ...headers } }, (res) => {
             let text = '';
             res.setEncoding('utf8');
             res.on('data', (chunk) => { text += chunk; });
