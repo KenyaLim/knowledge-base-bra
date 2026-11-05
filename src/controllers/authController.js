@@ -29,11 +29,7 @@ export async function login(req, res) {
     user = await authenticateWithSupabase(supabaseUrl, supabaseAnonKey, identity, password);
   }
   if (!user) return res.redirect(loginUrl(originOf(req), "invalid", nextPath));
-  const token = await createSession(secret, {
-    email: user.email || identity,
-    name: user.name || user.user_metadata?.full_name || user.user_metadata?.name || "",
-    role: user.role || "user",
-  });
+  const token = await createSession(secret, user);
   res.cookie(COOKIE_NAME, token, cookieOptions(Math.floor(SESSION_MS / 1000), req.secure || req.headers["x-forwarded-proto"] === "https"));
   return res.redirect(new URL(nextPath, originOf(req)).toString());
 }

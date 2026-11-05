@@ -40,6 +40,8 @@ export function newId() {
 
 export async function createSession(secret, user) {
   const payload = encodePayload({
+    sub: user.id,
+    provider: user.provider,
     e: user.email,
     n: user.name,
     r: user.role === "admin" ? "admin" : "user",
@@ -70,6 +72,8 @@ export async function readSessionFromToken(token, secret) {
 
 export async function refreshSession(secret, session) {
   const payload = encodePayload({
+    sub: session.sub,
+    provider: session.provider,
     e: session.e || session.u || "",
     n: session.n || "",
     r: session.r === "admin" ? "admin" : "user",
@@ -114,7 +118,7 @@ export async function authenticateWithManualUser(secret, identity, password) {
     (candidate) => candidate.username.toLowerCase() === identity.toLowerCase()
   );
   if (!user || !(await secretsEqual(secret, password, user.password))) return false;
-  return { email: user.username, name: user.name, role: user.role };
+  return { id: user.username, provider: "manual", email: user.username, name: user.name, role: user.role };
 }
 
 export async function authenticateWithSupabase(url, anonKey, email, password) {
@@ -126,7 +130,13 @@ export async function authenticateWithSupabase(url, anonKey, email, password) {
       body: JSON.stringify({ email, password }),
     });
     if (!response.ok) return false;
-    return await response.json();
+    const data = await response.json();
+    const user = data?.user;
+    if (!user || typeof user.id !== "string" || !user.id.trim() ||
+        typeof user.email !== "string" || !user.email.trim()) return false;
+    const metadata = user.user_metadata;
+    const name = [metadata?.full_name, metadata?.name].find((value) => typeof value === "string" && value.trim()) || "";
+    return { id: user.id, provider: "supabase", email: user.email, name, role: "user" };
   } catch {
     return false;
   }

@@ -104,6 +104,8 @@ async function readSession(request, secret) {
 
 async function refreshSession(secret, session) {
     const payload = encodePayload({
+        sub: session.sub,
+        provider: session.provider,
         e: session.e || session.u || "",
         n: session.n || "",
         r: session.r === "admin" ? "admin" : "user",
@@ -148,7 +150,9 @@ function bufferToHex(buffer) {
 }
 
 function encodePayload(data) {
-    return btoa(JSON.stringify(data))
+    const bytes = new TextEncoder().encode(JSON.stringify(data));
+    const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
+    return btoa(binary)
         .replace(/\+/g, "-")
         .replace(/\//g, "_")
         .replace(/=+$/g, "");
@@ -157,7 +161,9 @@ function encodePayload(data) {
 function decodePayload(value) {
     const padded = value.replace(/-/g, "+").replace(/_/g, "/");
     const padLength = (4 - (padded.length % 4)) % 4;
-    return JSON.parse(atob(padded + "=".repeat(padLength)));
+    const binary = atob(padded + "=".repeat(padLength));
+    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
 }
 
 function getCookie(request, name) {
