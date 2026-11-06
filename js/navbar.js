@@ -99,6 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div class="navbar-right">
                     <a href="${ROOT}admin.html" class="navbar-link" id="navbar-admin-link" hidden>Admin</a>
                     <a href="${ROOT}users.html" class="navbar-link" id="navbar-users-link" hidden>Manajemen Pengguna</a>
+                    <a href="${ROOT}faq-admin.html" class="navbar-link" id="navbar-faq-link" hidden>Kelola FAQ</a>
                     <div class="navbar-user" aria-live="polite">
                         <i class="ph ph-user-circle"></i>
                         <span id="navbar-user-name">Loading...</span>
@@ -344,6 +345,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (adminLink && session.isAdmin) adminLink.hidden = false;
                 const usersLink = document.getElementById("navbar-users-link");
                 if (usersLink && session.isAdmin) usersLink.hidden = false;
+                const faqLink = document.getElementById("navbar-faq-link");
+                if (faqLink && session.isAdmin) faqLink.hidden = false;
                 if (welcomeElement) welcomeElement.textContent = `Welcome, ${email}`;
             })
             .catch(function () {

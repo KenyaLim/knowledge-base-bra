@@ -38,7 +38,7 @@ export default async function middleware(request) {
         }
     }
 
-    if (["/admin.html", "/admin", "/users.html", "/users"].includes(path) && !isCmsAdmin(session)) {
+    if (["/admin.html", "/admin", "/users.html", "/users", "/faq-admin.html", "/faq-admin"].includes(path) && !isCmsAdmin(session)) {
         return redirectTo(new URL("/index.html", url.origin).toString());
     }
 

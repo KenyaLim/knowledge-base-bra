@@ -9,6 +9,7 @@ const files = [
     'index.html', 'login.html', 'admin.html', 'materials.html', 'material.html', 'ERP Docs.html',
     'css/style.css', 'js/admin.js', 'js/cms.js', 'js/erp-editor.js',
     'js/navbar.js', 'js/navigation-admin.js', 'users.html', 'js/users.js',
+    'faq-admin.html', 'js/faq.js', 'css/faq.css',
 ];
 
 async function collectPages(directory) {
@@ -36,7 +37,12 @@ await build({
     outfile: 'generated/sanitize-html.cjs',
 });
 for (const file of files) {
-    if (!(await lstat(path.join(root, file))).isFile()) throw new Error(`Invalid public file: ${file}`);
+    try {
+        if (!(await lstat(path.join(root, file))).isFile()) throw new Error(`Invalid public file: ${file}`);
+    } catch (error) {
+        if (error.code === 'ENOENT' && ['faq-admin.html', 'js/faq.js', 'css/faq.css'].includes(file)) continue;
+        throw error;
+    }
     const destination = path.join(output, file);
     await mkdir(path.dirname(destination), { recursive: true });
     await copyFile(path.join(root, file), destination);

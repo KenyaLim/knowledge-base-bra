@@ -7,6 +7,7 @@ import authRoutes from "./src/routes/auth.js";
 import userRoutes from "./src/routes/users.js";
 import { csrf, csrfToken } from "./src/middlewares/csrf.js";
 import cmsRoutes from "./src/routes/cms.js";
+import faqRoutes from "./src/routes/faq.js";
 import { getDynamicPage } from "./src/controllers/cmsController.js";
 import { requireSession } from "./src/middlewares/auth.js";
 import { COOKIE_NAME, SESSION_MS, cookieOptions, isCmsAdmin, readSessionFromToken, refreshSession, safeNext } from "./src/utils/session.js";
@@ -26,6 +27,7 @@ export function createApp() {
   app.use("/api/users", userRoutes);
   app.use("/api", authRoutes);
   app.use("/api/cms", cmsRoutes);
+  app.use("/api", faqRoutes);
   app.get("/docs/:page", requireSession, getDynamicPage);
 
   app.use("/css", express.static(path.join(ROOT, "css")));
@@ -43,7 +45,7 @@ export function createApp() {
     const token = req.cookies?.[COOKIE_NAME];
     const session = await readSessionFromToken(token, secret);
     const isLogin = ["/login.html", "/login"].includes(req.path);
-    const isAdminPage = ["/admin.html", "/admin", "/users.html", "/users"].includes(req.path);
+    const isAdminPage = ["/admin.html", "/admin", "/users.html", "/users", "/faq-admin.html", "/faq-admin"].includes(req.path);
 
     if (isLogin) {
       if (session) return res.redirect(safeNext(req.query.next, `${req.protocol}://${req.get("host")}`));

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen FAQ | Knowledge Base</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/faq.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body data-page="faq">
+    <div id="navbar"></div>
+    <div class="app-layout">
+        <aside id="sidebar"></aside>
+        <main class="main-content" id="faq-app" data-admin="true">
+            <section class="page-header"><p class="eyebrow">KNOWLEDGE BASE</p><h1>Manajemen FAQ</h1><a href="getting-started/faq.html">Lihat FAQ</a></section>
+            <div class="faq-controls">
+                <label for="faq-search">Cari pertanyaan</label><input id="faq-search" type="search" placeholder="Cari pertanyaan..." maxlength="300">
+                <label for="faq-category">Kategori</label><select id="faq-category"><option>Semua</option><option>STAGE</option><option>PROMAN</option><option>Umum</option></select>
+                <button id="faq-add" type="button" disabled><i class="ph ph-plus" aria-hidden="true"></i> Tambah FAQ</button>
+            </div>
+            <p id="faq-status" role="status" aria-live="polite">Memuat FAQ...</p>
+            <button id="faq-retry" type="button" hidden>Coba lagi</button>
+            <form id="faq-form" hidden>
+                <h2 id="faq-form-title">Tambah FAQ</h2>
+                <label for="faq-question">Pertanyaan</label><input id="faq-question" maxlength="300" required>
+                <label for="faq-edit-category">Kategori</label><select id="faq-edit-category"><option>Umum</option><option>STAGE</option><option>PROMAN</option></select>
+                <label><input id="faq-published" type="checkbox"> Terbitkan</label>
+                <div class="erp-editor-toolbar" role="toolbar" aria-label="Format jawaban">
+                    <button type="button" data-command="formatBlock" data-value="p">Paragraf</button>
+                    <button type="button" data-command="bold">Tebal</button>
+                    <button type="button" data-command="italic">Miring</button>
+                    <button type="button" data-command="insertUnorderedList">Daftar poin</button>
+                    <button type="button" data-command="insertOrderedList">Daftar nomor</button>
+                    <button type="button" id="faq-link">Tautan</button>
+                    <label for="faq-image">Upload gambar</label><input type="file" id="faq-image" accept="image/png,image/jpeg,image/webp,image/gif">
+                </div>
+                <label id="faq-answer-label">Jawaban</label>
+                <div id="faq-answer" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="faq-answer-label"></div>
+                <button type="submit">Simpan</button><button type="button" id="faq-cancel">Batal</button>
+            </form>
+            <section id="faq-list" aria-label="Daftar FAQ"></section>
+        </main>
+    </div>
+    <script src="js/navbar.js"></script><script src="js/faq.js"></script>
+</body>
+</html>

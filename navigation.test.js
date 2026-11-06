@@ -18,7 +18,7 @@ test('deployment output contains only website files and keeps function routing s
     const entries = await readdir(path.join(root, 'public'), { recursive: true, withFileTypes: true });
     const files = entries.filter((entry) => entry.isFile()).map((entry) => path.relative(path.join(root, 'public'), path.join(entry.parentPath, entry.name))).sort();
     const tracked = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' }).trim().split('\n');
-    const expected = tracked.filter((file) => /^(?:[^/]+\.html|css\/style\.css|js\/(?:admin|cms|erp-editor|navbar|navigation-admin|users)\.js|(?:erp|proman|stage|getting-started)\/.*\.html)$/.test(file)).sort();
+    const expected = tracked.filter((file) => /^(?:[^/]+\.html|css\/(?:style|faq)\.css|js\/(?:admin|cms|erp-editor|faq|navbar|navigation-admin|users)\.js|(?:erp|proman|stage|getting-started)\/.*\.html)$/.test(file)).sort();
     assert.deepEqual(files, expected);
     for (const file of files) {
         assert.deepEqual(await readFile(path.join(root, 'public', file)), await readFile(path.join(root, file)));
