@@ -217,7 +217,7 @@ test('dashboard placement, server category filtering, maximum five and lazy cach
     const document = dom.window.document;
     assert.equal(document.querySelector('.search-box').nextElementSibling.id, 'searchStatus');
     assert.equal(document.getElementById('searchStatus').nextElementSibling.id, 'searchResults');
-    assert.equal(document.getElementById('searchResults').nextElementSibling.id, 'faq-app');
+    assert.equal(document.getElementById('faq-app').parentElement.classList.contains('hero'), false);
     assert.equal(document.querySelector('#faq-app #searchInput, #faq-app #searchResults'), null);
     assert.equal(document.querySelectorAll('.faq-item').length, 5);
     assert.equal(calls.length, 1);
