@@ -31,8 +31,21 @@ test('FAQ SQL and HTTP lifecycle, authorization, CSRF, validation and sanitizati
             } else if (url.pathname.endsWith('/cms_mutate_faq')) {
                 const body = JSON.parse(options.body);
                 data = (await db.query('SELECT cms_mutate_faq($1,$2,$3) AS result', [body.p_action, body.p_id, body.p_data])).rows[0].result;
+            } else if (url.pathname.endsWith('/cms_faq_tags')) {
+                const body = JSON.parse(options.body);
+                data = (await db.query('SELECT * FROM cms_faq_tags($1,$2)', [body.p_search, body.p_admin])).rows;
             } else if (url.pathname.endsWith('/cms_faqs')) {
-                data = (await db.query(`SELECT * FROM cms_faqs ${url.searchParams.has('published') ? 'WHERE published' : ''} ORDER BY sort_order, created_at, id`)).rows;
+                const q = url.searchParams;
+                const where = [];
+                const values = [];
+                for (const field of ['published', 'category', 'featured', 'id']) {
+                    if (q.has(field)) { values.push(q.get(field).slice(3)); where.push(`${field}=$${values.length}`); }
+                }
+                if (q.has('tags')) { values.push(JSON.parse(q.get('tags').slice(3).replace(/^\{/, '[').replace(/\}$/, ']'))); where.push(`tags @> $${values.length}::text[]`); }
+                if (q.has('question')) { assert.ok(q.get('question').startsWith('imatch.')); values.push(q.get('question').slice(7)); where.push(`question ~* $${values.length}`); }
+                values.push(Number(q.get('limit') || 20), Number(q.get('offset') || 0));
+                data = (await db.query(`SELECT * FROM cms_faqs ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY sort_order, created_at, id LIMIT $${values.length - 1} OFFSET $${values.length}`, values)).rows;
+                if (q.get('select') !== '*') data = data.map((row) => Object.fromEntries(q.get('select').split(',').map((key) => [key, row[key]])));
             }
             return Response.json(data);
         } catch (error) { return Response.json({ message: error.message }, { status: 400 }); }
@@ -90,8 +103,59 @@ test('FAQ SQL and HTTP lifecycle, authorization, CSRF, validation and sanitizati
     await db.query("UPDATE cms_faqs SET question='Seed edited' WHERE sort_order=0");
     await db.exec(migration);
     assert.equal((await db.query('SELECT question FROM cms_faqs WHERE sort_order=0')).rows[0].question, 'Seed edited');
+    await t.test('filtered bounded previews, tags, detail security and old payload preservation', async () => {
+        const tagged = await (await send(api, 'POST', { ...payload, question: 'Tagged featured', tags: ['orders', 'orders', 'quoted,"tag'], featured: true, published: true })).json();
+        assert.deepEqual(tagged.tags, ['orders', 'quoted,"tag']);
+        await send(`${api}/${tagged.id}`, 'PUT', { ...edited, question: 'Tagged featured' });
+        assert.equal((await db.query('SELECT featured FROM cms_faqs WHERE id=$1', [tagged.id])).rows[0].featured, true);
+        const query = '/api/faq?featured=true&category=PROMAN&tag=orders&search=Tagged&limit=5';
+        const previews = await (await send(query)).json();
+        assert.equal(previews.length, 1);
+        assert.equal(previews[0].id, tagged.id);
+        assert.equal('answer' in previews[0], false);
+        assert.equal((await (await send(query + '&offset=1')).json()).length, 0);
+        assert.equal((await (await send('/api/faq?limit=1&page=2')).json()).length, 1);
+        assert.equal((await (await send('/api/faq/tags?search=ord')).json())[0], 'orders');
+        assert.equal((await (await send('/api/faq?tag=' + encodeURIComponent('quoted,"tag'))).json()).length, 1);
+        for (const invalid of ['limit=51', 'limit=0', 'offset=-1', 'page=0', 'featured=yes', 'category=bad', 'search[x]=bad']) assert.equal((await send('/api/faq?' + invalid)).status, 400);
+        for (const invalid of [{ tags: 'bad' }, { tags: [''] }, { tags: ['x'.repeat(41)] }, { featured: 'true' }]) assert.equal((await send(api, 'POST', { ...payload, ...invalid })).status, 400);
+        for (const literal of ['*', '%', '_', '\\', '.*', '(x)|', '&published=eq.false', '",or=(published.eq.false)']) {
+            const question = `Literal ${literal} match`;
+            await send(`${api}/${tagged.id}`, 'PUT', { ...edited, question });
+            const matches = await (await send('/api/faq?search=' + encodeURIComponent(literal))).json();
+            assert.deepEqual(matches.map((row) => row.id), [tagged.id]);
+        }
+        assert.equal((await send('/api/faq/' + tagged.id)).status, 200);
+        await send(`${api}/${tagged.id}`, 'PUT', { ...edited, published: false });
+        assert.equal((await send('/api/faq/' + tagged.id)).status, 404);
+        assert.equal((await send(`${api}/${tagged.id}`)).status, 200);
+        assert.equal((await (await send('/api/faq/tags')).json()).includes('orders'), false);
+        assert.equal((await (await send(api + '/tags')).json()).includes('orders'), true);
+        await send('/api/login', 'POST', { identity: 'reader', password: 'reader-password' });
+        assert.equal((await send(`${api}/${tagged.id}`)).status, 403);
+        assert.equal((await send('/api/faq/' + tagged.id)).status, 404);
+        cookie = '';
+        assert.equal((await send('/api/faq/' + tagged.id)).status, 401);
+        await send('/api/login', 'POST', { identity: 'owner', password: 'original-password' });
+    });
     globalThis.fetch = async (input, options) => new URL(input).hostname === 'database.invalid' ? Response.json({}, { status: 503 }) : realFetch(input, options);
     assert.equal((await send('/api/faq')).status, 503);
+});
+
+test('FAQ additive migration preserves preexisting rows and old RPC fields', async () => {
+    const db = new PGlite();
+    try {
+        await db.exec('CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role;');
+        await db.exec(migration.slice(0, migration.indexOf('ALTER TABLE')));
+        await db.exec("INSERT INTO cms_faqs(question,answer,category) VALUES ('Legacy','<p>Legacy answer</p>','Umum')");
+        await db.exec(migration);
+        await db.exec(migration);
+        const row = (await db.query("SELECT * FROM cms_faqs WHERE question='Legacy'")).rows[0];
+        assert.deepEqual(row.tags, []);
+        assert.equal(row.featured, false);
+        assert.equal(row.answer, '<p>Legacy answer</p>');
+        assert.equal((await db.query("SELECT indexname FROM pg_indexes WHERE tablename='cms_faqs'")).rows.length, 3);
+    } finally { await db.close(); }
 });
 
 async function browser(admin, handler) {
@@ -102,6 +166,62 @@ async function browser(admin, handler) {
     await new Promise((resolve) => setTimeout(resolve, 20));
     return dom;
 }
+test('dashboard placement, server category filtering, maximum five and lazy cached accordion', async () => {
+    const dom = new JSDOM(await readFile(new URL('./index.html', import.meta.url), 'utf8'), { url: 'http://localhost/', runScripts: 'outside-only' });
+    const calls = [];
+    dom.window.fetch = async (url) => {
+        calls.push(url);
+        if (!url.includes('?')) return Response.json({ answer: '<p>Detail</p><img src="https://example.com/a.webp">' });
+        const query = new URL(url, 'http://localhost').searchParams;
+        assert.equal(query.get('limit'), '5');
+        assert.equal(query.get('featured'), 'true');
+        return Response.json(Array.from({ length: 5 }, (_, i) => ({ id: String(i), question: 'Question ' + i, category: query.get('category') === 'Semua' ? 'Umum' : query.get('category'), tags: ['orders'] })));
+    };
+    dom.window.eval(await readFile(new URL('./js/faq.js', import.meta.url), 'utf8'));
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 30));
+    await settle();
+    const document = dom.window.document;
+    assert.equal(document.querySelector('.search-box').nextElementSibling.id, 'faq-app');
+    assert.equal(document.querySelectorAll('.faq-item').length, 5);
+    assert.equal(calls.length, 1);
+    const toggle = document.querySelector('.faq-question');
+    toggle.click(); await settle(); toggle.click(); toggle.click(); await settle();
+    assert.equal(calls.length, 2);
+    assert.equal(document.querySelector('.faq-answer img').loading, 'lazy');
+    assert.equal(document.querySelector('.faq-tags').textContent, 'orders');
+    document.querySelector('[data-category="STAGE"]').click(); await settle();
+    assert.match(calls.at(-1), /category=STAGE/);
+    assert.equal(document.querySelector('.faq-all').getAttribute('href'), 'getting-started/faq.html');
+    dom.window.close();
+});
+
+test('full FAQ loads additional previews and admin edit loads detail with tags and featured', async () => {
+    const calls = [];
+    const handler = async (url, options) => {
+        calls.push({ url, ...options });
+        if (!url.includes('?')) return Response.json({ id: 'one', question: 'Question', answer: '<p>Saved</p>', category: 'Umum', tags: ['reuse', 'quoted,"tag'], featured: true });
+        const offset = Number(new URL(url, 'http://localhost').searchParams.get('offset'));
+        return Response.json(Array.from({ length: offset ? 1 : 20 }, (_, i) => ({ id: i ? String(i + offset) : 'one', question: 'Question', category: 'Umum', tags: ['reuse'], featured: true })));
+    };
+    const dom = await browser(false, handler);
+    dom.window.document.getElementById('faq-more').click();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    assert.equal(dom.window.document.querySelectorAll('.faq-item').length, 21);
+    assert.equal(dom.window.document.getElementById('faq-more').hidden, true);
+    assert.match(calls.at(-1).url, /offset=20/);
+    dom.window.close();
+    const admin = await browser(true, handler);
+    [...admin.window.document.querySelectorAll('.faq-actions button')].find((node) => node.textContent === 'Edit').click();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    assert.equal(admin.window.document.getElementById('faq-tags').value, 'reuse, quoted,"tag');
+    assert.equal(admin.window.document.getElementById('faq-featured').checked, true);
+    assert.equal(admin.window.document.getElementById('faq-answer').innerHTML, '<p>Saved</p>');
+    admin.window.document.getElementById('faq-form').dispatchEvent(new admin.window.Event('submit', { cancelable: true }));
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    assert.deepEqual(JSON.parse(calls.find((call) => call.method === 'PUT').body).tags, ['reuse', 'quoted,"tag']);
+    admin.window.close();
+});
+
 const rows = [{ id: 'one', question: 'Stage question', answer: '<p>Answer</p>', category: 'STAGE', published: true }, { id: 'two', question: 'Proman question', answer: '<p>Other</p>', category: 'PROMAN', published: false }];
 test('FAQ accessible accordion, search, categories and empty state', async () => {
     const dom = await browser(false, async () => Response.json(rows));
@@ -147,7 +267,7 @@ test('FAQ error retry and admin add/edit/publish/reorder/delete actions', async 
     assert.equal(JSON.parse(calls.filter((call) => call.method === 'PUT').at(-1).body).published, false);
     const down = [...document.querySelectorAll('.faq-actions button')].find((button) => button.textContent === 'Turun');
     assert.ok(down);
-    down.disabled = false;
+    assert.equal(down.disabled, false);
     down.click(); await settle();
     assert.ok(calls.some((call) => call.method === 'PATCH' && JSON.parse(call.body).direction === 'down'));
     dom.window.confirm = () => false; action('Hapus').click(); await settle();

@@ -23,10 +23,12 @@
                 <input id="faq-search" type="search" placeholder="Cari pertanyaan..." maxlength="300">
                 <label for="faq-category">Kategori</label>
                 <select id="faq-category"><option>Semua</option><option>STAGE</option><option>PROMAN</option><option>Umum</option></select>
+                <label for="faq-tag">Tag</label><input id="faq-tag" list="faq-tag-options" maxlength="40"><datalist id="faq-tag-options"></datalist>
             </div>
             <p id="faq-status" role="status" aria-live="polite">Memuat FAQ...</p>
             <button id="faq-retry" type="button" hidden>Coba lagi</button>
             <section id="faq-list" aria-label="Pertanyaan dan jawaban"></section>
+            <button id="faq-more" type="button" hidden>Muat lebih banyak</button>
         </main>
     </div>
     <script src="../js/navbar.js"></script>

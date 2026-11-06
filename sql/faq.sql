@@ -8,6 +8,10 @@ CREATE TABLE IF NOT EXISTS public.cms_faqs (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.cms_faqs ADD COLUMN IF NOT EXISTS tags text[] NOT NULL DEFAULT '{}';
+ALTER TABLE public.cms_faqs ADD COLUMN IF NOT EXISTS featured boolean NOT NULL DEFAULT false;
+CREATE INDEX IF NOT EXISTS cms_faqs_public_order ON public.cms_faqs (category, featured, sort_order, created_at, id) WHERE published;
+CREATE INDEX IF NOT EXISTS cms_faqs_tags ON public.cms_faqs USING gin(tags);
 ALTER TABLE public.cms_faqs ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.cms_faqs FROM PUBLIC, anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.cms_faqs TO service_role;
@@ -21,15 +25,18 @@ DECLARE
 BEGIN
   LOCK TABLE public.cms_faqs IN EXCLUSIVE MODE;
   IF p_action = 'create' THEN
-    INSERT INTO public.cms_faqs(question, answer, category, published, sort_order)
+    INSERT INTO public.cms_faqs(question, answer, category, published, tags, featured, sort_order)
     VALUES (p_data->>'question', p_data->>'answer', p_data->>'category', (p_data->>'published')::boolean,
+      ARRAY(SELECT jsonb_array_elements_text(coalesce(p_data->'tags', '[]'::jsonb))), coalesce((p_data->>'featured')::boolean, false),
       (SELECT coalesce(max(sort_order), -1) + 1 FROM public.cms_faqs)) RETURNING * INTO item;
   ELSE
     SELECT * INTO item FROM public.cms_faqs WHERE id = p_id;
     IF NOT FOUND THEN RETURN NULL; END IF;
     IF p_action = 'update' THEN
       UPDATE public.cms_faqs SET question = p_data->>'question', answer = p_data->>'answer',
-        category = p_data->>'category', published = (p_data->>'published')::boolean, updated_at = now()
+        category = p_data->>'category', published = (p_data->>'published')::boolean,
+        tags = CASE WHEN p_data ? 'tags' THEN ARRAY(SELECT jsonb_array_elements_text(p_data->'tags')) ELSE item.tags END,
+        featured = CASE WHEN p_data ? 'featured' THEN (p_data->>'featured')::boolean ELSE item.featured END, updated_at = now()
       WHERE id = p_id RETURNING * INTO item;
     ELSIF p_action = 'delete' THEN
       DELETE FROM public.cms_faqs WHERE id = p_id;
@@ -55,6 +62,13 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.cms_mutate_faq(text, uuid, jsonb) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.cms_mutate_faq(text, uuid, jsonb) TO service_role;
+CREATE OR REPLACE FUNCTION public.cms_faq_tags(p_search text, p_admin boolean DEFAULT false)
+RETURNS TABLE(tag text) LANGUAGE sql STABLE SET search_path = public AS $$
+  SELECT DISTINCT t.tag FROM cms_faqs f CROSS JOIN LATERAL unnest(f.tags) t(tag)
+  WHERE (p_admin OR f.published) AND starts_with(lower(t.tag), lower(p_search)) ORDER BY t.tag LIMIT 20;
+$$;
+REVOKE ALL ON FUNCTION public.cms_faq_tags(text, boolean) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.cms_faq_tags(text, boolean) TO service_role;
 INSERT INTO public.cms_faqs(id, question, answer, category, published, sort_order) VALUES
 ('f0000000-0000-4000-8000-000000000001', 'What is the ERP system?', '<p>Input your answer here.</p>', 'Umum', true, 0),
 ('f0000000-0000-4000-8000-000000000002', 'How do I log in?', '<p>Input your answer here.</p>', 'Umum', true, 1),

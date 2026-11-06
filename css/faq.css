@@ -15,4 +15,13 @@
 #faq-form { display: grid; gap: 12px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 24px; }
 #faq-answer { min-height: 180px; padding: 16px; border: 1px solid #aaa; border-radius: 6px; overflow-wrap: anywhere; }
 #faq-app h2 { font-size: 18px; margin: 0; }
+#faq-app[data-dashboard] { margin-top: 24px; text-align: left; }
+#faq-app .faq-question { display: flex; justify-content: space-between; align-items: center; gap: 16px; width: 100%; text-align: left; padding: 16px; }
+#faq-app .faq-item { border: 1px solid #ddd; margin: 12px 0; }
+#faq-app .faq-answer { padding: 16px; }
+.faq-tags { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px; }
+.faq-tags span { background: #eef2ff; color: #334155; border-radius: 12px; padding: 2px 8px; font-size: 12px; }
+#faq-app [aria-pressed="true"] { background: #2563eb; color: white; }
+#faq-app .open .ph-caret-down { transform: rotate(180deg); }
+.faq-all { display: block; margin-top: 16px; }
 @media (max-width: 600px) { .faq-controls { align-items: stretch; flex-direction: column; } #faq-form { padding: 12px; } }
