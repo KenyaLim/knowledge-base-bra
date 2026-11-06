@@ -9,6 +9,7 @@ import { csrf, csrfToken } from "./src/middlewares/csrf.js";
 import cmsRoutes from "./src/routes/cms.js";
 import faqRoutes from "./src/routes/faq.js";
 import { getDynamicPage } from "./src/controllers/cmsController.js";
+import { pageAccess } from "./src/models/cmsModel.js";
 import { requireSession } from "./src/middlewares/auth.js";
 import { COOKIE_NAME, SESSION_MS, cookieOptions, isCmsAdmin, readSessionFromToken, refreshSession, safeNext } from "./src/utils/session.js";
 
@@ -55,6 +56,8 @@ export function createApp() {
       return res.redirect(new URL("/index.html", `${req.protocol}://${req.get("host")}`).toString());
     }
     if (session) {
+      const access = await pageAccess(req.path, isCmsAdmin(session));
+      if (!access.ok || !access.allowed) return res.status(access.ok ? 404 : 502).set("Cache-Control", "private, no-store").send("Page unavailable");
       try {
         const refreshed = await refreshSession(secret, session);
         res.cookie(COOKIE_NAME, refreshed, cookieOptions(Math.floor(SESSION_MS / 1000), req.secure));

@@ -3,6 +3,7 @@ import multer from "multer";
 import { requireSession } from "../middlewares/auth.js";
 import { requireAdmin } from "../middlewares/admin.js";
 import {
+  getPageAccess,
   getAdminContent,
   getAdminNavigation,
   getContent,
@@ -20,6 +21,7 @@ import {
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } });
 
+router.get("/access", requireSession, getPageAccess);
 router.get("/content", requireSession, getContent);
 router.get("/navigation", requireSession, getNavigation);
 router.get("/page/:page", requireSession, getDynamicPage);

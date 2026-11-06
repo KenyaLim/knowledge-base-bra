@@ -35,6 +35,12 @@
                     <input type="hidden" id="navigationId">
                     <label id="navigationParentField" hidden>Modul induk<select id="navigationParentId"></select></label>
                     <label><span id="navigationTitleLabel">Nama modul baru</span><input id="navigationTitle" required maxlength="200" autocomplete="off"></label>
+                    <fieldset id="navigationIconField">
+                        <legend>Ikon modul</legend>
+                        <label>Cari ikon<input id="navigationIconSearch" type="search" placeholder="wallet, factory, folder"></label>
+                        <div id="navigationIconPicker" class="navigation-icon-picker"></div>
+                        <output id="navigationIconPreview" class="navigation-icon-preview" aria-live="polite"></output>
+                    </fieldset>
                     <div class="cms-form-actions">
                         <button type="submit" id="saveNavigation" class="navbar-signin">Tambah</button>
                         <button type="button" id="newNavigation" class="cms-secondary-button" hidden>Batal</button>

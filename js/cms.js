@@ -175,16 +175,15 @@ async function loadMaterial() {
         }
     }
 
-    const fallback = localMaterials[slug];
     try {
         const response = await fetch(`/api/cms/content?slug=${encodeURIComponent(slug)}`);
         if (!response.ok) throw new Error("Could not load material");
         const material = await response.json();
-        if (!material && !fallback) throw new Error("Not found");
-        showMaterial(material || fallback);
+        if (!material) throw new Error("Not found");
+        showMaterial(material);
     } catch {
-        if (fallback) showMaterial(fallback);
-        else status.textContent = "Materi tidak ditemukan atau belum dipublish.";
+        document.getElementById("materialContent").replaceChildren();
+        status.textContent = "Materi tidak ditemukan atau belum dipublish.";
     }
 }
 

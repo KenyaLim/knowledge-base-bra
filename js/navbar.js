@@ -574,7 +574,8 @@ document.addEventListener("DOMContentLoaded", function () {
             sidebarScroll.insertAdjacentHTML("beforeend", otherGroups);
             bindSidebarAccordions();
         } catch (error) {
-            console.warn("CMS navigation is unavailable; using the built-in navigation.", error);
+            sidebarContainer.querySelectorAll(".sidebar-app-group-stage, .sidebar-app-group-proman").forEach((group) => group.remove());
+            console.warn("CMS navigation is unavailable.", error);
         }
     }
 
@@ -723,17 +724,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         async function loadDocumentationIndex() {
-            const [materialsResult, navigationResult, ...pageResults] = await Promise.allSettled([
+            const [materialsResult, navigationResult] = await Promise.allSettled([
                 loadSearchMaterials(),
                 fetch("/api/cms/navigation").then(function (response) {
                     if (!response.ok) throw new Error("Could not load search navigation");
                     return response.json();
-                }),
-                ...modulePages.map(function (page) {
-                    return fetch(page.url).then(function (response) {
-                        if (!response.ok) throw new Error(`Could not load ${page.title}`);
-                        return response.text();
-                    });
                 })
             ]);
             const materials = materialsResult.status === "fulfilled"
@@ -745,6 +740,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const navigationPages = navigationResult.status === "fulfilled"
                 ? (navigationResult.value.items || []).filter(function (item) { return item.page && item.url; })
                 : [];
+            const visiblePages = modulePages.filter((page) => navigationPages.some((item) => item.page === page.page));
+            const pageResults = await Promise.allSettled(visiblePages.map(async (page) => {
+                const response = await fetch(page.url);
+                if (!response.ok || response.redirected) throw new Error("Page unavailable");
+                return response.text();
+            }));
             const materialUrls = new Map();
             navigationPages.forEach(function (item) {
                 materialUrls.set(item.page, navigationUrl(item.url));
@@ -756,7 +757,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
             const indexedSlugs = new Set();
 
-            documentationIndex = modulePages.map(function (page, index) {
+            documentationIndex = visiblePages.map(function (page, index) {
                 const result = pageResults[index];
                 if (result.status !== "fulfilled") {
                     searchIndexError = true;

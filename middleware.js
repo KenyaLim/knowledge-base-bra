@@ -50,6 +50,18 @@ export default async function middleware(request) {
     }
 
     if (session) {
+        if (/^\/(?:docs|erp|stage|proman)\//.test(decodeURIComponent(path))) {
+            try {
+                const access = await fetch(new URL(`/api/cms/access?path=${encodeURIComponent(path)}`, url.origin), {
+                    headers: { cookie: `${COOKIE_NAME}=${getCookie(request, COOKIE_NAME)}` },
+                    redirect: "error",
+                    cache: "no-store"
+                });
+                if (!access.ok || (await access.json()).allowed !== true) return new Response("Page unavailable", { status: access.status === 404 ? 404 : 502, headers: { "Cache-Control": "private, no-store" } });
+            } catch {
+                return new Response("Page unavailable", { status: 502, headers: { "Cache-Control": "private, no-store" } });
+            }
+        }
         const response = next({
             headers: {
                 "Cache-Control": "private, no-store"

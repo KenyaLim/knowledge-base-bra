@@ -17,6 +17,12 @@ body.admin-page .navigation-segments input:checked + span { background: #fff; co
 body.admin-page .navigation-segments input:focus-visible + span { outline: 2px solid #14532d; }
 body.admin-page #navigationList, body.admin-page .navigation-pages { list-style: none; padding: 0; margin: 0; }
 body.admin-page .navigation-list-panel h2 { font-size: 14px; margin: 0 0 16px; }
+body.admin-page .navigation-inactive > .navigation-module-row, body.admin-page .navigation-page-row.navigation-inactive { background: #f4f4f4; color: #666; }
+body.admin-page .navigation-inactive-label { font-size: 12px; font-weight: 500; padding: 3px 7px; border-radius: 4px; background: #e5e5e5; color: #555; }
+body.admin-page .navigation-icon-picker { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+body.admin-page .navigation-icon-button { padding: 10px; border: 1px solid #ccc; background: white; cursor: pointer; font-size: 22px; }
+body.admin-page .navigation-icon-button[aria-pressed="true"] { background: #eff9ed; border-color: #14532d; }
+body.admin-page .navigation-icon-preview { display: flex; align-items: center; gap: 8px; }
 body.admin-page .navigation-module { border-top: 1px solid #e5e5e5; }
 body.admin-page .navigation-module-row, body.admin-page .navigation-page-row { display: flex; align-items: center; gap: 8px; padding: 10px 0; min-width: 0; }
 body.admin-page .navigation-toggle { display: flex; align-items: center; gap: 10px; flex: 1; text-align: left; min-width: 0; font-weight: 700; }

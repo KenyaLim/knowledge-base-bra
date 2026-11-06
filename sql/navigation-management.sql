@@ -20,6 +20,14 @@ begin
   select * into v_old from public.cms_navigation where id = v_id for update;
   v_exists := found;
   if p_item ? 'id' and not v_exists then raise exception 'Navigation item not found'; end if;
+  if v_exists then
+    v_scope := coalesce(v_scope, v_old.scope);
+    v_type := coalesce(v_type, case when v_old.page is null then 'module' else 'page' end);
+    v_title := coalesce(v_title, v_old.title);
+    if not (p_item ? 'parent_id') then v_parent_id := v_old.parent_id; end if;
+  end if;
+  if p_item ? 'icon' and (jsonb_typeof(p_item->'icon') <> 'string' or p_item->>'icon' not in ('ph-folder', 'ph-wallet', 'ph-factory', 'ph-file-text', 'ph-shopping-cart', 'ph-money', 'ph-chart-bar', 'ph-receipt', 'ph-box-arrow-down', 'ph-package', 'ph-users', 'ph-gear', 'ph-truck', 'ph-buildings')) then raise exception 'Invalid icon'; end if;
+  if p_item ? 'published' and jsonb_typeof(p_item->'published') <> 'boolean' then raise exception 'Invalid published value'; end if;
   if v_scope is null or v_scope not in ('stage', 'proman') or v_type is null or v_type not in ('module', 'page') or coalesce(v_title, '') = '' then
     raise exception 'Valid scope, type and title are required';
   end if;
@@ -57,8 +65,8 @@ begin
     end if;
   end if;
   insert into public.cms_navigation(id, parent_id, scope, title, icon, page, url, published, sort_order)
-  values(v_id, v_parent_id, v_scope, v_title, coalesce(v_old.icon, case when v_type = 'page' then 'ph-file-text' else 'ph-folder' end), v_page, v_url, coalesce(v_old.published, true), v_order)
-  on conflict(id) do update set parent_id = excluded.parent_id, title = excluded.title, sort_order = excluded.sort_order, updated_at = now()
+  values(v_id, v_parent_id, v_scope, v_title, coalesce(p_item->>'icon', v_old.icon, case when v_type = 'page' then 'ph-file-text' else 'ph-folder' end), v_page, v_url, coalesce((p_item->>'published')::boolean, v_old.published, true), v_order)
+  on conflict(id) do update set parent_id = excluded.parent_id, title = excluded.title, icon = excluded.icon, published = excluded.published, sort_order = excluded.sort_order, updated_at = now()
   returning * into v_row;
   if not v_exists and v_type = 'page' then
     insert into public.cms_materials(slug, title, module, module_id, kind, content, published, sort_order, last_edited_at, last_edited_by)

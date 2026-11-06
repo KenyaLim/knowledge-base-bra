@@ -1,18 +1,29 @@
-import { deleteMaterial, listMaterials, listNavigation, getNavigationPage, normalizePayload, upsertMaterial, upsertNavigation } from "../models/cmsModel.js";
-import { parsePaging, newId } from "../utils/session.js";
+import { pageAccess, deleteMaterial, listMaterials, listNavigation, getNavigationPage, normalizePayload, upsertMaterial, upsertNavigation } from "../models/cmsModel.js";
+import { parsePaging, newId, isCmsAdmin } from "../utils/session.js";
 import { storageBucket, supabaseBaseUrl, supabaseRequest } from "../config/supabase.js";
 import { renderDocumentationPage } from "../templates/documentationPage.js";
 import { sanitizeContent, sanitizeMaterial } from "../utils/content.js";
 
 export async function getDynamicPage(req, res) {
-  const result = await getNavigationPage(req.params.page, { publishedOnly: true });
+  const admin = isCmsAdmin(req.session);
+  const access = await pageAccess(`/docs/${req.params.page}`, admin);
+  if (!access.ok) return res.status(502).json({ error: "Could not load page" });
+  if (!access.allowed) return res.status(404).send("Page not found");
+  const result = await getNavigationPage(req.params.page, { publishedOnly: !admin });
   if (!result.ok) return res.status(502).json({ error: "Could not load page" });
   const page = result.data?.[0];
   if (!page) return res.status(404).send("Page not found");
-  const results = await Promise.all([listMaterials({ slug: page.page }), listMaterials({ slug: `erp-${page.page}` })]);
+  const results = await Promise.all([listMaterials({ slug: page.page, publishedOnly: !admin }), listMaterials({ slug: `erp-${page.page}`, publishedOnly: !admin })]);
   const material = results.map((entry) => entry.ok ? entry.data : null).find(Boolean);
   res.set("Cache-Control", "private, no-store");
   return res.send(renderDocumentationPage({ page, material }));
+}
+
+export async function getPageAccess(req, res) {
+  if (typeof req.query.path !== "string" || !req.query.path.startsWith("/")) return res.status(400).json({ error: "Invalid path" });
+  const access = await pageAccess(req.query.path, isCmsAdmin(req.session));
+  res.set("Cache-Control", "private, no-store");
+  return res.status(access.ok ? (access.allowed ? 200 : 404) : 502).json({ allowed: access.allowed });
 }
 
 export async function getNavigation(req, res) {
@@ -28,8 +39,10 @@ export async function getAdminNavigation(req, res) {
 export async function saveAdminNavigation(req, res) {
   const item = req.body || {};
   if (!["module", "page"].includes(item.type) || !["stage", "proman"].includes(item.scope) || typeof item.title !== "string" || !item.title.trim()) return res.status(400).json({ error: "Type, area and title are required" });
+  if (Object.hasOwn(item, "icon") && !["ph-folder", "ph-wallet", "ph-factory", "ph-file-text", "ph-shopping-cart", "ph-money", "ph-chart-bar", "ph-receipt", "ph-box-arrow-down", "ph-package", "ph-users", "ph-gear", "ph-truck", "ph-buildings"].includes(item.icon)) return res.status(400).json({ error: "Invalid icon" });
+  if (Object.hasOwn(item, "published") && typeof item.published !== "boolean") return res.status(400).json({ error: "Invalid published value" });
   const result = await supabaseRequest("POST", "/rest/v1/rpc/cms_navigation_save", {
-    p_item: { type: item.type, scope: item.scope, title: item.title.trim(), parent_id: item.parent_id || null, ...(item.id ? { id: item.id } : {}) },
+    p_item: { type: item.type, scope: item.scope, title: item.title.trim(), ...(Object.hasOwn(item, "parent_id") ? { parent_id: item.parent_id || null } : {}), ...(item.id ? { id: item.id } : {}), ...(Object.hasOwn(item, "icon") ? { icon: item.icon } : {}), ...(Object.hasOwn(item, "published") ? { published: item.published } : {}) },
     p_editor: req.session?.n || req.session?.e || req.session?.u || "",
   });
   return result.ok ? res.json({ item: result.data }) : res.status(400).json({ error: result.error || "Apply the navigation migration before saving" });
