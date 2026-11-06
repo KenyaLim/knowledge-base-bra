@@ -1,27 +1,55 @@
+#faq-app { color: #1e293b; min-width: 0; }
 #faq-app [hidden] { display: none !important; }
-.faq-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 20px; }
-#faq-app input:not([type="checkbox"]), #faq-app select { padding: 10px; border: 1px solid #bbb; border-radius: 6px; max-width: 100%; }
-#faq-search { flex: 1; min-width: 180px; }
-#faq-app button { cursor: pointer; }
+#faq-app .faq-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 20px 0 16px; }
+#faq-app input:not([type="checkbox"]), #faq-app select { font: inherit; color: #334155; background: #fff; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; min-width: 0; max-width: 100%; }
+#faq-app #faq-search { flex: 1; }
+#faq-app button { font: inherit; cursor: pointer; }
 #faq-app button:disabled { cursor: not-allowed; opacity: .5; }
-#faq-app button:not(.faq-question) { padding: 8px 12px; }
+#faq-app button:not(.faq-question) { padding: 8px 14px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #334155; font-size: 13px; font-weight: 600; }
+#faq-app button:not(.faq-question):hover { background: #f1f5f9; }
 #faq-app :focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+#faq-app #faq-list { display: grid; gap: 10px; }
+#faq-app .faq-item { border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; margin: 0; overflow-wrap: anywhere; box-shadow: 0 2px 6px rgb(15 23 42 / 3%); min-width: 0; }
+#faq-app .faq-item.open { border-color: #94a3b8; }
+#faq-app .faq-item h2 { font-size: 15px; margin: 0; padding: 0; border: 0; }
+#faq-app .faq-question { display: flex; justify-content: space-between; align-items: center; gap: 16px; width: 100%; min-height: 56px; text-align: left; padding: 16px 20px; border: 0; border-radius: 12px; background: transparent; color: #1e293b; font-size: 15px; line-height: 1.5; font-weight: 600; }
+#faq-app .faq-question:hover { background: #f8fafc; }
+#faq-app .faq-question i { flex: 0 0 8px; width: 8px; height: 8px; margin: 0 4px; border-right: 2px solid #64748b; border-bottom: 2px solid #64748b; transform: rotate(45deg); transition: transform .2s ease; }
+#faq-app .faq-question i::before { content: none; }
+#faq-app .faq-item.open .faq-question i { transform: rotate(225deg); }
 #faq-app .faq-answer:not([hidden]) { display: block; }
+#faq-app .faq-answer { padding: 16px 20px 20px; border-top: 1px solid #eef2f6; color: #475569; font-size: 14px; line-height: 1.8; overflow-x: auto; }
 #faq-app .faq-answer p { margin: 0 0 12px; }
-#faq-app .faq-answer ul, #faq-app .faq-answer ol { padding-left: 24px; }
-#faq-app img { max-width: 100%; height: auto; }
-#faq-app .faq-item { border-radius: 8px; overflow-wrap: anywhere; }
-.faq-actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; align-items: center; }
-#faq-form { display: grid; gap: 12px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 24px; }
-#faq-answer { min-height: 180px; padding: 16px; border: 1px solid #aaa; border-radius: 6px; overflow-wrap: anywhere; }
-#faq-app h2 { font-size: 18px; margin: 0; }
-#faq-app[data-dashboard] { margin-top: 24px; text-align: left; }
-#faq-app .faq-question { display: flex; justify-content: space-between; align-items: center; gap: 16px; width: 100%; text-align: left; padding: 16px; }
-#faq-app .faq-item { border: 1px solid #ddd; margin: 12px 0; }
-#faq-app .faq-answer { padding: 16px; }
-.faq-tags { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px; }
-.faq-tags span { background: #eef2ff; color: #334155; border-radius: 12px; padding: 2px 8px; font-size: 12px; }
-#faq-app [aria-pressed="true"] { background: #2563eb; color: white; }
-#faq-app .open .ph-caret-down { transform: rotate(180deg); }
-.faq-all { display: block; margin-top: 16px; }
-@media (max-width: 600px) { .faq-controls { align-items: stretch; flex-direction: column; } #faq-form { padding: 12px; } }
+#faq-app .faq-answer > :last-child { margin-bottom: 0; }
+#faq-app .faq-answer ul, #faq-app .faq-answer ol { padding-left: 24px; margin: 12px 0; }
+#faq-app .faq-answer ul { list-style: disc; }
+#faq-app .faq-answer ol { list-style: decimal; }
+#faq-app .faq-answer a { color: #1d4ed8; text-decoration: underline; }
+#faq-app .faq-answer pre { white-space: pre-wrap; }
+#faq-app img { max-width: 100%; height: auto; border-radius: 8px; }
+#faq-app .faq-tags { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 20px 12px; }
+#faq-app .faq-tags:empty { display: none; }
+#faq-app .faq-tags span { background: #f1f5f9; color: #475569; border-radius: 20px; padding: 3px 9px; font-size: 12px; line-height: 1.5; }
+#faq-app .faq-actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 20px; align-items: center; border-top: 1px solid #eef2f6; font-size: 13px; }
+#faq-app #faq-form { display: grid; gap: 12px; padding: 20px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin: 20px 0; }
+#faq-app #faq-answer { min-height: 180px; padding: 16px; border: 1px solid #cbd5e1; border-radius: 8px; overflow-wrap: anywhere; }
+#faq-app #faq-status { margin: 12px 0; color: #64748b; font-size: 13px; line-height: 1.6; }
+#faq-app #faq-more, #faq-app #faq-retry { margin: 12px 0; }
+#faq-app[data-dashboard] { margin-top: 28px; text-align: left; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; }
+#faq-app #faq-title { font-size: 18px; font-weight: 700; margin: 0 0 6px; }
+#faq-app[data-dashboard] > p:not(#faq-status) { color: #64748b; font-size: 14px; margin: 0; }
+#faq-app #faq-categories { flex-direction: row; gap: 8px; margin: 16px 0 12px; }
+#faq-app #faq-categories button { border-radius: 20px; }
+#faq-app #faq-categories [aria-pressed="true"] { background: #1e293b; border-color: #1e293b; color: #fff; }
+#faq-app[data-dashboard] .faq-question { padding: 13px 16px; min-height: 48px; font-size: 14px; }
+#faq-app .faq-all { display: inline-block; margin-top: 16px; color: #1d4ed8; font-size: 13px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+@media (max-width: 600px) {
+    #faq-app .faq-controls { align-items: stretch; flex-direction: column; }
+    #faq-app #faq-form, #faq-app[data-dashboard] { padding: 14px; }
+    #faq-app .faq-question { padding: 14px; gap: 12px; }
+    #faq-app .faq-answer { padding: 14px; }
+    #faq-app .faq-tags { padding: 0 14px 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #faq-app .faq-question i { transition: none; }
+}

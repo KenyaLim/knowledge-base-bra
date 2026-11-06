@@ -107,14 +107,24 @@
         status.textContent = "Memuat FAQ...";
         get("retry").hidden = true;
         try {
-            const rows = await request(`${endpoint}?${params}`);
+            let rows = await request(`${endpoint}?${params}`);
             if (current !== generation) return;
+            if (dashboard && rows.length < pageSize) {
+                params.set("featured", "false");
+                params.set("limit", String(pageSize - rows.length));
+                const fallback = await request(`${endpoint}?${params}`);
+                if (current !== generation) return;
+                rows = [...rows, ...fallback];
+            }
             items = append ? [...items, ...rows] : rows;
             render();
             if (get("more")) { get("more").hidden = rows.length < pageSize; get("more").disabled = false; }
             if (admin) get("add").disabled = false;
         } catch (error) {
             if (current !== generation) return;
+            if (!append) { items = []; get("list").replaceChildren(); }
+            if (get("more")) get("more").hidden = true;
+            if (admin) get("add").disabled = true;
             status.textContent = error.message;
             get("retry").hidden = false;
         }

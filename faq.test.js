@@ -138,6 +138,40 @@ test('FAQ SQL and HTTP lifecycle, authorization, CSRF, validation and sanitizati
         assert.equal((await send('/api/faq/' + tagged.id)).status, 401);
         await send('/api/login', 'POST', { identity: 'owner', password: 'original-password' });
     });
+    await t.test('dashboard fills published legacy rows, prefers featured and filters before limiting', async () => {
+        await db.exec('UPDATE cms_faqs SET featured=false');
+        const dom = new JSDOM(await readFile(new URL('./index.html', import.meta.url), 'utf8'), { url: origin, runScripts: 'outside-only' });
+        const calls = [];
+        dom.window.fetch = async (url) => { calls.push(url); return send(url); };
+        dom.window.eval(await readFile(new URL('./js/faq.js', import.meta.url), 'utf8'));
+        const settle = async () => {
+            for (let i = 0; i < 100 && dom.window.document.getElementById('faq-status').textContent === 'Memuat FAQ...'; i++) await new Promise((resolve) => setTimeout(resolve, 20));
+        };
+        await settle();
+        assert.equal(dom.window.document.querySelectorAll('.faq-item').length, 4);
+        assert.equal(calls.length, 2);
+        for (let i = 0; i < 7; i++) await send(api, 'POST', { ...payload, question: 'Dashboard ' + i, published: true, featured: i === 6 });
+        dom.window.document.querySelector('[data-category="PROMAN"]').click();
+        await settle();
+        const questions = [...dom.window.document.querySelectorAll('.faq-question')].map((node) => node.textContent);
+        assert.deepEqual(questions, ['Dashboard 6', 'Dashboard 0', 'Dashboard 1', 'Dashboard 2', 'Dashboard 3']);
+        assert.match(calls.at(-1), /limit=4/);
+        assert.match(calls.at(-1), /category=PROMAN/);
+        assert.match(calls.at(-1), /featured=false/);
+        dom.window.close();
+    });
+    await t.test('missing columns and outdated RPC never report success', async () => {
+        const savedFetch = globalThis.fetch;
+        globalThis.fetch = async (input, options) => new URL(input).hostname === 'database.invalid' && new URL(input).pathname.endsWith('/cms_mutate_faq') ? Response.json({ id: 'old', ...payload }) : savedFetch(input, options);
+        const stale = await send(api, 'POST', { ...payload, tags: ['new'], featured: true });
+        assert.equal(stale.status, 503);
+        assert.match((await stale.json()).error, /sql\/faq.sql/);
+        globalThis.fetch = savedFetch;
+        await db.exec('ALTER TABLE cms_faqs DROP COLUMN featured');
+        const missing = await send('/api/faq?featured=true&limit=5');
+        assert.equal(missing.status, 503);
+        assert.match((await missing.json()).error, /sql\/faq.sql/);
+    });
     globalThis.fetch = async (input, options) => new URL(input).hostname === 'database.invalid' ? Response.json({}, { status: 503 }) : realFetch(input, options);
     assert.equal((await send('/api/faq')).status, 503);
 });
@@ -220,6 +254,34 @@ test('full FAQ loads additional previews and admin edit loads detail with tags a
     await new Promise((resolve) => setTimeout(resolve, 30));
     assert.deepEqual(JSON.parse(calls.find((call) => call.method === 'PUT').body).tags, ['reuse', 'quoted,"tag']);
     admin.window.close();
+});
+
+test('FAQ styles stay scoped and override legacy accordion presentation', async () => {
+    const css = await readFile(new URL('./css/faq.css', import.meta.url), 'utf8');
+    const dom = new JSDOM('<style>' + css + '</style><button class="faq-question">Outside</button><section id="faq-app"><article class="faq-item open"><h2><button class="faq-question">Inside<i></i></button></h2><div class="faq-answer" hidden>Hidden</div></article></section>');
+    function scoped(rules) {
+        for (const rule of rules) {
+            if (rule.selectorText) for (const selector of rule.selectorText.split(',')) assert.ok(selector.trim().startsWith('#faq-app'), selector);
+            if (rule.cssRules) scoped(rule.cssRules);
+        }
+    }
+    scoped(dom.window.document.styleSheets[0].cssRules);
+    assert.equal(dom.window.getComputedStyle(dom.window.document.querySelector('.faq-answer')).display, 'none');
+    assert.equal(dom.window.getComputedStyle(dom.window.document.querySelector('#faq-app .faq-question i')).transform, 'rotate(225deg)');
+    assert.match(css, /@media \(max-width: 600px\)/);
+    assert.match(css, /#faq-app #faq-categories \{ flex-direction: row/);
+    dom.window.close();
+});
+
+test('dashboard fallback errors show retry instead of partial success', async () => {
+    const dom = new JSDOM(await readFile(new URL('./index.html', import.meta.url), 'utf8'), { url: 'http://localhost/', runScripts: 'outside-only' });
+    dom.window.fetch = async (url) => url.includes('featured=true') ? Response.json([{ id: 'one', question: 'Featured', category: 'Umum' }]) : Response.json({ error: 'Skema FAQ: sql/faq.sql' }, { status: 503 });
+    dom.window.eval(await readFile(new URL('./js/faq.js', import.meta.url), 'utf8'));
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    assert.equal(dom.window.document.querySelectorAll('.faq-item').length, 0);
+    assert.equal(dom.window.document.getElementById('faq-retry').hidden, false);
+    assert.match(dom.window.document.getElementById('faq-status').textContent, /sql\/faq.sql/);
+    dom.window.close();
 });
 
 const rows = [{ id: 'one', question: 'Stage question', answer: '<p>Answer</p>', category: 'STAGE', published: true }, { id: 'two', question: 'Proman question', answer: '<p>Other</p>', category: 'PROMAN', published: false }];

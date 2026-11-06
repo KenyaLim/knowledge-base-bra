@@ -7,6 +7,10 @@ import { sanitizeContent } from "../utils/content.js";
 const router = Router();
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const clean = (item) => ({ ...item, ...(typeof item.answer === "string" ? { answer: sanitizeContent(item.answer) } : {}) });
+const migrationError = "Skema FAQ belum diperbarui. Minta administrator menerapkan sql/faq.sql, lalu coba lagi.";
+function unavailable(result, fallback) {
+  return /42703|42P01|42883|PGRST20[0245]/.test(result.data?.code || "") || /(?:column|relation|function).*?(?:does not exist|schema cache)|could not find.*(?:column|function|table)/i.test(result.error || "") ? migrationError : fallback;
+}
 function list(admin) {
   return async (req, res) => {
     if (Object.keys(req.query).some((key) => !["search", "category", "tag", "featured", "limit", "offset", "page"].includes(key))) return res.status(400).json({ error: "Filter FAQ tidak valid" });
@@ -19,7 +23,7 @@ function list(admin) {
     if (tag) query.set("tags", `cs.${JSON.stringify([tag]) .replace(/^\[/, "{").replace(/\]$/, "}")}`);
     if (search.trim()) query.set("question", `imatch.${search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
     const result = await supabaseRequest("GET", `/rest/v1/cms_faqs?${query}`);
-    if (!result.ok) return res.status(503).json({ error: "FAQ belum tersedia. Coba lagi nanti." });
+    if (!result.ok) return res.status(503).json({ error: unavailable(result, "FAQ belum tersedia. Coba lagi nanti.") });
     res.set("Cache-Control", "private, no-store").json(result.data.filter((item) => admin || item.published === true).map(clean));
   };
 }
@@ -30,7 +34,7 @@ function detail(admin) {
     if (!uuid.test(req.params.id)) return res.status(400).json({ error: "ID FAQ tidak valid" });
     const result = await supabaseRequest("GET", `/rest/v1/cms_faqs?select=*&id=eq.${req.params.id}&limit=1${admin ? "" : "&published=eq.true"}`);
     res.set("Cache-Control", "private, no-store");
-    if (!result.ok) return res.status(503).json({ error: "FAQ belum tersedia" });
+    if (!result.ok) return res.status(503).json({ error: unavailable(result, "FAQ belum tersedia") });
     const item = result.data.find((row) => row.id === req.params.id && (admin || row.published === true));
     return item ? res.json(clean(item)) : res.status(404).json({ error: "FAQ tidak ditemukan" });
   };
@@ -41,7 +45,7 @@ function suggestions(admin) {
     if (typeof search !== "string" || search.length > 40) return res.status(400).json({ error: "Tag tidak valid" });
     const result = await supabaseRequest("POST", "/rest/v1/rpc/cms_faq_tags", { p_search: search, p_admin: admin });
     res.set("Cache-Control", "private, no-store");
-    return result.ok ? res.json(result.data.map((row) => row.tag)) : res.status(503).json({ error: "Tag belum tersedia" });
+    return result.ok ? res.json(result.data.map((row) => row.tag)) : res.status(503).json({ error: unavailable(result, "Tag belum tersedia") });
   };
 }
 router.get("/faq/tags", requireSession, suggestions(false));
@@ -73,8 +77,9 @@ async function mutate(req, res) {
     data.direction = body.direction;
   }
   const result = await supabaseRequest("POST", "/rest/v1/rpc/cms_mutate_faq", { p_action: action, p_id: id || null, p_data: data });
-  if (!result.ok) return res.status(503).json({ error: "Gagal menyimpan FAQ. Coba lagi nanti." });
+  if (!result.ok) return res.status(503).json({ error: unavailable(result, "Gagal menyimpan FAQ. Coba lagi nanti.") });
   if (!result.data) return res.status(404).json({ error: "FAQ tidak ditemukan" });
+  if ((data.featured !== undefined && result.data.featured !== data.featured) || (data.tags !== undefined && JSON.stringify(result.data.tags) !== JSON.stringify(data.tags))) return res.status(503).json({ error: migrationError });
   return res.status(action === "create" ? 201 : 200).json(clean(result.data));
 }
 router.patch("/admin/faq/reorder", requireSession, requireAdmin, mutate);
