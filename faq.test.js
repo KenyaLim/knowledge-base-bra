@@ -215,7 +215,10 @@ test('dashboard placement, server category filtering, maximum five and lazy cach
     const settle = () => new Promise((resolve) => setTimeout(resolve, 30));
     await settle();
     const document = dom.window.document;
-    assert.equal(document.querySelector('.search-box').nextElementSibling.id, 'faq-app');
+    assert.equal(document.querySelector('.search-box').nextElementSibling.id, 'searchStatus');
+    assert.equal(document.getElementById('searchStatus').nextElementSibling.id, 'searchResults');
+    assert.equal(document.getElementById('searchResults').nextElementSibling.id, 'faq-app');
+    assert.equal(document.querySelector('#faq-app #searchInput, #faq-app #searchResults'), null);
     assert.equal(document.querySelectorAll('.faq-item').length, 5);
     assert.equal(calls.length, 1);
     const toggle = document.querySelector('.faq-question');
@@ -227,6 +230,64 @@ test('dashboard placement, server category filtering, maximum five and lazy cach
     assert.match(calls.at(-1), /category=STAGE/);
     assert.equal(document.querySelector('.faq-all').getAttribute('href'), 'getting-started/faq.html');
     dom.window.close();
+});
+
+test('dashboard documentation search and FAQ filters operate independently', async () => {
+    const dom = new JSDOM(await readFile(new URL('./index.html', import.meta.url), 'utf8'), { url: 'http://localhost/', runScripts: 'outside-only' });
+    try {
+        const calls = [];
+        dom.window.fetch = async (url) => {
+            calls.push(url);
+            if (url.startsWith('/api/faq?')) {
+                const category = new URL(url, 'http://localhost').searchParams.get('category');
+                return Response.json(Array.from({ length: 5 }, (_, i) => ({ id: String(i), question: 'FAQ ' + i, category: category === 'Semua' ? 'Umum' : category, tags: [] })));
+            }
+            if (url.startsWith('/api/cms/content?')) return Response.json([{ slug: 'unique-guide', title: 'Uniqueguide', content: '<p>Documentation</p>', module: 'STAGE', summary: 'Guide' }]);
+            if (url === '/api/cms/navigation') return Response.json({ items: [] });
+            if (url === '/api/session') return Response.json({});
+            return new Response('<main><h1>Other documentation</h1></main>');
+        };
+        await new Promise((resolve) => dom.window.document.readyState === 'loading' ? dom.window.document.addEventListener('DOMContentLoaded', resolve, { once: true }) : resolve());
+        dom.window.eval(await readFile(new URL('./js/navbar.js', import.meta.url), 'utf8'));
+        dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
+        dom.window.eval(await readFile(new URL('./js/faq.js', import.meta.url), 'utf8'));
+        const settle = () => new Promise((resolve) => setTimeout(resolve, 30));
+        await settle();
+        const { document, Event, KeyboardEvent } = dom.window;
+        const input = document.getElementById('searchInput');
+        const results = document.getElementById('searchResults');
+        const faq = document.getElementById('faq-app');
+        const initialFAQ = faq.innerHTML;
+        const faqCalls = calls.filter((url) => url.startsWith('/api/faq')).length;
+        input.value = 'Uniqueguide';
+        input.dispatchEvent(new Event('input'));
+        assert.equal(results.children.length, 1);
+        assert.match(results.textContent, /Uniqueguide/);
+        assert.ok(results.compareDocumentPosition(faq) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
+        assert.equal(faq.innerHTML, initialFAQ);
+        assert.equal(calls.filter((url) => url.startsWith('/api/faq')).length, faqCalls);
+        const searchHTML = results.innerHTML;
+        const searchStatus = document.getElementById('searchStatus').textContent;
+        document.querySelector('[data-category="STAGE"]').click();
+        await settle();
+        assert.match(calls.at(-1), /category=STAGE/);
+        assert.equal(document.querySelector('[data-category="STAGE"]').getAttribute('aria-pressed'), 'true');
+        assert.equal(results.innerHTML, searchHTML);
+        assert.equal(document.getElementById('searchStatus').textContent, searchStatus);
+        assert.equal(input.value, 'Uniqueguide');
+        input.value = 'no-matching-document';
+        document.getElementById('searchButton').click();
+        assert.equal(results.children.length, 0);
+        assert.match(document.getElementById('searchStatus').textContent, /No results found/);
+        input.value = 'Uniqueguide';
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+        assert.equal(results.children.length, 1);
+        input.value = '';
+        input.dispatchEvent(new Event('input'));
+        assert.equal(results.children.length, 0);
+        assert.equal(document.querySelectorAll('.faq-item').length, 5);
+        assert.equal(document.querySelector('[data-category="STAGE"]').getAttribute('aria-pressed'), 'true');
+    } finally { dom.window.close(); }
 });
 
 test('full FAQ loads additional previews and admin edit loads detail with tags and featured', async () => {
