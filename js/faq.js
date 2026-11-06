@@ -40,11 +40,13 @@
         get("list").replaceChildren();
         const query = (get("search")?.value || "").trim().toLocaleLowerCase();
         const category = get("category")?.value || categoryValue;
-        const visible = items.filter((item) => item.question.toLocaleLowerCase().includes(query) && (category === "Semua" || category === item.category)).slice(0, dashboard ? 5 : undefined);
-        status.textContent = visible.length ? `${visible.length} pertanyaan` : "Tidak ada FAQ yang ditemukan.";
+        const tag = get("tag")?.value || "";
+        const visible = items.filter((item) => (admin || item.published !== false) && item.question.toLocaleLowerCase().includes(query) && (category === "Semua" || category === item.category) && (!tag || (item.tags || []).includes(tag))).slice(0, dashboard ? 5 : undefined);
+        status.textContent = visible.length ? `${visible.length} pertanyaan${!dashboard && !admin ? " cocok dimuat" : ""}` : "Tidak ada FAQ yang ditemukan. Coba kategori atau kata kunci lain.";
         visible.forEach((item) => {
             const section = document.createElement("article");
             section.className = "faq-item";
+            section.dataset.faqCategory = item.category;
             const heading = document.createElement("h2");
             const answer = document.createElement("div");
             answer.id = `answer-${item.id}`;
@@ -76,7 +78,13 @@
             const tags = document.createElement("div");
             tags.className = "faq-tags";
             (item.tags || []).forEach((tag) => { const label = document.createElement("span"); label.textContent = tag; tags.append(label); });
-            section.append(heading, tags, answer);
+            if (!admin && !dashboard) {
+                const categoryLabel = document.createElement("span");
+                categoryLabel.className = "faq-category-label";
+                categoryLabel.textContent = item.category;
+                tags.prepend(categoryLabel);
+                section.append(tags, heading, answer);
+            } else section.append(heading, tags, answer);
             if (admin) {
                 const actions = document.createElement("div");
                 actions.className = "faq-actions";
@@ -166,8 +174,12 @@
     get("retry").addEventListener("click", () => load());
     get("more")?.addEventListener("click", () => load(true));
     app.querySelectorAll("[data-category]").forEach((node) => node.addEventListener("click", () => {
+        clearTimeout(timer);
         categoryValue = node.dataset.category;
         app.querySelectorAll("[data-category]").forEach((other) => other.setAttribute("aria-pressed", String(other === node)));
+        items = [];
+        get("list").replaceChildren();
+        if (get("more")) get("more").hidden = true;
         load();
     }));
     [get("tag"), get("tags")].filter(Boolean).forEach((input) => {

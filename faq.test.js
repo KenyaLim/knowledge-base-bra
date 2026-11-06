@@ -284,6 +284,75 @@ test('dashboard fallback errors show retry instead of partial success', async ()
     dom.window.close();
 });
 
+test('dashboard category clicks clear old cards immediately and reject stale featured and fallback responses', async () => {
+    const dom = new JSDOM(await readFile(new URL('./index.html', import.meta.url), 'utf8'), { url: 'http://localhost/', runScripts: 'outside-only' });
+    const pending = [];
+    dom.window.fetch = (url) => new Promise((resolve) => pending.push({ query: new URL(url, 'http://localhost').searchParams, resolve }));
+    dom.window.eval(await readFile(new URL('./js/faq.js', import.meta.url), 'utf8'));
+    const document = dom.window.document;
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 10));
+    const respond = (call, category, count = 5) => call.resolve(Response.json(Array.from({ length: count }, (_, i) => ({ id: category + i, question: category + i, category, published: true, answer: '<p>Answer</p>' }))));
+    respond(pending.shift(), 'Umum'); await settle();
+    for (const category of ['STAGE', 'PROMAN', 'Umum', 'Semua']) {
+        document.querySelector(`[data-category="${category}"]`).click();
+        assert.equal(document.querySelectorAll('.faq-item').length, 0);
+        assert.equal(document.querySelector('[aria-pressed="true"]').dataset.category, category);
+        const call = pending.shift();
+        assert.equal(call.query.get('category'), category);
+        assert.equal(call.query.get('limit'), '5');
+        assert.equal(call.query.get('featured'), 'true');
+        respond(call, category === 'Semua' ? 'Umum' : category); await settle();
+        assert.equal(document.querySelectorAll('.faq-item').length, 5);
+        assert.ok([...document.querySelectorAll('.faq-item')].every((node) => category === 'Semua' || node.dataset.faqCategory === category));
+        const toggle = document.querySelector('.faq-question');
+        toggle.click(); await settle();
+        assert.equal(toggle.getAttribute('aria-expanded'), 'true');
+        toggle.click();
+        assert.equal(toggle.getAttribute('aria-expanded'), 'false');
+    }
+    document.querySelector('[data-category="STAGE"]').click();
+    const staleFeatured = pending.shift();
+    document.querySelector('[data-category="PROMAN"]').click();
+    respond(pending.shift(), 'PROMAN', 1); await settle();
+    const staleFallback = pending.shift();
+    assert.equal(staleFallback.query.get('category'), 'PROMAN');
+    assert.equal(staleFallback.query.get('limit'), '4');
+    assert.equal(staleFallback.query.get('featured'), 'false');
+    document.querySelector('[data-category="Umum"]').click();
+    respond(pending.shift(), 'Umum'); await settle();
+    respond(staleFeatured, 'STAGE'); respond(staleFallback, 'PROMAN', 4); await settle();
+    assert.equal(document.querySelectorAll('.faq-item').length, 5);
+    assert.ok([...document.querySelectorAll('.faq-item')].every((node) => node.dataset.faqCategory === 'Umum'));
+    dom.window.close();
+});
+
+test('full FAQ pills combine search and tags with accurate loaded counts and reset pagination', async () => {
+    const calls = [];
+    const dom = await browser(false, async (url) => {
+        const query = new URL(url, 'http://localhost').searchParams;
+        calls.push(query);
+        if (url.includes('/tags?')) return Response.json(['orders']);
+        return Response.json([{ id: 'one', question: 'Order help', category: query.get('category') === 'Semua' ? 'Umum' : query.get('category'), tags: ['orders'], published: true }]);
+    });
+    const { document, Event } = dom.window;
+    for (const category of ['STAGE', 'PROMAN', 'Umum', 'Semua']) {
+        document.querySelector(`[data-category="${category}"]`).click();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        assert.equal(calls.at(-1).get('category'), category);
+        assert.equal(calls.at(-1).get('offset'), '0');
+        assert.equal(document.getElementById('faq-status').textContent, '1 pertanyaan cocok dimuat');
+    }
+    document.getElementById('faq-search').value = 'Order';
+    document.getElementById('faq-search').dispatchEvent(new Event('input'));
+    document.getElementById('faq-tag').value = 'orders';
+    document.getElementById('faq-tag').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    assert.ok(calls.some((query) => query.get('search') === 'Order' && query.get('tag') === 'orders' && query.get('offset') === '0'));
+    assert.equal(document.querySelectorAll('.faq-item').length, 1);
+    assert.equal(document.getElementById('faq-more').hidden, true);
+    dom.window.close();
+});
+
 const rows = [{ id: 'one', question: 'Stage question', answer: '<p>Answer</p>', category: 'STAGE', published: true }, { id: 'two', question: 'Proman question', answer: '<p>Other</p>', category: 'PROMAN', published: false }];
 test('FAQ accessible accordion, search, categories and empty state', async () => {
     const dom = await browser(false, async () => Response.json(rows));
@@ -298,8 +367,8 @@ test('FAQ accessible accordion, search, categories and empty state', async () =>
     const search = document.getElementById('faq-search');
     search.value = 'stage'; search.dispatchEvent(new Event('input'));
     assert.equal(document.querySelectorAll('.faq-item').length, 1);
-    const category = document.getElementById('faq-category');
-    category.value = 'PROMAN'; category.dispatchEvent(new Event('change'));
+    document.querySelector('[data-category="PROMAN"]').click();
+    await new Promise((resolve) => setTimeout(resolve, 20));
     assert.equal(document.querySelectorAll('.faq-item').length, 0);
     assert.match(document.getElementById('faq-status').textContent, /Tidak ada/);
     dom.window.close();
